@@ -6,10 +6,8 @@ from ami import Ami
 from ctypes import *
 from enum import Enum
 
-class BmiStatus(Enum):
-    """The BMI status code as returned from the kernel"""
-    BMI_SUCCESS = 0
-    BMI_FAILURE = 1
+BMI_SUCCESS = 0
+BMI_FAILURE = 1
 
 class Mf6(Ami):
     """This is the BMI+AMI wrapper for the MODFLOW 6 kernel"""
@@ -28,7 +26,7 @@ class Mf6(Ami):
         check_result(BmiStatus.BMI_FAILURE, "update_until")
 
     def finalize(self) -> None:
-        check_result(self.dll.finalize, "finalize")
+        check_result(self.dll.finalize(), "finalize")
 
     def get_current_time(self) -> float:
         current_time = c_double(0.0)
@@ -173,5 +171,5 @@ class Mf6(Ami):
 
 def check_result(result, function_name):
     """Utility function to check the BMI status in the kernel"""
-    if result != BmiStatus.BMI_SUCCESS:
+    if result != BMI_SUCCESS:
         raise Exception("MODFLOW 6 BMI, exception in: " + function_name)
