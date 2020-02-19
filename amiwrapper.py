@@ -1,16 +1,14 @@
+import numpy as np
+from ctypes import *
 from typing import Tuple
 
-import numpy as np
-
 from ami import Ami
-from ctypes import *
-from enum import Enum
 
 BMI_SUCCESS = 0
 BMI_FAILURE = 1
 
-class Mf6(Ami):
-    """This is the BMI+AMI wrapper for the MODFLOW 6 kernel"""
+class AmiWrapper(Ami):
+    """This is the AMI (BMI++) wrapper for marshalling python types into the kernels, and v.v."""
 
     def __init__(self, path):
         self.path = path
@@ -23,7 +21,7 @@ class Mf6(Ami):
         check_result(self.dll.update(), "update")
 
     def update_until(self, time: float) -> None:
-        check_result(BmiStatus.BMI_FAILURE, "update_until")
+        check_result(BMI_FAILURE, "update_until")
 
     def finalize(self) -> None:
         check_result(self.dll.finalize(), "finalize")
@@ -146,25 +144,32 @@ class Mf6(Ami):
         pass
 
     # ===========================
-    # here start the AMI
+    # here starts the AMI
     # ===========================
     def prepare_timestep(self) -> None:
-        pass
+        check_result(self.dll.prepare_timestep(), "prepare_timestep")
 
     def finalize_timestep(self) -> None:
-        pass
+        check_result(self.dll.finalize_timestep(), "finalize_timestep")
 
     def get_subcomponent_count(self) -> int:
-        pass
+        count = c_int(0)
+        check_result(self.dll.get_subcomponent_count(byref(count)), "get_subcomponent_count")
+        return count.value
 
     def prepare_iteration(self, component_id) -> None:
-        pass
+        cid = c_int(component_id)
+        check_result(self.dll.prepare_iteration(byref(cid)), "prepare_iteration")
 
     def do_iteration(self, component_id) -> bool:
-        pass
+        cid = c_int(component_id)
+        has_converged = c_int(0)
+        check_result(self.dll.do_iteration(byref(cid), byref(has_converged)), "do_iteration")
+        return has_converged.value == 1
 
     def finalize_iteration(self, component_id) -> None:
-        pass
+        cid = c_int(component_id)
+        check_result(self.dll.finalize_iteration(byref(cid)), "finalize_iteration")
 
 
 

@@ -1,11 +1,14 @@
-from mf6 import Mf6
-
+import os
 import sys
 import getopt
 
+from amiwrapper import AmiWrapper
+
+# defaults
+mf6_dll = r"d:\checkouts\modflow6-mjr\msvs\dll\x64\Debug\mf6.dll"
+mf6_config_file = r"d:\checkouts\modflow6-examples\mf6\test001e_UZF_3lay\mfsim.nam"
+
 # parse arguments
-mf6_dll = r"D:\checkouts\modflow6-mjr\msvs\dll\x64\Debug\mf6.dll"
-mf6_config_file = "mfsim.nam"
 try:
     opts, args = getopt.getopt(sys.argv[1:],"i:s:")
 except getopt.GetoptError as err:
@@ -19,8 +22,16 @@ for o, a in opts:
     elif o == "-s":
         mf6_dll = a
 
-# load and run the model from here:
-mf6 = Mf6(r"d:\checkouts\modflow6-mjr\msvs\dll\x64\Debug\mf6.dll")
+# load the wrapper and cd to model dir
+old_dir = os.getcwd()
+model_dir = os.path.dirname(mf6_config_file)
+print("\n", "Change to model directory: ", model_dir, "\n")
+os.chdir(model_dir)
+
+mf6 = AmiWrapper(mf6_dll)
+
+
+# run the model
 mf6.initialize(mf6_config_file)
 
 current_time = mf6.get_current_time()
@@ -32,4 +43,4 @@ while current_time < end_time:
 
 mf6.finalize()
 
-
+os.chdir(old_dir)
