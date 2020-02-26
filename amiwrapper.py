@@ -2,10 +2,13 @@ import numpy as np
 from ctypes import *
 from typing import Tuple
 
+from numpy.ctypeslib import ndpointer
+
 from ami import Ami
 
 BMI_SUCCESS = 0
 BMI_FAILURE = 1
+MAX_DIMS = 3
 
 class AmiWrapper(Ami):
     """This is the AMI (BMI++) wrapper for marshalling python types into the kernels, and v.v."""
@@ -13,6 +16,11 @@ class AmiWrapper(Ami):
     def __init__(self, path):
         self.path = path
         self.dll = cdll.LoadLibrary(path)
+        self.MAXSTRLEN = self.get_constant_int("MAXSTRLEN")
+
+    def get_constant_int(self, name: str) -> int:
+        c_var = c_int.in_dll(self.dll, name)
+        return c_var.value
 
     def initialize(self, config_file: str) -> None:
         check_result(self.dll.initialize(config_file), "initialize")
@@ -60,16 +68,28 @@ class AmiWrapper(Ami):
         pass
 
     def get_var_type(self, name: str) -> str:
-        pass
+        var_type = create_string_buffer(self.MAXSTRLEN)
+        check_result(self.dll.get_var_type(c_char_p(name.encode()), byref(var_type)), "get_var_type", "for variable " + name)
+        return var_type.value.decode()
+
+    # strictly speaking not BMI...
+    def get_var_shape(self, name: str) -> np.ndarray:
+        array = np.zeros(MAX_DIMS, dtype=np.int)
+        check_result(self.dll.get_var_shape(c_char_p(name.encode()), c_void_p(array.ctypes.data)), "get_var_shape", "for variable " + name)
+        return array
 
     def get_var_units(self, name: str) -> str:
         pass
 
     def get_var_itemsize(self, name: str) -> int:
-        pass
+        item_size = c_int(0)
+        check_result(self.dll.get_var_itemsize(c_char_p(name.encode()), byref(item_size)), "get_var_itemsize", "for variable " + name)
+        return item_size.value
 
     def get_var_nbytes(self, name: str) -> int:
-        pass
+        nbytes = c_int(0)
+        check_result(self.dll.get_var_nbytes(c_char_p(name.encode()), byref(nbytes)), "get_var_nbytes", "for variable " + name)
+        return nbytes.value
 
     def get_var_location(self, name: str) -> str:
         pass
@@ -84,7 +104,40 @@ class AmiWrapper(Ami):
         pass
 
     def get_value_ptr(self, name: str) -> np.ndarray:
-        pass
+        # prepare numpy array pointer
+        vartype = self.get_var_type(name)
+        shape_array = self.get_var_shape(name)
+
+        # special treatment for scalar values
+        if shape_array[0] == 0:
+            return self.get_value_ptr_scalar(name)
+
+        # convert shape array to python tuple
+        shape_tuple = tuple(np.trim_zeros(shape_array))
+        ndim = len(shape_tuple)
+
+        if vartype.startswith("DOUBLE"):
+            arraytype = np.ctypeslib.ndpointer(dtype="double", ndim=ndim, shape=shape_tuple, flags='F')
+            values = arraytype()
+            check_result(self.dll.get_value_ptr_double(c_char_p(name.encode()), byref(values)), "get_value_ptr", "for variable " + name)
+            return values.contents
+        elif vartype.startswith("INTEGER"):
+            arraytype = np.ctypeslib.ndpointer(dtype="int", ndim=ndim, shape=shape_tuple, flags='F')
+            values = arraytype()
+            check_result(self.dll.get_value_ptr_int(c_char_p(name.encode()), byref(values)), "get_value_ptr", "for variable " + name)
+            return values.contents
+
+    def get_value_ptr_scalar(self, name: str) -> np.ndarray:
+        vartype = self.get_var_type(name)
+        if vartype.startswith("DOUBLE"):
+            assert False
+        elif vartype.startswith("INTEGER"):
+            arraytype = np.ctypeslib.ndpointer(dtype="int", ndim=1, shape=(1,), flags='F')
+            values = arraytype()
+            check_result(self.dll.get_value_ptr_int(c_char_p(name.encode()), byref(values)), "get_value_ptr", "for variable " + name)
+            return values.contents
+
+
 
     def get_value_at_indices(self, name: str, dest: np.ndarray, inds: np.ndarray) -> np.ndarray:
         pass
@@ -174,7 +227,7 @@ class AmiWrapper(Ami):
 
 
 
-def check_result(result, function_name):
+def check_result(result, function_name, detail = ""):
     """Utility function to check the BMI status in the kernel"""
     if result != BMI_SUCCESS:
-        raise Exception("MODFLOW 6 BMI, exception in: " + function_name)
+        raise Exception("MODFLOW 6 BMI, exception in: " + function_name + "(" + detail + ")")
