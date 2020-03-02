@@ -1,6 +1,7 @@
 import math
 import os
 from math import sin
+import numpy as np
 
 import matplotlib.pyplot as plt
 from amiwrapper import AmiWrapper
@@ -26,33 +27,52 @@ mf6 = AmiWrapper(mf6_dll)
 # run the model
 mf6.initialize(mf6_config_file)
 
+# get some 'pointers' to MF6 internal data
+head = mf6.get_value_ptr("SLN_1/X")
+shape = mf6.get_var_shape("FLOW15 RCH-1/BOUND")
+recharge = mf6.get_value_ptr("FLOW15 RCH-1/BOUND")
+storage = mf6.get_value_ptr("FLOW15 STO/SC2")
+max_iter_arr = mf6.get_value_ptr("SLN_1/MXITER")
+
+orig_storage = np.copy(storage)
+storage_corr = np.copy(storage)
+storage_corr[:int(storage_corr.size/2)] = 0.0
+storage_corr[int(storage_corr.size/2):-1] = -0.99
+
+# at some point we would need access to this stuff as well...
+nodeuser = mf6.get_value_ptr("FLOW15 DIS/NODEUSER")
+
+
 # time loop
+start_time = mf6.get_start_time()
 current_time = mf6.get_current_time()
 end_time = mf6.get_end_time()
 simulation_length = end_time - current_time
 
 # convergence
-max_iter = mf6.get_value_ptr("SLN_1/MXITER")[0]
+max_iter = max_iter_arr[0]
 
 # for plotting
 fig, ax = plt.subplots()
 plt.ion()
 
-head = mf6.get_value_ptr("SLN_1/X")
+
 init_line, = ax.plot(head)
-plt.ylim(top=12.0)
-plt.ylim(bottom=0.0)
+plt.ylim(top=10.0)
+plt.ylim(bottom=6.0)
 plt.show()
 
+init_storage = storage.copy()
 
 while current_time < end_time:
     mf6.prepare_timestep()
 
-    # modify recharge rate for model FLOW15
-    shape = mf6.get_var_shape("FLOW15 RCH-1/BOUND")
-    recharge = mf6.get_value_ptr("FLOW15 RCH-1/BOUND")
-    new_recharge = 0.05 * sin(4 * math.pi * current_time / simulation_length)
-    recharge[0, :] = new_recharge
+    # modify recharge
+    recharge[:] = 0.1 #* sin(4 * math.pi * current_time / simulation_length)
+
+    # modify storage
+    frac = math.pow((current_time - start_time)/simulation_length, 0.1) # from 0 to 1
+    storage[:] = (1.0 + frac*storage_corr) * orig_storage[:]
 
     # loop over subcomponents
     n_solutions = mf6.get_subcomponent_count()
@@ -71,12 +91,9 @@ while current_time < end_time:
 
         mf6.finalize_iteration(sol_id)
 
-
-
         # update head in graph
-        head = mf6.get_value_ptr("SLN_1/X")
         init_line.set_ydata(head)
-        plt.pause(0.1)
+        plt.pause(0.2)
 
     mf6.finalize_timestep()
     current_time = mf6.get_current_time()

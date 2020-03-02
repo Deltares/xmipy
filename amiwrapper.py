@@ -8,7 +8,6 @@ from ami import Ami
 
 BMI_SUCCESS = 0
 BMI_FAILURE = 1
-MAX_DIMS = 3
 
 class AmiWrapper(Ami):
     """This is the AMI (BMI++) wrapper for marshalling python types into the kernels, and v.v."""
@@ -74,9 +73,15 @@ class AmiWrapper(Ami):
 
     # strictly speaking not BMI...
     def get_var_shape(self, name: str) -> np.ndarray:
-        array = np.zeros(MAX_DIMS, dtype=np.int)
+        rank = self.get_var_rank(name)
+        array = np.zeros(rank, dtype=np.int)
         check_result(self.dll.get_var_shape(c_char_p(name.encode()), c_void_p(array.ctypes.data)), "get_var_shape", "for variable " + name)
         return array
+
+    def get_var_rank(self, name: str) -> int:
+        rank = c_int(0)
+        check_result(self.dll.get_var_rank(c_char_p(name.encode()), byref(rank)), "get_var_rank", "for variable " + name)
+        return rank.value
 
     def get_var_units(self, name: str) -> str:
         pass
@@ -104,13 +109,15 @@ class AmiWrapper(Ami):
         pass
 
     def get_value_ptr(self, name: str) -> np.ndarray:
-        # prepare numpy array pointer
+
+        # first scalars
+        rank = self.get_var_rank(name)
+        if (rank == 0):
+            return self.get_value_ptr_scalar(name)
+
+
         vartype = self.get_var_type(name)
         shape_array = self.get_var_shape(name)
-
-        # special treatment for scalar values
-        if shape_array[0] == 0:
-            return self.get_value_ptr_scalar(name)
 
         # convert shape array to python tuple
         shape_tuple = tuple(np.trim_zeros(shape_array))
