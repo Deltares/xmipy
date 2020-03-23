@@ -4,7 +4,7 @@ from math import sin
 import numpy as np
 
 import matplotlib.pyplot as plt
-from amiwrapper import AmiWrapper
+from amipy import AmiWrapper
 
 # for debugging
 print("PID: ", os.getpid(), "; continue? [y]")
