@@ -80,7 +80,7 @@ class AmiWrapper(Ami):
     # strictly speaking not BMI...
     def get_var_shape(self, name: str) -> np.ndarray:
         rank = self.get_var_rank(name)
-        array = np.zeros(rank, dtype=np.int)
+        array = np.zeros(rank, dtype=np.int32)
         check_result(self.dll.get_var_shape(c_char_p(name.encode()),
                                             c_void_p(array.ctypes.data)),
                      "get_var_shape", "for variable " + name)
@@ -137,7 +137,7 @@ class AmiWrapper(Ami):
         ndim = len(shape_tuple)
 
         if vartype.startswith("DOUBLE"):
-            arraytype = np.ctypeslib.ndpointer(dtype="double", ndim=ndim,
+            arraytype = np.ctypeslib.ndpointer(dtype=np.float64, ndim=ndim,
                                                shape=shape_tuple, flags='F')
             values = arraytype()
             check_result(self.dll.get_value_ptr_double(c_char_p(name.encode()),
@@ -145,7 +145,7 @@ class AmiWrapper(Ami):
                          "get_value_ptr", "for variable " + name)
             return values.contents
         elif vartype.startswith("INTEGER"):
-            arraytype = np.ctypeslib.ndpointer(dtype="int", ndim=ndim,
+            arraytype = np.ctypeslib.ndpointer(dtype=np.int32, ndim=ndim,
                                                shape=shape_tuple, flags='F')
             values = arraytype()
             check_result(self.dll.get_value_ptr_int(c_char_p(name.encode()),
@@ -158,7 +158,7 @@ class AmiWrapper(Ami):
         if vartype.startswith("DOUBLE"):
             assert False
         elif vartype.startswith("INTEGER"):
-            arraytype = np.ctypeslib.ndpointer(dtype="int", ndim=1, shape=(1,),
+            arraytype = np.ctypeslib.ndpointer(dtype=np.int32, ndim=1, shape=(1,),
                                                flags='F')
             values = arraytype()
             check_result(self.dll.get_value_ptr_int(c_char_p(name.encode()),
