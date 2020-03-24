@@ -1,31 +1,35 @@
 from abc import abstractmethod
 from bmipy import Bmi
 
+
 class Ami(Bmi):
-    """This class extends the CSDMS Basic Model Interface
+    """
+    This class extends the CSDMS Basic Model Interface
 
     The extension to the BMI is twofold:
 
-    - the model's outer convergence loop is exposed to facilitate coupling at this level
+    - the model's outer convergence loop is exposed to facilitate coupling at
+      this level
 
-    - a model can have sub-components which share the time stepping but have their own convergence loop
+    - a model can have sub-components which share the time stepping but have
+      their own convergence loop
 
-    It does not change anything in the BMI interface, so models implementing the AMI interface are
-    compatible with BMI
+    It does not change anything in the BMI interface, so models implementing
+    the AMI interface are compatible with BMI
 
     """
 
     @abstractmethod
     def prepare_timestep(self) -> None:
         """
-        
+
         """
         ...
-        
+
     @abstractmethod
     def finalize_timestep(self) -> None:
         """
-        
+
         """
         ...
 

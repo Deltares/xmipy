@@ -2,7 +2,7 @@ import os
 import sys
 import getopt
 
-from amiwrapper import AmiWrapper
+from amipy import AmiWrapper
 
 # defaults
 mf6_dll = r"d:\checkouts\modflow6-mjr\msvs\dll\x64\Debug\mf6.dll"
