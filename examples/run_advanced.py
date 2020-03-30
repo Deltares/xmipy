@@ -7,13 +7,15 @@ import matplotlib.pyplot as plt
 from amipy import AmiWrapper
 
 # for debugging
-print("PID: ", os.getpid(), "; continue? [y]")
-answer = input()
-if answer != 'y':
-    exit(0)
+debug_native = False
+if debug_native:
+    print("PID: ", os.getpid(), "; continue? [y]")
+    answer = input()
+    if answer != 'y':
+        exit(0)
 
 # defaults
-mf6_dll = r"d:\checkouts\modflow6-mjr\msvs\dll\x64\Debug\mf6.dll"
+mf6_dll = r"d:\checkouts\modflow6-mjr\bin\libmf6.dll"
 mf6_config_file = r"d:\Data\Models\mf6\multilayer\mfsim.nam"
 
 # load the wrapper and cd to model dir

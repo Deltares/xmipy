@@ -23,6 +23,10 @@ class AmiWrapper(Ami):
         c_var = c_int.in_dll(self.dll, name)
         return c_var.value
 
+    def set_int(self, name: str, value: int) -> None:
+        c_var = c_int.in_dll(self.dll, name)
+        c_var.value = value
+
     def initialize(self, config_file: str) -> None:
         check_result(self.dll.initialize(config_file), "initialize")
 

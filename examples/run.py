@@ -5,7 +5,7 @@ import getopt
 from amipy import AmiWrapper
 
 # defaults
-mf6_dll = r"d:\checkouts\modflow6-mjr\msvs\dll\x64\Debug\mf6.dll"
+mf6_dll = r"d:\checkouts\modflow6-mjr\bin\libmf6.dll"
 mf6_config_file = r"d:\checkouts\modflow6-examples\mf6\test001e_UZF_3lay\mfsim.nam"
 
 # parse arguments
@@ -30,6 +30,8 @@ os.chdir(model_dir)
 
 mf6 = AmiWrapper(mf6_dll)
 
+# write output to screen:
+mf6.set_int("ISTDOUTTOFILE", 0)
 
 # run the model
 mf6.initialize(mf6_config_file)
