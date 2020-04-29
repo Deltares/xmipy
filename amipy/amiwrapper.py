@@ -188,7 +188,12 @@ class AmiWrapper(Ami):
         pass
 
     def get_grid_type(self, grid: int) -> str:
-        pass
+        grid_type = create_string_buffer(self.MAXSTRLEN)
+        c_grid = c_int(grid)
+        check_result(
+            self.dll.get_grid_type(byref(c_grid), byref(grid_type)),
+            "get_grid_type", "for id " + str(grid))
+        return grid_type.value.decode()
 
     def get_grid_shape(self, grid: int, shape: np.ndarray) -> np.ndarray:
         pass
@@ -272,5 +277,5 @@ def check_result(result, function_name, detail=""):
     """
     if result != BMI_SUCCESS:
         msg = "MODFLOW 6 BMI, exception in: " + function_name + \
-              "(" + detail + ")"
+              " (" + detail + ")"
         raise Exception(msg)

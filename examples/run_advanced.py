@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from amipy import AmiWrapper
 
 # for debugging
-debug_native = False
+debug_native = True
 if debug_native:
     print("PID: ", os.getpid(), "; continue? [y]")
     answer = input()
@@ -15,7 +15,7 @@ if debug_native:
         exit(0)
 
 # defaults
-mf6_dll = r"d:\checkouts\modflow6-mjr\bin\libmf6.dll"
+mf6_dll = r"d:\checkouts\modflow6-mjr\bin\libmf6d.dll"
 mf6_config_file = r"d:\Data\Models\mf6\multilayer\mfsim.nam"
 
 # load the wrapper and cd to model dir
@@ -33,19 +33,17 @@ mf6.initialize(mf6_config_file)
 head = mf6.get_value_ptr("SLN_1/X")
 shape = mf6.get_var_shape("FLOW15 RCH-1/BOUND")
 recharge = mf6.get_value_ptr("FLOW15 RCH-1/BOUND")
-storage = mf6.get_value_ptr("FLOW15 STO/SC2")
+sc2 = mf6.get_value_ptr("FLOW15 STO/SC2")
+N_sc2 = mf6.get_var_shape("FLOW15 STO/SC2")
+update_sc2 = mf6.get_value_ptr("FLOW15 STO/IRESETSC2")
 max_iter_arr = mf6.get_value_ptr("SLN_1/MXITER")
 
-orig_storage = np.copy(storage)
-storage_corr = np.copy(storage)
-storage_corr[:int(storage_corr.size/2)] = 0.0
-storage_corr[int(storage_corr.size/2):-1] = -0.99
 
 # at some point we would need access to this stuff as well...
 nodeuser = mf6.get_value_ptr("FLOW15 DIS/NODEUSER")
 
 
-# time loop
+# time loopy
 start_time = mf6.get_start_time()
 current_time = mf6.get_current_time()
 end_time = mf6.get_end_time()
@@ -60,21 +58,23 @@ plt.ion()
 
 
 init_line, = ax.plot(head)
-plt.ylim(top=10.0)
+plt.ylim(top=13.0)
 plt.ylim(bottom=6.0)
 plt.show()
 
-init_storage = storage.copy()
-
 while current_time < end_time:
-    mf6.prepare_timestep()
 
     # modify recharge
-    recharge[:] = 0.1 #* sin(4 * math.pi * current_time / simulation_length)
+    recharge[:] = 0.2
 
-    # modify storage
-    frac = math.pow((current_time - start_time)/simulation_length, 0.1) # from 0 to 1
-    storage[:] = (1.0 + frac*storage_corr) * orig_storage[:]
+    # modify storage (before prepare_timestep because the conversions are done in sto_rp()
+    frac = (current_time - start_time)/simulation_length
+    halfway = int(N_sc2[0]/2)
+    sc2[:halfway] = 0.2
+    sc2[halfway:] = (1.0 - 0.99*frac) * 0.2
+    update_sc2[0] = 1
+
+    mf6.prepare_timestep()
 
     # loop over subcomponents
     n_solutions = mf6.get_subcomponent_count()
