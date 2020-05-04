@@ -11,7 +11,7 @@ if answer != 'y':
     exit(0)
 
 # defaults
-mf6_dll = r"d:\checkouts\modflow6-mjr\msvs\dll\x64\Debug\mf6.dll"
+mf6_dll = r"d:\checkouts\modflow6-mjr\bin\libmf6d.dll"
 mf6_config_file = r"d:\Data\Models\mf6\small_models\ex_10x10_ani\mfsim.nam"
 
 # load the wrapper and cd to model dir
