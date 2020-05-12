@@ -1,9 +1,6 @@
-import math
 import os
-from math import sin
-import numpy as np
-
 import matplotlib.pyplot as plt
+
 from amipy import AmiWrapper
 
 # for debugging

@@ -244,6 +244,9 @@ class AmiWrapper(Ami):
     def prepare_timestep(self) -> None:
         check_result(self.dll.prepare_timestep(), "prepare_timestep")
 
+    def do_timestep(self) -> None:
+        check_result(self.dll.do_timestep(), "do_timestep")
+
     def finalize_timestep(self) -> None:
         check_result(self.dll.finalize_timestep(), "finalize_timestep")
 
