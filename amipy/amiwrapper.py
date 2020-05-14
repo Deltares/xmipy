@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from ctypes import *
 from typing import Tuple
@@ -19,6 +20,9 @@ class AmiWrapper(Ami):
         self.dll = cdll.LoadLibrary(path)
         self.MAXSTRLEN = self.get_constant_int("MAXSTRLEN")
 
+        self.working_directory = "."
+        self.previous_directory = "."
+
     def get_constant_int(self, name: str) -> int:
         c_var = c_int.in_dll(self.dll, name)
         return c_var.value
@@ -28,16 +32,28 @@ class AmiWrapper(Ami):
         c_var.value = value
 
     def initialize(self, config_file: str) -> None:
+        self.previous_directory = os.getcwd()
+        os.chdir(self.working_directory)
         check_result(self.dll.initialize(config_file), "initialize")
+        os.chdir(self.previous_directory)
 
     def update(self) -> None:
+        self.previous_directory = os.getcwd()
+        os.chdir(self.working_directory)
         check_result(self.dll.update(), "update")
+        os.chdir(self.previous_directory)
 
     def update_until(self, time: float) -> None:
+        self.previous_directory = os.getcwd()
+        os.chdir(self.working_directory)
         check_result(BMI_FAILURE, "update_until")
+        os.chdir(self.previous_directory)
 
     def finalize(self) -> None:
+        self.previous_directory = os.getcwd()
+        os.chdir(self.working_directory)
         check_result(self.dll.finalize(), "finalize")
+        os.chdir(self.previous_directory)
 
     def get_current_time(self) -> float:
         current_time = c_double(0.0)
@@ -242,13 +258,22 @@ class AmiWrapper(Ami):
     # here starts the AMI
     # ===========================
     def prepare_timestep(self) -> None:
+        self.previous_directory = os.getcwd()
+        os.chdir(self.working_directory)
         check_result(self.dll.prepare_timestep(), "prepare_timestep")
+        os.chdir(self.previous_directory)
 
     def do_timestep(self) -> None:
+        self.previous_directory = os.getcwd()
+        os.chdir(self.working_directory)
         check_result(self.dll.do_timestep(), "do_timestep")
+        os.chdir(self.previous_directory)
 
     def finalize_timestep(self) -> None:
+        self.previous_directory = os.getcwd()
+        os.chdir(self.working_directory)
         check_result(self.dll.finalize_timestep(), "finalize_timestep")
+        os.chdir(self.previous_directory)
 
     def get_subcomponent_count(self) -> int:
         count = c_int(0)
@@ -258,25 +283,40 @@ class AmiWrapper(Ami):
 
     def prepare_iteration(self, component_id) -> None:
         cid = c_int(component_id)
+
+        self.previous_directory = os.getcwd()
+        os.chdir(self.working_directory)
         check_result(self.dll.prepare_iteration(byref(cid)),
                      "prepare_iteration")
+        os.chdir(self.previous_directory)
 
     def do_iteration(self, component_id) -> bool:
         cid = c_int(component_id)
         has_converged = c_int(0)
+
+        self.previous_directory = os.getcwd()
+        os.chdir(self.working_directory)
         check_result(self.dll.do_iteration(byref(cid), byref(has_converged)),
                      "do_iteration")
+        os.chdir(self.previous_directory)
+
         return has_converged.value == 1
+
 
     def finalize_iteration(self, component_id) -> None:
         cid = c_int(component_id)
+
+        self.previous_directory = os.getcwd()
+        os.chdir(self.working_directory)
         check_result(self.dll.finalize_iteration(byref(cid)),
                      "finalize_iteration")
+        os.chdir(self.previous_directory)
 
 
 def check_result(result, function_name, detail=""):
     """
     Utility function to check the BMI status in the kernel
+    TODO_MJR: rename this, is executes the bmi call (and also checks the status)
     """
     if result != BMI_SUCCESS:
         msg = "MODFLOW 6 BMI, exception in: " + function_name + \
