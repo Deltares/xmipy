@@ -156,7 +156,7 @@ class AmiWrapper(Ami):
         shape_tuple = tuple(np.trim_zeros(shape_array))
         ndim = len(shape_tuple)
 
-        if vartype.startswith("DOUBLE"):
+        if vartype.lower().startswith("double"):
             arraytype = np.ctypeslib.ndpointer(dtype=np.float64, ndim=ndim,
                                                shape=shape_tuple, flags='F')
             values = arraytype()
@@ -164,7 +164,7 @@ class AmiWrapper(Ami):
                                                        byref(values)),
                          "get_value_ptr", "for variable " + name)
             return values.contents
-        elif vartype.startswith("INTEGER"):
+        elif vartype.lower().startswith("int"):
             arraytype = np.ctypeslib.ndpointer(dtype=np.int32, ndim=ndim,
                                                shape=shape_tuple, flags='F')
             values = arraytype()
@@ -175,9 +175,9 @@ class AmiWrapper(Ami):
 
     def get_value_ptr_scalar(self, name: str) -> np.ndarray:
         vartype = self.get_var_type(name)
-        if vartype.startswith("DOUBLE"):
+        if vartype.lower().startswith("double"):
             assert False
-        elif vartype.startswith("INTEGER"):
+        elif vartype.lower().startswith("int"):
             arraytype = np.ctypeslib.ndpointer(dtype=np.int32, ndim=1, shape=(1,),
                                                flags='F')
             values = arraytype()
