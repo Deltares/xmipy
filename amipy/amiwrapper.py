@@ -72,6 +72,11 @@ class AmiWrapper(Ami):
         check_result(self.dll.get_end_time(byref(end_time)), "get_end_time")
         return end_time.value
 
+    def get_time_step(self) -> float:
+        dt = c_double(0.0)
+        check_result(self.dll.get_time_step(byref(dt)), "get_time_step")
+        return dt.value
+
     def get_component_name(self) -> str:
         pass
 
@@ -134,9 +139,6 @@ class AmiWrapper(Ami):
         pass
 
     def get_time_units(self) -> str:
-        pass
-
-    def get_time_step(self) -> float:
         pass
 
     def get_value(self, name: str, dest: np.ndarray) -> np.ndarray:
@@ -257,10 +259,11 @@ class AmiWrapper(Ami):
     # ===========================
     # here starts the AMI
     # ===========================
-    def prepare_timestep(self) -> None:
+    def prepare_timestep(self, dt) -> None:
         self.previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.dll.prepare_timestep(), "prepare_timestep")
+        dt = c_double(dt)
+        check_result(self.dll.prepare_timestep(byref(dt)), "prepare_timestep")
         os.chdir(self.previous_directory)
 
     def do_timestep(self) -> None:
