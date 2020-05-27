@@ -1,8 +1,9 @@
 import sys
 from setuptools import setup
 
-from amipy import __version__, __name__, __author__
-
+__version__ = "0.1.0"
+__name__ = 'amipy'
+__author__ = 'Martijn Russcher'
 
 # ensure minimum version of Python is running
 if sys.version_info[0:2] < (3, 6):

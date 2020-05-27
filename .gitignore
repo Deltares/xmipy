@@ -60,4 +60,5 @@ docs/_build/
 # ignore all .ipynb_checkpoints
 .ipynb_checkpoints
 
-
+# Visual Studio Code
+.vscode/
