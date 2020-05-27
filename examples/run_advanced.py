@@ -11,7 +11,7 @@ debug_native = False
 if debug_native:
     print("PID: ", os.getpid(), "; continue? [y]")
     answer = input()
-    if answer != 'y':
+    if answer != "y":
         exit(0)
 
 # defaults
@@ -38,8 +38,8 @@ max_iter_arr = mf6.get_value_ptr("SLN_1/MXITER")
 
 orig_storage = np.copy(storage)
 storage_corr = np.copy(storage)
-storage_corr[:int(storage_corr.size/2)] = 0.0
-storage_corr[int(storage_corr.size/2):-1] = -0.99
+storage_corr[: int(storage_corr.size / 2)] = 0.0
+storage_corr[int(storage_corr.size / 2) : -1] = -0.99
 
 # at some point we would need access to this stuff as well...
 nodeuser = mf6.get_value_ptr("FLOW15 DIS/NODEUSER")
@@ -59,7 +59,7 @@ fig, ax = plt.subplots()
 plt.ion()
 
 
-init_line, = ax.plot(head)
+(init_line,) = ax.plot(head)
 plt.ylim(top=10.0)
 plt.ylim(bottom=6.0)
 plt.show()
@@ -70,15 +70,15 @@ while current_time < end_time:
     mf6.prepare_timestep()
 
     # modify recharge
-    recharge[:] = 0.1 #* sin(4 * math.pi * current_time / simulation_length)
+    recharge[:] = 0.1  # * sin(4 * math.pi * current_time / simulation_length)
 
     # modify storage
-    frac = math.pow((current_time - start_time)/simulation_length, 0.1) # from 0 to 1
-    storage[:] = (1.0 + frac*storage_corr) * orig_storage[:]
+    frac = math.pow((current_time - start_time) / simulation_length, 0.1)  # from 0 to 1
+    storage[:] = (1.0 + frac * storage_corr) * orig_storage[:]
 
     # loop over subcomponents
     n_solutions = mf6.get_subcomponent_count()
-    for sol_id in range(1,n_solutions+1):
+    for sol_id in range(1, n_solutions + 1):
 
         # convergence loop
         kiter = 0

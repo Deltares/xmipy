@@ -1,5 +1,5 @@
-__name__ = 'amipy'
-__author__ = 'Martijn Russcher'
+__name__ = "amipy"
+__author__ = "Martijn Russcher"
 
 # imports
 from .version import __version__

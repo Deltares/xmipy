@@ -10,10 +10,10 @@ mf6_config_file = r"d:\checkouts\modflow6-examples\mf6\test001e_UZF_3lay\mfsim.n
 
 # parse arguments
 try:
-    opts, args = getopt.getopt(sys.argv[1:],"i:s:")
+    opts, args = getopt.getopt(sys.argv[1:], "i:s:")
 except getopt.GetoptError as err:
     print(err)
-    print('usage: run.py -i <configuration_file> -s <shared_library>')
+    print("usage: run.py -i <configuration_file> -s <shared_library>")
     sys.exit(1)
 
 for o, a in opts:
