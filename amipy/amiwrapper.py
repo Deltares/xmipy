@@ -78,22 +78,22 @@ class AmiWrapper(Ami):
         return dt.value
 
     def get_component_name(self) -> str:
-        pass
+        raise NotImplementedError
 
     def get_input_item_count(self) -> int:
-        pass
+        raise NotImplementedError
 
     def get_output_item_count(self) -> int:
-        pass
+        raise NotImplementedError
 
     def get_input_var_names(self) -> Tuple[str]:
-        pass
+        raise NotImplementedError
 
     def get_output_var_names(self) -> Tuple[str]:
-        pass
+        raise NotImplementedError
 
     def get_var_grid(self, name: str) -> int:
-        pass
+        raise NotImplementedError
 
     def get_var_type(self, name: str) -> str:
         var_type = create_string_buffer(self.MAXSTRLEN)
@@ -119,7 +119,7 @@ class AmiWrapper(Ami):
         return rank.value
 
     def get_var_units(self, name: str) -> str:
-        pass
+        raise NotImplementedError
 
     def get_var_itemsize(self, name: str) -> int:
         item_size = c_int(0)
@@ -136,13 +136,13 @@ class AmiWrapper(Ami):
         return nbytes.value
 
     def get_var_location(self, name: str) -> str:
-        pass
+        raise NotImplementedError
 
     def get_time_units(self) -> str:
-        pass
+        raise NotImplementedError
 
     def get_value(self, name: str, dest: np.ndarray) -> np.ndarray:
-        pass
+        raise NotImplementedError
 
     def get_value_ptr(self, name: str) -> np.ndarray:
 
@@ -190,20 +190,20 @@ class AmiWrapper(Ami):
 
     def get_value_at_indices(self, name: str, dest: np.ndarray,
                              inds: np.ndarray) -> np.ndarray:
-        pass
+        raise NotImplementedError
 
     def set_value(self, name: str, values: np.ndarray) -> None:
-        pass
+        raise NotImplementedError
 
     def set_value_at_indices(self, name: str, inds: np.ndarray,
                              src: np.ndarray) -> None:
-        pass
+        raise NotImplementedError
 
     def get_grid_rank(self, grid: int) -> int:
-        pass
+        raise NotImplementedError
 
     def get_grid_size(self, grid: int) -> int:
-        pass
+        raise NotImplementedError
 
     def get_grid_type(self, grid: int) -> str:
         grid_type = create_string_buffer(self.MAXSTRLEN)
@@ -214,47 +214,47 @@ class AmiWrapper(Ami):
         return grid_type.value.decode()
 
     def get_grid_shape(self, grid: int, shape: np.ndarray) -> np.ndarray:
-        pass
+        raise NotImplementedError
 
     def get_grid_spacing(self, grid: int, spacing: np.ndarray) -> np.ndarray:
-        pass
+        raise NotImplementedError
 
     def get_grid_origin(self, grid: int, origin: np.ndarray) -> np.ndarray:
-        pass
+        raise NotImplementedError
 
     def get_grid_x(self, grid: int, x: np.ndarray) -> np.ndarray:
-        pass
+        raise NotImplementedError
 
     def get_grid_y(self, grid: int, y: np.ndarray) -> np.ndarray:
-        pass
+        raise NotImplementedError
 
     def get_grid_z(self, grid: int, z: np.ndarray) -> np.ndarray:
-        pass
+        raise NotImplementedError
 
     def get_grid_node_count(self, grid: int) -> int:
-        pass
+        raise NotImplementedError
 
     def get_grid_edge_count(self, grid: int) -> int:
-        pass
+        raise NotImplementedError
 
     def get_grid_face_count(self, grid: int) -> int:
-        pass
+        raise NotImplementedError
 
     def get_grid_edge_nodes(self, grid: int,
                             edge_nodes: np.ndarray) -> np.ndarray:
-        pass
+        raise NotImplementedError
 
     def get_grid_face_edges(self, grid: int,
                             face_edges: np.ndarray) -> np.ndarray:
-        pass
+        raise NotImplementedError
 
     def get_grid_face_nodes(self, grid: int,
                             face_nodes: np.ndarray) -> np.ndarray:
-        pass
+        raise NotImplementedError
 
     def get_grid_nodes_per_face(self, grid: int,
                                 nodes_per_face: np.ndarray) -> np.ndarray:
-        pass
+        raise NotImplementedError
 
     # ===========================
     # here starts the AMI
