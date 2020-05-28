@@ -1,5 +1,26 @@
 import os
+import sys
 from amipy import AmiWrapper
+import getopt
+
+
+# defaults
+mf6_dll = r"d:\checkouts\modflow6-mjr\bin\libmf6d.dll"
+mf6_config_file = r"d:\Data\Models\mf6\small_models\ex_10x10\mfsim.nam"
+
+# parse arguments
+try:
+    opts, args = getopt.getopt(sys.argv[1:], "i:s:")
+except getopt.GetoptError as err:
+    print(err)
+    print('usage: run.py -i <configuration_file> -s <shared_library>')
+    sys.exit(1)
+
+for o, a in opts:
+    if o == "-i":
+        mf6_config_file = a
+    elif o == "-s":
+        mf6_dll = a
 
 # for debugging
 debug_native = True
@@ -9,16 +30,11 @@ if debug_native:
     if answer != 'y':
         exit(0)
 
-# defaults
-mf6_dll = r"d:\checkouts\modflow6-mjr\bin\libmf6d.dll"
-mf6_config_file = r"d:\Data\Models\mf6\small_models\ex_10x10\mfsim.nam"
-
 # load the wrapper and cd to model dir
 old_dir = os.getcwd()
 model_dir = os.path.dirname(mf6_config_file)
 print("\n", "Change to model directory: ", model_dir, "\n")
 os.chdir(model_dir)
-
 mf6 = AmiWrapper(mf6_dll)
 
 # write output to screen:
@@ -28,8 +44,9 @@ mf6.initialize(mf6_config_file)
 gtype = mf6.get_grid_type(1)
 try:
     gtype = mf6.get_grid_type(2)
-except:
-    print("exception")
+except Exception as e:
+    print(e)
+
 
 mf6.update()
 mf6.finalize()
