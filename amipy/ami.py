@@ -20,7 +20,7 @@ class Ami(Bmi):
     """
 
     @abstractmethod
-    def prepare_timestep(self) -> None:
+    def prepare_timestep(self, dt) -> None:
         """
 
         """

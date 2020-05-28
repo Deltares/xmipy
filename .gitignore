@@ -62,3 +62,6 @@ docs/_build/
 
 # Visual Studio Code
 .vscode/
+
+# Ignore mypy cache
+.mypy_cache
