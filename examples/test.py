@@ -2,6 +2,7 @@ import os
 import sys
 from amipy import AmiWrapper
 import getopt
+import numpy as np
 
 
 # defaults
@@ -47,6 +48,18 @@ try:
 except Exception as e:
     print(e)
 
+grank = mf6.get_grid_rank(1)
+gshape = np.zeros(grank, dtype=np.int32)
+mf6.get_grid_shape(1, gshape)
+print(gshape)
+
+gx = np.ones(gshape[-1]+1, dtype=np.double)
+mf6.get_grid_x(1, gx)
+print(gx)
+
+gy = np.ones(gshape[-2]+1, dtype=np.double)
+mf6.get_grid_y(1, gy)
+print(gy)
 
 mf6.update()
 mf6.finalize()
