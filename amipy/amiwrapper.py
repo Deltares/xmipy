@@ -200,7 +200,11 @@ class AmiWrapper(Ami):
         raise NotImplementedError
 
     def get_grid_rank(self, grid: int) -> int:
-        raise NotImplementedError
+        item_size = c_int(0)
+        c_grid = c_int(grid)
+        check_result(self.dll.get_grid_rank(byref(c_grid), byref(item_size)),
+                     "get_grid_rank", "for id " + str(grid))
+        return item_size.value
 
     def get_grid_size(self, grid: int) -> int:
         raise NotImplementedError
@@ -214,7 +218,10 @@ class AmiWrapper(Ami):
         return grid_type.value.decode()
 
     def get_grid_shape(self, grid: int, shape: np.ndarray) -> np.ndarray:
-        raise NotImplementedError
+        c_grid = c_int(grid)
+        check_result(self.dll.get_grid_shape(byref(c_grid), c_void_p(shape.ctypes.data)),
+                     "get_grid_shape", "for id " + str(id))
+        return shape
 
     def get_grid_spacing(self, grid: int, spacing: np.ndarray) -> np.ndarray:
         raise NotImplementedError
@@ -223,13 +230,22 @@ class AmiWrapper(Ami):
         raise NotImplementedError
 
     def get_grid_x(self, grid: int, x: np.ndarray) -> np.ndarray:
-        raise NotImplementedError
+        c_grid = c_int(grid)
+        check_result(self.dll.get_grid_x(byref(c_grid), c_void_p(x.ctypes.data)),
+                     "get_grid_x", "for id " + str(id))
+        return x
 
     def get_grid_y(self, grid: int, y: np.ndarray) -> np.ndarray:
-        raise NotImplementedError
+        c_grid = c_int(grid)
+        check_result(self.dll.get_grid_y(byref(c_grid), c_void_p(y.ctypes.data)),
+                     "get_grid_y", "for id " + str(id))
+        return y
 
     def get_grid_z(self, grid: int, z: np.ndarray) -> np.ndarray:
-        raise NotImplementedError
+        c_grid = c_int(grid)
+        check_result(self.dll.get_grid_z(byref(c_grid), c_void_p(z.ctypes.data)),
+                     "get_grid_z", "for id " + str(id))
+        return z
 
     def get_grid_node_count(self, grid: int) -> int:
         raise NotImplementedError
