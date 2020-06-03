@@ -20,14 +20,21 @@ class Ami(Bmi):
     """
 
     @abstractmethod
-    def prepare_timestep(self, dt) -> None:
+    def prepare_time_step(self, dt) -> None:
         """
 
         """
         ...
 
     @abstractmethod
-    def finalize_timestep(self) -> None:
+    def do_time_step(self) -> None:
+        """
+
+        """
+        ...
+
+    @abstractmethod
+    def finalize_time_step(self) -> None:
         """
 
         """
@@ -41,21 +48,21 @@ class Ami(Bmi):
         ...
 
     @abstractmethod
-    def prepare_iteration(self, component_id) -> None:
+    def prepare_solve(self, component_id) -> None:
         """
 
         """
         ...
 
     @abstractmethod
-    def do_iteration(self, component_id) -> bool:
+    def solve(self, component_id) -> bool:
         """
 
         """
         ...
 
     @abstractmethod
-    def finalize_iteration(self, component_id) -> None:
+    def finalize_solve(self, component_id) -> None:
         """
 
         """

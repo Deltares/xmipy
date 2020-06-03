@@ -35,10 +35,8 @@ N_sc2 = mf6.get_var_shape("FLOW15 STO/SC2")
 update_sc2 = mf6.get_value_ptr("FLOW15 STO/IRESETSC2")
 max_iter_arr = mf6.get_value_ptr("SLN_1/MXITER")
 
-
 # at some point we would need access to this stuff as well...
 nodeuser = mf6.get_value_ptr("FLOW15 DIS/NODEUSER")
-
 
 # time loopy
 start_time = mf6.get_start_time()
@@ -61,8 +59,7 @@ plt.show()
 
 while current_time < end_time:
 
-    # modify recharge
-    recharge[:] = 0.2
+
 
     # modify storage (before prepare_timestep because the conversions are done in sto_rp()
     frac = (current_time - start_time)/simulation_length
@@ -71,7 +68,11 @@ while current_time < end_time:
     sc2[halfway:] = (1.0 - 0.99*frac) * 0.2
     update_sc2[0] = 1
 
-    mf6.prepare_timestep()
+    dt = mf6.get_time_step()
+    mf6.prepare_time_step(dt)
+
+    # modify recharge after prepare_time_step!!
+    recharge[:] = 0.2
 
     # loop over subcomponents
     n_solutions = mf6.get_subcomponent_count()
@@ -79,22 +80,22 @@ while current_time < end_time:
 
         # convergence loop
         kiter = 0
-        mf6.prepare_iteration(sol_id)
+        mf6.prepare_solve(sol_id)
         while kiter < max_iter:
-            has_converged = mf6.do_iteration(sol_id)
+            has_converged = mf6.solve(sol_id)
             kiter += 1
 
             if has_converged:
                 print("\n\nComponent ", sol_id, " converged in ", kiter, "iterations\n")
                 break
 
-        mf6.finalize_iteration(sol_id)
+        mf6.finalize_solve(sol_id)
 
         # update head in graph
         init_line.set_ydata(head)
         plt.pause(0.2)
 
-    mf6.finalize_timestep()
+    mf6.finalize_time_step()
     current_time = mf6.get_current_time()
 
 mf6.finalize()

@@ -275,23 +275,23 @@ class AmiWrapper(Ami):
     # ===========================
     # here starts the AMI
     # ===========================
-    def prepare_timestep(self, dt) -> None:
+    def prepare_time_step(self, dt) -> None:
         self.previous_directory = os.getcwd()
         os.chdir(self.working_directory)
         dt = c_double(dt)
-        check_result(self.dll.prepare_timestep(byref(dt)), "prepare_timestep")
+        check_result(self.dll.prepare_time_step(byref(dt)), "prepare_time_step")
         os.chdir(self.previous_directory)
 
-    def do_timestep(self) -> None:
+    def do_time_step(self) -> None:
         self.previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.dll.do_timestep(), "do_timestep")
+        check_result(self.dll.do_time_step(), "do_time_step")
         os.chdir(self.previous_directory)
 
-    def finalize_timestep(self) -> None:
+    def finalize_time_step(self) -> None:
         self.previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.dll.finalize_timestep(), "finalize_timestep")
+        check_result(self.dll.finalize_time_step(), "finalize_time_step")
         os.chdir(self.previous_directory)
 
     def get_subcomponent_count(self) -> int:
@@ -300,35 +300,35 @@ class AmiWrapper(Ami):
                      "get_subcomponent_count")
         return count.value
 
-    def prepare_iteration(self, component_id) -> None:
+    def prepare_solve(self, component_id) -> None:
         cid = c_int(component_id)
 
         self.previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.dll.prepare_iteration(byref(cid)),
-                     "prepare_iteration")
+        check_result(self.dll.prepare_solve(byref(cid)),
+                     "prepare_solve")
         os.chdir(self.previous_directory)
 
-    def do_iteration(self, component_id) -> bool:
+    def solve(self, component_id) -> bool:
         cid = c_int(component_id)
         has_converged = c_int(0)
 
         self.previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.dll.do_iteration(byref(cid), byref(has_converged)),
-                     "do_iteration")
+        check_result(self.dll.solve(byref(cid), byref(has_converged)),
+                     "solve")
         os.chdir(self.previous_directory)
 
         return has_converged.value == 1
 
 
-    def finalize_iteration(self, component_id) -> None:
+    def finalize_solve(self, component_id) -> None:
         cid = c_int(component_id)
 
         self.previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.dll.finalize_iteration(byref(cid)),
-                     "finalize_iteration")
+        check_result(self.dll.finalize_solve(byref(cid)),
+                     "finalize_solve")
         os.chdir(self.previous_directory)
 
 
