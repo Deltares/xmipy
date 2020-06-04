@@ -47,8 +47,8 @@ def cleanup():
 
 
 def list_exes():
-    cmd = 'ls -l {}'.format(bindir)
-    os.system(cmd)
+    executable = os.listdir(bindir)
+    print(f"Executables: {executable} are in {bindir}")
     return
 
 
