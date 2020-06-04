@@ -6,8 +6,8 @@ nosetests -v get_exes.py --with-id --with-timer -w ./autotest
 
 if [ "${RUN_TYPE}" = "test" ]; then
   echo "Running flopy autotest suite..."
-  # nosetests -v --with-id --with-timer -w ./autotest \
-  #   --with-coverage --cover-package=amipy
+  nosetests -v --with-id --with-timer -w ./autotest \
+     --with-coverage --cover-package=amipy
 elif [ "${RUN_TYPE}" = "style" ]; then
   echo "Checking Python code with flake8..."
   if ! flake8; then
