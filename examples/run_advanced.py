@@ -8,7 +8,7 @@ debug_native = True
 if debug_native:
     print("PID: ", os.getpid(), "; continue? [y]")
     answer = input()
-    if answer != 'y':
+    if answer != "y":
         exit(0)
 
 # defaults
@@ -52,7 +52,7 @@ fig, ax = plt.subplots()
 plt.ion()
 
 
-init_line, = ax.plot(head)
+(init_line,) = ax.plot(head)
 plt.ylim(top=13.0)
 plt.ylim(bottom=6.0)
 plt.show()
@@ -60,10 +60,10 @@ plt.show()
 while current_time < end_time:
 
     # modify storage (before prepare_timestep because the conversions are done in sto_rp()
-    frac = (current_time - start_time)/simulation_length
-    halfway = int(N_sc2[0]/2)
+    frac = (current_time - start_time) / simulation_length
+    halfway = int(N_sc2[0] / 2)
     sc2[:halfway] = 0.2
-    sc2[halfway:] = (1.0 - 0.99*frac) * 0.2
+    sc2[halfway:] = (1.0 - 0.99 * frac) * 0.2
     update_sc2[0] = 1
 
     dt = mf6.get_time_step()
@@ -74,7 +74,7 @@ while current_time < end_time:
 
     # loop over subcomponents
     n_solutions = mf6.get_subcomponent_count()
-    for sol_id in range(1,n_solutions+1):
+    for sol_id in range(1, n_solutions + 1):
 
         # convergence loop
         kiter = 0

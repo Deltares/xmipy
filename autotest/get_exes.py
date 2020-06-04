@@ -5,33 +5,33 @@ import shutil
 
 try:
     import pymake
-except:
-    print('pymake is not installed...will not build executables')
+except ModuleNotFoundError:
+    print("pymake is not installed...will not build executables")
     pymake = None
 
 os.environ["TRAVIS"] = "1"
 
 # path where downloaded executables will be extracted
-exe_pth = 'exe_download'
+exe_pth = "exe_download"
 # make the directory if it does not exist
 if not os.path.isdir(exe_pth):
     os.makedirs(exe_pth)
 
 # determine if running on Travis
-is_travis = 'TRAVIS' in os.environ
+is_travis = "TRAVIS" in os.environ
 
-bindir = '.'
+bindir = "."
 dotlocal = False
 if is_travis:
     dotlocal = True
 
 if not dotlocal:
     for idx, arg in enumerate(sys.argv):
-        if '--travis' in arg.lower():
+        if "--travis" in arg.lower():
             dotlocal = True
             break
 if dotlocal:
-    bindir = os.path.join(os.path.expanduser('~'), '.local', 'bin')
+    bindir = os.path.join(os.path.expanduser("~"), ".local", "bin")
     bindir = os.path.abspath(bindir)
     if not os.path.isdir(bindir):
         os.makedirs(bindir)
@@ -48,7 +48,7 @@ def cleanup():
 
 def list_exes():
     executable = os.listdir(bindir)
-    print(f"Executables: {executable} are in {bindir}")
+    print("Executables: ", executable, " are in ", bindir)
     return
 
 
@@ -74,5 +74,5 @@ def main():
     list_exes()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
