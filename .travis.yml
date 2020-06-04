@@ -1,0 +1,40 @@
+language: python
+os: linux
+dist: xenial
+compiler: gcc
+services:
+- xvfb
+matrix:
+  include:
+  - env: RUN_TYPE=misc
+    python: 3.7
+  - env: RUN_TYPE=test
+    python: 3.5
+  - env: RUN_TYPE=test
+    python: 3.6
+  - env: RUN_TYPE=test
+    python: 3.7
+  - env: RUN_TYPE=test
+    python: 3.8
+cache:
+  pip: true
+  directories:
+  - "$HOME/.cache/pip"
+  - "$HOME/.local"
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - libhdf5-serial-dev
+    - netcdf-bin
+    - libnetcdf-dev
+    - gdal-bin
+    - libgdal-dev
+env:
+  global:
+  - PYTHONPATH=$PYTHONPATH:.
+install: ./travis/install.sh
+before_script: ./travis/before_script.sh
+script: ./travis/script.sh
+after_success: coveralls
