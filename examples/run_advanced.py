@@ -59,8 +59,6 @@ plt.show()
 
 while current_time < end_time:
 
-
-
     # modify storage (before prepare_timestep because the conversions are done in sto_rp()
     frac = (current_time - start_time)/simulation_length
     halfway = int(N_sc2[0]/2)

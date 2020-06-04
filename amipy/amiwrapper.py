@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from ctypes import *
+from ctypes import cdll, c_int, c_double, byref, create_string_buffer, c_char_p, c_void_p
 from typing import Tuple
 
 from .ami import Ami
@@ -320,7 +320,6 @@ class AmiWrapper(Ami):
         os.chdir(self.previous_directory)
 
         return has_converged.value == 1
-
 
     def finalize_solve(self, component_id) -> None:
         cid = c_int(component_id)
