@@ -14,7 +14,7 @@ try:
     opts, args = getopt.getopt(sys.argv[1:], "i:s:")
 except getopt.GetoptError as err:
     print(err)
-    print('usage: run.py -i <configuration_file> -s <shared_library>')
+    print("usage: run.py -i <configuration_file> -s <shared_library>")
     sys.exit(1)
 
 for o, a in opts:
@@ -28,7 +28,7 @@ debug_native = True
 if debug_native:
     print("PID: ", os.getpid(), "; continue? [y]")
     answer = input()
-    if answer != 'y':
+    if answer != "y":
         exit(0)
 
 # load the wrapper and cd to model dir
@@ -53,11 +53,11 @@ gshape = np.zeros(grank, dtype=np.int32)
 mf6.get_grid_shape(1, gshape)
 print(gshape)
 
-gx = np.ones(gshape[-1]+1, dtype=np.double)
+gx = np.ones(gshape[-1] + 1, dtype=np.double)
 mf6.get_grid_x(1, gx)
 print(gx)
 
-gy = np.ones(gshape[-2]+1, dtype=np.double)
+gy = np.ones(gshape[-2] + 1, dtype=np.double)
 mf6.get_grid_y(1, gy)
 print(gy)
 
