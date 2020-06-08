@@ -2,6 +2,10 @@ language: python
 os: linux
 dist: focal
 compiler: gcc
+branches:
+  only:
+    - "master"
+    - "develop"
 services:
 - xvfb
 matrix:
