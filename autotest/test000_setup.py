@@ -91,7 +91,6 @@ def test_build_modflow6_so():
     assert os.path.isfile(target), msg
 
 
-
 if __name__ == "__main__":
     test_create_dirs()
     test_build_modflow6_so()
