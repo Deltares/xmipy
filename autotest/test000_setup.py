@@ -66,11 +66,12 @@ def test_build_modflow6_so():
             print(txt)
             return
 
-    pymake.download_and_unzip("https://github.com/MODFLOW-USGS/modflow6/archive/develop.zip")
+    pymake.download_and_unzip(url="https://github.com/MODFLOW-USGS/modflow6/archive/develop.zip",
+                              pth="./temp")
 
     # set source and target paths
-    srcdir = os.path.join('..', 'modflow6-develop', 'srcbmi')
-    comdir = os.path.join('..', 'modflow6-develop', 'src')
+    srcdir = os.path.join('temp', 'modflow6-develop', 'srcbmi')
+    comdir = os.path.join('temp', 'modflow6-develop', 'src')
     excludefiles = [os.path.join(comdir, 'mf6.f90')]
     target = os.path.join('..', 'bin', 'libmf6.so')
     target += eext
