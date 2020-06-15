@@ -14,3 +14,9 @@ pip install https://github.com/modflowpy/pymake/zipball/master
 pip install https://github.com/modflowpy/flopy/zipball/develop
 pip install shapely[vectorize]
 pip install coveralls nose-timer
+
+sudo apt-get install -y gfortran-9
+if [[ ! -d "$HOME/.local/bin" ]]; then mkdir "$HOME/.local/bin"; fi
+ln -fs /usr/bin/gfortran-9 $HOME/.local/bin/gfortran
+gfortran --version
+

@@ -1,11 +1,8 @@
 #!/bin/bash
 set -e
 
-echo "Building executables..."
-nosetests -v get_exes.py --with-id --with-timer -w ./autotest
-
 if [ "${RUN_TYPE}" = "test" ]; then
-  echo "Running flopy autotest suite..."
+  echo "Running amipy autotest suite..."
   nosetests -v --with-id --with-timer -w ./autotest \
      --with-coverage --cover-package=amipy
 elif [ "${RUN_TYPE}" = "style" ]; then
