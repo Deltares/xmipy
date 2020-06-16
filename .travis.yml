@@ -11,8 +11,6 @@ services:
 matrix:
   include:
   - env: RUN_TYPE=test
-    python: 3.5
-  - env: RUN_TYPE=test
     python: 3.6
   - env: RUN_TYPE=test
     python: 3.7
