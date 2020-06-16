@@ -3,6 +3,7 @@ import sys
 import platform
 import shutil
 import pymake
+from targets import target_dict
 
 os.environ["TRAVIS"] = "1"
 
@@ -15,11 +16,6 @@ ebindir = os.path.abspath(
 if not os.path.exists(ebindir):
     os.makedirs(ebindir)
 
-# make sure exe extension is used on windows
-eext = ''
-sysinfo = platform.system()
-if sysinfo.lower() == 'windows':
-    eext = '.exe'
 
 download_version = '3.0'
 mfexe_pth = 'temp/mfexes'
@@ -73,8 +69,7 @@ def test_build_modflow6_so():
     srcdir = os.path.join('temp', 'modflow6-develop', 'srcbmi')
     comdir = os.path.join('temp', 'modflow6-develop', 'src')
     excludefiles = [os.path.join(comdir, 'mf6.f90')]
-    target = os.path.join('..', 'bin', 'libmf6.so')
-    target += eext
+    target = target_dict['libmf6']
     fc, cc = pymake.set_compiler('mf6')
 
     fflags = None
