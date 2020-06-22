@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [3.6, 3.7, 3.8]
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-lates, windows-latest]
 
     steps:
     - uses: actions/checkout@v2
@@ -27,10 +27,13 @@ jobs:
         gfortran --version
     - name: Install system dependencies (macOS)
       if: runner.os == 'macOS'
-      run: |
-        # brew upgrade gfortran-9        
+      run: |  
         gfortran --version
-    - name: Install Vorta
+    - name: Install system dependencies (Windows)
+      if: runner.os == 'Windows'
+      run: |  
+        gfortran --version
+    - name: Install amipy
       run: |
         pip install .
         pip install https://github.com/modflowpy/pymake/zipball/master
