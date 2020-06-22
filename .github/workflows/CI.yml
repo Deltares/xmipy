@@ -42,11 +42,13 @@ jobs:
     - name: Test with nosetests
       run: |
         nosetests -v --with-id --with-timer -w ./autotest --with-coverage --cover-package=amipy
-    # - name: Coveralls
-    #   uses: coverallsapp/github-action@master
-    #   with:
-    #     github-token: ${{ secrets.GITHUB_TOKEN }}
-    #     path-to-lcov: ".coverage"
+    - name: Coveralls Parallel
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.github_token }}
+        flag-name: run-${{ matrix.python-version }}-${{ matrix.os }}
+        parallel: true
+  
   finish:
     needs: test
     runs-on: ubuntu-latest
