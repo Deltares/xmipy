@@ -23,14 +23,12 @@ jobs:
     - name: Install system dependencies (Linux)
       if: runner.os == 'Linux'
       run: |
-        sudo apt-get install -y gfortran-9
-        echo $PATH
+        ln -fs /usr/bin/gfortran-9 /usr/local/bin/gfortran
         gfortran --version
     - name: Install system dependencies (macOS)
       if: runner.os == 'macOS'
       run: |
-        brew upgrade gfortran-9
-        echo $PATH
+        # brew upgrade gfortran-9        
         gfortran --version
     - name: Install Vorta
       run: |
