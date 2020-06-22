@@ -42,6 +42,7 @@ jobs:
     - name: Test with nosetests
       run: |
         nosetests -v --with-id --with-timer -w ./autotest --with-coverage --cover-package=amipy
+        sudo apt install -y tree && tree -L 2
     - name: Coveralls
       uses: coverallsapp/github-action@master
       with:
