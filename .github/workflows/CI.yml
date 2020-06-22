@@ -49,6 +49,7 @@ jobs:
     steps:
     - name: Coveralls
       run: |
+        pip install coveralls
         coveralls
 
 
