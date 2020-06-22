@@ -47,6 +47,7 @@ jobs:
       with:
         github-token: ${{ secrets.github_token }}
         flag-name: run-${{ matrix.python-version }}-${{ matrix.os }}
+        path-to-lcov: ".coverage"
         parallel: true
   
   finish:
