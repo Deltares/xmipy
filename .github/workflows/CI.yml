@@ -23,7 +23,7 @@ jobs:
     - name: Install system dependencies (Linux)
       if: runner.os == 'Linux'
       run: |
-        ln -fs /usr/bin/gfortran-9 /usr/local/bin/gfortran
+        sudo ln -fs /usr/bin/gfortran-9 /usr/local/bin/gfortran
         gfortran --version
     - name: Install system dependencies (macOS)
       if: runner.os == 'macOS'
