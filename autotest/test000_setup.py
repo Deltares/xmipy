@@ -6,23 +6,22 @@ import pymake
 
 os.environ["TRAVIS"] = "1"
 
-if 'TRAVIS' in os.environ:
-    os.environ['PYMAKE_DOUBLE'] = '1'
+if "TRAVIS" in os.environ:
+    os.environ["PYMAKE_DOUBLE"] = "1"
 
 # paths to executables for  previous versions of MODFLOW
-ebindir = os.path.abspath(
-    os.path.join(os.path.expanduser('~'), '.local', 'bin'))
+ebindir = os.path.abspath(os.path.join(os.path.expanduser("~"), ".local", "bin"))
 if not os.path.exists(ebindir):
     os.makedirs(ebindir)
 
 # make sure exe extension is used on windows
-eext = ''
+eext = ""
 sysinfo = platform.system()
-if sysinfo.lower() == 'windows':
-    eext = '.exe'
+if sysinfo.lower() == "windows":
+    eext = ".exe"
 
-download_version = '3.0'
-mfexe_pth = 'temp/mfexes'
+download_version = "3.0"
+mfexe_pth = "temp/mfexes"
 
 
 def relpath_fallback(pth):
@@ -36,21 +35,20 @@ def relpath_fallback(pth):
 def create_dir(pth):
     # remove pth directory if it exists
     if os.path.exists(pth):
-        print('removing... {}'.format(os.path.abspath(pth)))
+        print("removing... {}".format(os.path.abspath(pth)))
         shutil.rmtree(pth)
     # create pth directory
-    print('creating... {}'.format(os.path.abspath(pth)))
+    print("creating... {}".format(os.path.abspath(pth)))
     os.makedirs(pth)
 
-    msg = 'could not create... {}'.format(os.path.abspath(pth))
+    msg = "could not create... {}".format(os.path.abspath(pth))
     assert os.path.exists(pth), msg
 
     return
 
 
 def test_create_dirs():
-    pths = [os.path.join('..', 'bin'),
-            os.path.join('temp')]
+    pths = [os.path.join("..", "bin"), os.path.join("temp")]
 
     for pth in pths:
         create_dir(pth)
@@ -61,34 +59,45 @@ def test_create_dirs():
 def test_build_modflow6_so():
     # determine if app should be build
     for idx, arg in enumerate(sys.argv):
-        if arg.lower() == '--nomf6':
-            txt = 'Command line cancel of MODFLOW 6 build'
+        if arg.lower() == "--nomf6":
+            txt = "Command line cancel of MODFLOW 6 build"
             print(txt)
             return
 
-    pymake.download_and_unzip(url="https://github.com/MODFLOW-USGS/modflow6/archive/develop.zip",
-                              pth="./temp")
+    pymake.download_and_unzip(
+        url="https://github.com/MODFLOW-USGS/modflow6/archive/develop.zip", pth="./temp"
+    )
 
     # set source and target paths
-    srcdir = os.path.join('temp', 'modflow6-develop', 'srcbmi')
-    comdir = os.path.join('temp', 'modflow6-develop', 'src')
-    excludefiles = [os.path.join(comdir, 'mf6.f90')]
-    target = os.path.join('..', 'bin', 'libmf6.so')
+    srcdir = os.path.join("temp", "modflow6-develop", "srcbmi")
+    comdir = os.path.join("temp", "modflow6-develop", "src")
+    excludefiles = [os.path.join(comdir, "mf6.f90")]
+    target = os.path.join("..", "bin", "libmf6.so")
     target += eext
-    fc, cc = pymake.set_compiler('mf6')
+    fc, cc = pymake.set_compiler("mf6")
 
     fflags = None
-    if fc == 'gfortran':
+    if fc == "gfortran":
         # some flags to check for errors in the code
         # add -Werror for compilation to terminate if errors are found
-        fflags = ('-Wtabs -Wline-truncation -Wunused-label '
-                  '-Wunused-variable -pedantic -std=f2008')
+        fflags = (
+            "-Wtabs -Wline-truncation -Wunused-label "
+            "-Wunused-variable -pedantic -std=f2008"
+        )
 
-    pymake.main(srcdir, target, fc=fc, cc=cc, include_subdirs=True,
-                fflags=fflags, srcdir2=comdir, excludefiles=excludefiles,
-                sharedobject=True)
+    pymake.main(
+        srcdir,
+        target,
+        fc=fc,
+        cc=cc,
+        include_subdirs=True,
+        fflags=fflags,
+        srcdir2=comdir,
+        excludefiles=excludefiles,
+        sharedobject=True,
+    )
 
-    msg = '{} does not exist.'.format(relpath_fallback(target))
+    msg = "{} does not exist.".format(relpath_fallback(target))
     assert os.path.isfile(target), msg
 
 
