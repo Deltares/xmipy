@@ -73,7 +73,7 @@ def test_build_modflow6_so():
     eext = ".so"
     sysinfo = platform.system()
     if sysinfo.lower() == "windows":
-        eext = ".exe"
+        eext = ".dll"
     target += eext
     fc, cc = pymake.set_compiler("mf6")
 
