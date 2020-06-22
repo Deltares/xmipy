@@ -41,8 +41,7 @@ jobs:
         pip install coveralls nose-timer
     - name: Test with nosetests
       run: |
-        nosetests -v --with-id --with-timer -w ./autotest \
-        --with-coverage --cover-package=amipy
+        nosetests -v --with-id --with-timer -w ./autotest --with-coverage --cover-package=amipy
 
   lint:
     runs-on: ubuntu-latest
