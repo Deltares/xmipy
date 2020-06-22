@@ -38,7 +38,7 @@ jobs:
         pip install .
         pip install https://github.com/modflowpy/pymake/zipball/master
         pip install https://github.com/modflowpy/flopy/zipball/develop
-        pip install nose-timer
+        pip install requests nose-timer
     - name: Test with nosetests
       run: |
         nosetests -v --with-id --with-timer -w ./autotest
