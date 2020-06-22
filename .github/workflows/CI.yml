@@ -42,12 +42,21 @@ jobs:
     - name: Test with nosetests
       run: |
         nosetests -v --with-id --with-timer -w ./autotest --with-coverage --cover-package=amipy
-        sudo apt install -y tree && tree -La 2
-        find lcov.info
-    - name: Coveralls
+    # - name: Coveralls
+    #   uses: coverallsapp/github-action@master
+    #   with:
+    #     github-token: ${{ secrets.GITHUB_TOKEN }}
+    #     path-to-lcov: ".coverage"
+  finish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls Finished
       uses: coverallsapp/github-action@master
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ secrets.github_token }}
+        parallel-finished: true
+        path-to-lcov: ".coverage"
 
 
   lint:
