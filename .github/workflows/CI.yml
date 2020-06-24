@@ -42,6 +42,11 @@ jobs:
     - name: Test with nosetests
       run: |
         nosetests -v --with-id --with-timer -w ./autotest
+    - uses: actions/upload-artifact@v2
+      with:
+        name: my-artifact
+        path: bin
+
 
 
   lint:
