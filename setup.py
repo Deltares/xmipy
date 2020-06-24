@@ -18,7 +18,7 @@ setup(
     author=__author__,
     author_email="Martijn.Russcher@deltares.nl",
     url="https://github.com/mjr-deltares/modflow6-bmipy.git",
-    license="New BSD",
+    license="CC0",
     platforms="Windows, Mac OS-X, Linux",
     install_requires=["bmipy", "numpy"],
     packages=[__name__],
