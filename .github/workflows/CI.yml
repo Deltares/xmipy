@@ -18,53 +18,53 @@ jobs:
       PYTHON: ${{ matrix.python-version }}
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install and print system dependencies (Linux)
-      if: runner.os == 'Linux'
-      run: |
-        sudo ln -fs /usr/bin/gfortran-9 /usr/local/bin/gfortran
-        gfortran --version
-    - name: Install and print system dependencies (macOS)
-      if: runner.os == 'macOS'
-      run: |  
-        gfortran --version
-    - name: Install and print system dependencies (Windows)
-      if: runner.os == 'Windows'
-      run: |  
-        gfortran --version
-    - name: Install amipy
-      run: |
-        pip install .
-        pip install https://github.com/modflowpy/pymake/zipball/master
-        pip install https://github.com/modflowpy/flopy/zipball/develop
-        pip install requests nose-timer coverage
-    - name: Test with nosetests
-      run: |
-        nosetests -v --with-id --with-timer -w ./autotest --cover-xml-file=coverage.xml
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        env_vars: OS,PYTHON
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install and print system dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo ln -fs /usr/bin/gfortran-9 /usr/local/bin/gfortran
+          gfortran --version
+      - name: Install and print system dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          gfortran --version
+      - name: Install and print system dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          gfortran --version
+      - name: Install amipy
+        run: |
+          pip install .
+      - name: Install test dependencies
+        run: |
+          pip install -r test_dependencies.txt
+      - name: Test with pytest
+        run: |
+          pytest --cov=./ --cov-report=xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          env_vars: OS,PYTHON
 
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v1
-      with:
-        python-version: 3.8
-    - name: Install packages
-      run: |
-        pip install flake8
-        pip install black
-    - name: Run flake8
-      run: flake8
-    - name: Run black
-      run: black --check
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Install packages
+        run: |
+          pip install flake8
+          pip install black
+      - name: Run flake8
+        run: flake8
+      - name: Run black
+        run: black --check
