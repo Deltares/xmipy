@@ -1,8 +1,5 @@
 import os
 import pymake
-from pathlib import Path
-import platform
-import shutil
 
 
 def test_compile_shared_object(get_shared_object_path, tmp_path):
