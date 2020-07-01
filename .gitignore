@@ -66,6 +66,5 @@ docs/_build/
 # Ignore mypy cache
 .mypy_cache
 
-# Autotest artifacts
-autotest/bin
-autotest/temp
+# Test artifacts
+tests/bin
