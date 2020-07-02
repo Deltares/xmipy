@@ -2,14 +2,14 @@ import os
 import pymake
 
 
-def test_compile_shared_object(get_shared_object_path, tmp_path):
+def test_compile_modflow_lib(modflow_lib_path, tmp_path):
     """Test which compiles the shared object.
 
     Needs to be run before other tests are run.
     Might be replaced by a fixture as soon as Modflow provides nightly shared libs.
     """
 
-    target = get_shared_object_path
+    target = modflow_lib_path
     download_dir = tmp_path / "download"
 
     pymake.download_and_unzip(
