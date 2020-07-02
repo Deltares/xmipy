@@ -202,7 +202,25 @@ class AmiWrapper(Ami):
     def get_value_ptr_scalar(self, name: str) -> np.ndarray:
         vartype = self.get_var_type(name)
         if vartype.lower().startswith("double"):
-            assert False
+            arraytype = np.ctypeslib.ndpointer(
+                dtype=np.double, ndim=1, shape=(1,), flags="F"
+            )
+            values = arraytype()
+            check_result(
+                self.dll.get_value_ptr_double(c_char_p(name.encode()), byref(values)),
+                "get_value_ptr",
+                "for variable " + name,
+            )
+        elif vartype.lower().startswith("float"):
+            arraytype = np.ctypeslib.ndpointer(
+                dtype=np.float, ndim=1, shape=(1,), flags="F"
+            )
+            values = arraytype()
+            check_result(
+                self.dll.get_value_ptr_float(c_char_p(name.encode()), byref(values)),
+                "get_value_ptr",
+                "for variable " + name,
+            )
         elif vartype.lower().startswith("int"):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.int32, ndim=1, shape=(1,), flags="F"
@@ -213,7 +231,10 @@ class AmiWrapper(Ami):
                 "get_value_ptr",
                 "for variable " + name,
             )
-            return values.contents
+        else:
+            raise Exception("Unsupported value type")
+
+        return values.contents
 
     def get_value_at_indices(
         self, name: str, dest: np.ndarray, inds: np.ndarray
