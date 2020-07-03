@@ -8,8 +8,10 @@ from ctypes import (
     c_void_p,
     cdll,
     create_string_buffer,
+    CDLL,
 )
 from typing import Tuple
+import sys
 
 import numpy as np
 from amipy.ami import Ami
@@ -26,7 +28,17 @@ class AmiWrapper(Ami):
     """
 
     def __init__(self, lib_path: str, lib_dependencies: Iterable[str] = None):
-        self.lib = cdll.LoadLibrary(lib_path)
+
+        if sys.version_info[0:2] < (3, 8):
+            # Python version < 3.8
+            self.lib = CDLL(lib_path)
+        else:
+            # LoadLibraryEx flag: LOAD_WITH_ALTERED_SEARCH_PATH 0x08
+            # -> uses the altered search path for resolving ddl dependencies
+            # Note: this could make amipy less secure (dll-injection)
+            # Can we get it to work without this flag?
+            self.lib = CDLL(lib_path, winmode=0x08)
+
         self.MAXSTRLEN = self.get_constant_int("MAXSTRLEN")
         self.working_directory = "."
         self.previous_directory = "."
