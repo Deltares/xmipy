@@ -1,17 +1,19 @@
 import os
-import numpy as np
+import platform
 from ctypes import (
-    cdll,
-    c_int,
-    c_double,
     byref,
-    create_string_buffer,
     c_char_p,
+    c_double,
+    c_int,
     c_void_p,
+    cdll,
+    create_string_buffer,
 )
 from typing import Tuple
 
-from .ami import Ami
+import numpy as np
+from amipy.ami import Ami
+from typing import Iterable
 
 BMI_SUCCESS = 0
 BMI_FAILURE = 1
@@ -23,32 +25,51 @@ class AmiWrapper(Ami):
     the kernels, and v.v.
     """
 
-    def __init__(self, path):
-        self.path = path
-        self.dll = cdll.LoadLibrary(path)
+    def __init__(self, lib_path: str, lib_dependencies: Iterable[str] = None):
+        self.lib = cdll.LoadLibrary(lib_path)
         self.MAXSTRLEN = self.get_constant_int("MAXSTRLEN")
-
         self.working_directory = "."
         self.previous_directory = "."
 
+        self._add_lib_dependencies(lib_dependencies)
+
+    @staticmethod
+    def _add_lib_dependencies(lib_dependencies):
+        if lib_dependencies:
+            if platform.system == "Windows":
+                if hasattr(os, "add_dll_directory"):
+                    # Should be available for Python >= 3.8
+                    for path in lib_dependencies:
+                        os.add_dll_directory(path)
+                else:
+                    # Python < 3.8
+                    for path in lib_dependencies:
+                        os.environ["PATH"] = path + os.pathsep + os.environ["PATH"]
+            else:
+                # Assume a Unix-like system
+                for path in lib_dependencies:
+                    os.environ["LD_LIBRARY_PATH"] = (
+                        path + os.pathsep + os.environ["LD_LIBRARY_PATH"]
+                    )
+
     def get_constant_int(self, name: str) -> int:
-        c_var = c_int.in_dll(self.dll, name)
+        c_var = c_int.in_dll(self.lib, name)
         return c_var.value
 
     def set_int(self, name: str, value: int) -> None:
-        c_var = c_int.in_dll(self.dll, name)
+        c_var = c_int.in_dll(self.lib, name)
         c_var.value = value
 
     def initialize(self, config_file: str) -> None:
         self.previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.dll.initialize(config_file), "initialize")
+        check_result(self.lib.initialize(config_file), "initialize")
         os.chdir(self.previous_directory)
 
     def update(self) -> None:
         self.previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.dll.update(), "update")
+        check_result(self.lib.update(), "update")
         os.chdir(self.previous_directory)
 
     def update_until(self, time: float) -> None:
@@ -60,27 +81,27 @@ class AmiWrapper(Ami):
     def finalize(self) -> None:
         self.previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.dll.finalize(), "finalize")
+        check_result(self.lib.finalize(), "finalize")
         os.chdir(self.previous_directory)
 
     def get_current_time(self) -> float:
         current_time = c_double(0.0)
-        check_result(self.dll.get_current_time(byref(current_time)), "get_current_time")
+        check_result(self.lib.get_current_time(byref(current_time)), "get_current_time")
         return current_time.value
 
     def get_start_time(self) -> float:
         start_time = c_double(0.0)
-        check_result(self.dll.get_start_time(byref(start_time)), "get_start_time")
+        check_result(self.lib.get_start_time(byref(start_time)), "get_start_time")
         return start_time.value
 
     def get_end_time(self) -> float:
         end_time = c_double(0.0)
-        check_result(self.dll.get_end_time(byref(end_time)), "get_end_time")
+        check_result(self.lib.get_end_time(byref(end_time)), "get_end_time")
         return end_time.value
 
     def get_time_step(self) -> float:
         dt = c_double(0.0)
-        check_result(self.dll.get_time_step(byref(dt)), "get_time_step")
+        check_result(self.lib.get_time_step(byref(dt)), "get_time_step")
         return dt.value
 
     def get_component_name(self) -> str:
@@ -104,7 +125,7 @@ class AmiWrapper(Ami):
     def get_var_type(self, name: str) -> str:
         var_type = create_string_buffer(self.MAXSTRLEN)
         check_result(
-            self.dll.get_var_type(c_char_p(name.encode()), byref(var_type)),
+            self.lib.get_var_type(c_char_p(name.encode()), byref(var_type)),
             "get_var_type",
             "for variable " + name,
         )
@@ -115,7 +136,7 @@ class AmiWrapper(Ami):
         rank = self.get_var_rank(name)
         array = np.zeros(rank, dtype=np.int32)
         check_result(
-            self.dll.get_var_shape(
+            self.lib.get_var_shape(
                 c_char_p(name.encode()), c_void_p(array.ctypes.data)
             ),
             "get_var_shape",
@@ -126,7 +147,7 @@ class AmiWrapper(Ami):
     def get_var_rank(self, name: str) -> int:
         rank = c_int(0)
         check_result(
-            self.dll.get_var_rank(c_char_p(name.encode()), byref(rank)),
+            self.lib.get_var_rank(c_char_p(name.encode()), byref(rank)),
             "get_var_rank",
             "for variable " + name,
         )
@@ -138,7 +159,7 @@ class AmiWrapper(Ami):
     def get_var_itemsize(self, name: str) -> int:
         item_size = c_int(0)
         check_result(
-            self.dll.get_var_itemsize(c_char_p(name.encode()), byref(item_size)),
+            self.lib.get_var_itemsize(c_char_p(name.encode()), byref(item_size)),
             "get_var_itemsize",
             "for variable " + name,
         )
@@ -147,7 +168,7 @@ class AmiWrapper(Ami):
     def get_var_nbytes(self, name: str) -> int:
         nbytes = c_int(0)
         check_result(
-            self.dll.get_var_nbytes(c_char_p(name.encode()), byref(nbytes)),
+            self.lib.get_var_nbytes(c_char_p(name.encode()), byref(nbytes)),
             "get_var_nbytes",
             "for variable " + name,
         )
@@ -182,7 +203,7 @@ class AmiWrapper(Ami):
             )
             values = arraytype()
             check_result(
-                self.dll.get_value_ptr_double(c_char_p(name.encode()), byref(values)),
+                self.lib.get_value_ptr_double(c_char_p(name.encode()), byref(values)),
                 "get_value_ptr",
                 "for variable " + name,
             )
@@ -193,7 +214,7 @@ class AmiWrapper(Ami):
             )
             values = arraytype()
             check_result(
-                self.dll.get_value_ptr_int(c_char_p(name.encode()), byref(values)),
+                self.lib.get_value_ptr_int(c_char_p(name.encode()), byref(values)),
                 "get_value_ptr",
                 "for variable " + name,
             )
@@ -202,18 +223,39 @@ class AmiWrapper(Ami):
     def get_value_ptr_scalar(self, name: str) -> np.ndarray:
         vartype = self.get_var_type(name)
         if vartype.lower().startswith("double"):
-            assert False
+            arraytype = np.ctypeslib.ndpointer(
+                dtype=np.double, ndim=1, shape=(1,), flags="F"
+            )
+            values = arraytype()
+            check_result(
+                self.lib.get_value_ptr_double(c_char_p(name.encode()), byref(values)),
+                "get_value_ptr",
+                "for variable " + name,
+            )
+        elif vartype.lower().startswith("float"):
+            arraytype = np.ctypeslib.ndpointer(
+                dtype=np.float, ndim=1, shape=(1,), flags="F"
+            )
+            values = arraytype()
+            check_result(
+                self.lib.get_value_ptr_float(c_char_p(name.encode()), byref(values)),
+                "get_value_ptr",
+                "for variable " + name,
+            )
         elif vartype.lower().startswith("int"):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.int32, ndim=1, shape=(1,), flags="F"
             )
             values = arraytype()
             check_result(
-                self.dll.get_value_ptr_int(c_char_p(name.encode()), byref(values)),
+                self.lib.get_value_ptr_int(c_char_p(name.encode()), byref(values)),
                 "get_value_ptr",
                 "for variable " + name,
             )
-            return values.contents
+        else:
+            raise Exception("Unsupported value type")
+
+        return values.contents
 
     def get_value_at_indices(
         self, name: str, dest: np.ndarray, inds: np.ndarray
@@ -232,7 +274,7 @@ class AmiWrapper(Ami):
         item_size = c_int(0)
         c_grid = c_int(grid)
         check_result(
-            self.dll.get_grid_rank(byref(c_grid), byref(item_size)),
+            self.lib.get_grid_rank(byref(c_grid), byref(item_size)),
             "get_grid_rank",
             "for id " + str(grid),
         )
@@ -245,7 +287,7 @@ class AmiWrapper(Ami):
         grid_type = create_string_buffer(self.MAXSTRLEN)
         c_grid = c_int(grid)
         check_result(
-            self.dll.get_grid_type(byref(c_grid), byref(grid_type)),
+            self.lib.get_grid_type(byref(c_grid), byref(grid_type)),
             "get_grid_type",
             "for id " + str(grid),
         )
@@ -254,7 +296,7 @@ class AmiWrapper(Ami):
     def get_grid_shape(self, grid: int, shape: np.ndarray) -> np.ndarray:
         c_grid = c_int(grid)
         check_result(
-            self.dll.get_grid_shape(byref(c_grid), c_void_p(shape.ctypes.data)),
+            self.lib.get_grid_shape(byref(c_grid), c_void_p(shape.ctypes.data)),
             "get_grid_shape",
             "for id " + str(id),
         )
@@ -269,7 +311,7 @@ class AmiWrapper(Ami):
     def get_grid_x(self, grid: int, x: np.ndarray) -> np.ndarray:
         c_grid = c_int(grid)
         check_result(
-            self.dll.get_grid_x(byref(c_grid), c_void_p(x.ctypes.data)),
+            self.lib.get_grid_x(byref(c_grid), c_void_p(x.ctypes.data)),
             "get_grid_x",
             "for id " + str(id),
         )
@@ -278,7 +320,7 @@ class AmiWrapper(Ami):
     def get_grid_y(self, grid: int, y: np.ndarray) -> np.ndarray:
         c_grid = c_int(grid)
         check_result(
-            self.dll.get_grid_y(byref(c_grid), c_void_p(y.ctypes.data)),
+            self.lib.get_grid_y(byref(c_grid), c_void_p(y.ctypes.data)),
             "get_grid_y",
             "for id " + str(id),
         )
@@ -287,7 +329,7 @@ class AmiWrapper(Ami):
     def get_grid_z(self, grid: int, z: np.ndarray) -> np.ndarray:
         c_grid = c_int(grid)
         check_result(
-            self.dll.get_grid_z(byref(c_grid), c_void_p(z.ctypes.data)),
+            self.lib.get_grid_z(byref(c_grid), c_void_p(z.ctypes.data)),
             "get_grid_z",
             "for id " + str(id),
         )
@@ -323,25 +365,25 @@ class AmiWrapper(Ami):
         self.previous_directory = os.getcwd()
         os.chdir(self.working_directory)
         dt = c_double(dt)
-        check_result(self.dll.prepare_time_step(byref(dt)), "prepare_time_step")
+        check_result(self.lib.prepare_time_step(byref(dt)), "prepare_time_step")
         os.chdir(self.previous_directory)
 
     def do_time_step(self) -> None:
         self.previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.dll.do_time_step(), "do_time_step")
+        check_result(self.lib.do_time_step(), "do_time_step")
         os.chdir(self.previous_directory)
 
     def finalize_time_step(self) -> None:
         self.previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.dll.finalize_time_step(), "finalize_time_step")
+        check_result(self.lib.finalize_time_step(), "finalize_time_step")
         os.chdir(self.previous_directory)
 
     def get_subcomponent_count(self) -> int:
         count = c_int(0)
         check_result(
-            self.dll.get_subcomponent_count(byref(count)), "get_subcomponent_count"
+            self.lib.get_subcomponent_count(byref(count)), "get_subcomponent_count"
         )
         return count.value
 
@@ -350,7 +392,7 @@ class AmiWrapper(Ami):
 
         self.previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.dll.prepare_solve(byref(cid)), "prepare_solve")
+        check_result(self.lib.prepare_solve(byref(cid)), "prepare_solve")
         os.chdir(self.previous_directory)
 
     def solve(self, component_id) -> bool:
@@ -359,7 +401,7 @@ class AmiWrapper(Ami):
 
         self.previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.dll.solve(byref(cid), byref(has_converged)), "solve")
+        check_result(self.lib.solve(byref(cid), byref(has_converged)), "solve")
         os.chdir(self.previous_directory)
 
         return has_converged.value == 1
@@ -369,7 +411,7 @@ class AmiWrapper(Ami):
 
         self.previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.dll.finalize_solve(byref(cid)), "finalize_solve")
+        check_result(self.lib.finalize_solve(byref(cid)), "finalize_solve")
         os.chdir(self.previous_directory)
 
 
