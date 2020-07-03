@@ -29,12 +29,14 @@ class AmiWrapper(Ami):
 
     def __init__(self, lib_path: str, lib_dependencies: Iterable[str] = None):
 
+        self._add_lib_dependencies(lib_dependencies)
         if sys.version_info[0:2] < (3, 8):
             # Python version < 3.8
             self.lib = CDLL(lib_path)
         else:
             # LoadLibraryEx flag: LOAD_WITH_ALTERED_SEARCH_PATH 0x08
             # -> uses the altered search path for resolving ddl dependencies
+            # `winmode` has no effect while running on Linux or macOS
             # Note: this could make amipy less secure (dll-injection)
             # Can we get it to work without this flag?
             self.lib = CDLL(lib_path, winmode=0x08)
@@ -43,25 +45,17 @@ class AmiWrapper(Ami):
         self.working_directory = "."
         self.previous_directory = "."
 
-        self._add_lib_dependencies(lib_dependencies)
-
     @staticmethod
     def _add_lib_dependencies(lib_dependencies):
         if lib_dependencies:
-            if platform.system == "Windows":
-                if hasattr(os, "add_dll_directory"):
-                    # Should be available for Python >= 3.8
-                    for path in lib_dependencies:
-                        os.add_dll_directory(path)
-                else:
-                    # Python < 3.8
-                    for path in lib_dependencies:
-                        os.environ["PATH"] = path + os.pathsep + os.environ["PATH"]
+            if platform.system() == "Windows":
+                for dep_path in lib_dependencies:
+                    os.environ["PATH"] = dep_path + os.pathsep + os.environ["PATH"]
             else:
                 # Assume a Unix-like system
-                for path in lib_dependencies:
+                for dep_path in lib_dependencies:
                     os.environ["LD_LIBRARY_PATH"] = (
-                        path + os.pathsep + os.environ["LD_LIBRARY_PATH"]
+                        dep_path + os.pathsep + os.environ["LD_LIBRARY_PATH"]
                     )
 
     def get_constant_int(self, name: str) -> int:
