@@ -30,6 +30,8 @@ class AmiWrapper(Ami):
         self.MAXSTRLEN = self.get_constant_int("MAXSTRLEN")
         self.working_directory = "."
         self.previous_directory = "."
+        if hasattr(os, "add_dll_directory"):
+            os.add_dll_directory(os.path.dirname(lib_path))
 
         self._add_lib_dependencies(lib_dependencies)
 
