@@ -35,7 +35,7 @@ jobs:
           gfortran --version
       - name: Install amipy
         run: |
-          pip install .
+          pip install -e .
       - name: Install test dependencies
         run: |
           pip install -r test_dependencies.txt
