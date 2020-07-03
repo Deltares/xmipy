@@ -11,4 +11,3 @@ def get_shared_object_path():
     else:
         lib_name = "libmf6.so"
     return str(Path(__file__).parent / "bin" / lib_name)
-
