@@ -11,7 +11,7 @@ if answer != "y":
     exit(0)
 
 # defaults
-mf6_dll = r"d:\checkouts\modflow6-mjr\bin\libmf6d.dll"
+mf6_dll = r"d:\checkouts\modflow6-mjr\bin\libmf6.dll"
 mf6_config_file = r"d:\Data\Models\mf6\small_models\ex_10x10_ani\mfsim.nam"
 
 # load the wrapper and cd to model dir
@@ -26,7 +26,7 @@ mf6 = AmiWrapper(mf6_dll)
 mf6.initialize(mf6_config_file)
 
 # get some 'pointers' to MF6 internal data
-head = mf6.get_value_ptr("SLN_1/X")
+head = mf6.get_value_ptr("TESTJE/X")
 spdis = mf6.get_value_ptr("TESTJE NPF/SPDIS")
 init_head = mf6.get_value_ptr("TESTJE IC/STRT")
 rndm_head = 1.0 + np.random.rand(10, 10)
