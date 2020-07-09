@@ -40,8 +40,10 @@ jobs:
         run: |
           pip install -r test_dependencies.txt
       - name: Test with pytest
+        # The flag -s stops pytest from capturing output
+        # This is necessary until proper error reporting is implemented by Modflow
         run: |
-          pytest --cov=amipy --cov-report=xml tests/
+          pytest -s --cov=amipy --cov-report=xml tests/
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
 

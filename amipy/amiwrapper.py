@@ -1,6 +1,8 @@
 import os
 import platform
+import sys
 from ctypes import (
+    CDLL,
     byref,
     c_char_p,
     c_double,
@@ -8,17 +10,25 @@ from ctypes import (
     c_void_p,
     cdll,
     create_string_buffer,
-    CDLL,
 )
-from typing import Tuple
-import sys
+from enum import Enum, unique, IntEnum
+from typing import Iterable, Tuple
 
 import numpy as np
-from amipy.ami import Ami
-from typing import Iterable
 
-BMI_SUCCESS = 0
-BMI_FAILURE = 1
+from amipy.ami import Ami
+
+
+@unique
+class Status(IntEnum):
+    SUCCESS = 0
+    FAILURE = 1
+
+
+@unique
+class State(Enum):
+    UNINITIALIZED = 1
+    INITIALIZED = 2
 
 
 class AmiWrapper(Ami):
@@ -44,6 +54,11 @@ class AmiWrapper(Ami):
         self.MAXSTRLEN = self.get_constant_int("MAXSTRLEN")
         self.working_directory = "."
         self.previous_directory = "."
+        self._state = State.UNINITIALIZED
+
+    def __del__(self):
+        if self._state == State.INITIALIZED:
+            self.finalize()
 
     @staticmethod
     def _add_lib_dependencies(lib_dependencies):
@@ -67,10 +82,14 @@ class AmiWrapper(Ami):
         c_var.value = value
 
     def initialize(self, config_file: str) -> None:
-        self.previous_directory = os.getcwd()
-        os.chdir(self.working_directory)
-        check_result(self.lib.initialize(config_file), "initialize")
-        os.chdir(self.previous_directory)
+        if self._state == State.UNINITIALIZED:
+            self.previous_directory = os.getcwd()
+            os.chdir(self.working_directory)
+            check_result(self.lib.initialize(config_file), "initialize")
+            os.chdir(self.previous_directory)
+            self._state = State.INITIALIZED
+        else:
+            raise Exception("Modflow is already initialized")
 
     def update(self) -> None:
         self.previous_directory = os.getcwd()
@@ -81,14 +100,18 @@ class AmiWrapper(Ami):
     def update_until(self, time: float) -> None:
         self.previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(BMI_FAILURE, "update_until")
+        check_result(Status.Failure, "update_until")
         os.chdir(self.previous_directory)
 
     def finalize(self) -> None:
-        self.previous_directory = os.getcwd()
-        os.chdir(self.working_directory)
-        check_result(self.lib.finalize(), "finalize")
-        os.chdir(self.previous_directory)
+        if self._state == State.INITIALIZED:
+            self.previous_directory = os.getcwd()
+            os.chdir(self.working_directory)
+            check_result(self.lib.finalize(), "finalize")
+            os.chdir(self.previous_directory)
+            self._state = State.UNINITIALIZED
+        else:
+            raise Exception("Modflow is not initialized yet")
 
     def get_current_time(self) -> float:
         current_time = c_double(0.0)
@@ -426,6 +449,6 @@ def check_result(result, function_name, detail=""):
     Utility function to check the BMI status in the kernel
     TODO_MJR: rename this, is executes the bmi call (and also checks the status)
     """
-    if result != BMI_SUCCESS:
+    if result != Status.SUCCESS:
         msg = "MODFLOW 6 BMI, exception in: " + function_name + " (" + detail + ")"
         raise Exception(msg)
