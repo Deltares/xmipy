@@ -14,4 +14,4 @@ ignore =
     W503, # line break before binary operator
     W504  # line break after binary operator
 statistics = True
-max-line-length = 88
+max-line-length = 92
