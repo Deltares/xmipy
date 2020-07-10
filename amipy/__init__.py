@@ -1,3 +1,3 @@
 # imports
-from .ami import Ami
-from .amiwrapper import AmiWrapper
+from amipy.ami import Ami
+from amipy.amiwrapper import AmiWrapper

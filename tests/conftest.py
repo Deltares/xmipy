@@ -19,7 +19,9 @@ def flopy_dis(tmp_path_factory):
     name = "test_model_dis"
     tmp_dir = tmp_path_factory.mktemp(name)
     sim = flopy.mf6.MFSimulation(sim_name=name, sim_ws=str(tmp_dir))
-    flopy.mf6.ModflowTdis(sim)
+
+    tdis_rc = [(6.0, 2, 1.0), (6.0, 3, 1.0)]
+    flopy.mf6.ModflowTdis(sim, time_units="DAYS", nper=2, perioddata=tdis_rc)
     flopy.mf6.ModflowIms(sim)
     gwf = flopy.mf6.ModflowGwf(sim, modelname=name, save_flows=True)
     flopy.mf6.ModflowGwfdis(gwf, nrow=10, ncol=10)
