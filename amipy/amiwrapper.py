@@ -57,8 +57,9 @@ class AmiWrapper(Ami):
         self._state = State.UNINITIALIZED
 
     def __del__(self):
-        if self._state == State.INITIALIZED:
-            self.finalize()
+        if hasattr(self, "_state"):
+            if self._state == State.INITIALIZED:
+                self.finalize()
 
     @staticmethod
     def _add_lib_dependencies(lib_dependencies):
