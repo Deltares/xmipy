@@ -28,7 +28,6 @@ jobs:
       - name: Install and print system dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
-          brew install gcc@9
           gfortran --version
       - name: Install and print system dependencies (Windows)
         if: runner.os == 'Windows'
