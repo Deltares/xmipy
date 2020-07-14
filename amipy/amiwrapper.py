@@ -37,7 +37,9 @@ class AmiWrapper(Ami):
     the kernels, and v.v.
     """
 
-    def __init__(self, lib_path: str, lib_dependencies: Iterable[str] = None):
+    def __init__(
+        self, lib_path: str, lib_dependencies: Iterable[str] = None, timing=False
+    ):
 
         self._add_lib_dependencies(lib_dependencies)
         if sys.version_info[0:2] < (3, 8):
@@ -53,7 +55,6 @@ class AmiWrapper(Ami):
 
         self.MAXSTRLEN = self.get_constant_int("MAXSTRLEN")
         self.working_directory = "."
-        self.previous_directory = "."
         self._state = State.UNINITIALIZED
 
     def __del__(self):
@@ -84,54 +85,51 @@ class AmiWrapper(Ami):
 
     def initialize(self, config_file: str) -> None:
         if self._state == State.UNINITIALIZED:
-            self.previous_directory = os.getcwd()
+            previous_directory = os.getcwd()
             os.chdir(self.working_directory)
-            check_result(self.lib.initialize(config_file), "initialize")
-            os.chdir(self.previous_directory)
+            execute_function(self.lib.initialize, [config_file])
+            os.chdir(previous_directory)
             self._state = State.INITIALIZED
         else:
             raise Exception("Modflow is already initialized")
 
     def update(self) -> None:
-        self.previous_directory = os.getcwd()
+        previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.lib.update(), "update")
-        os.chdir(self.previous_directory)
+        execute_function(self.lib.update, [])
+        os.chdir(previous_directory)
 
     def update_until(self, time: float) -> None:
-        self.previous_directory = os.getcwd()
-        os.chdir(self.working_directory)
-        check_result(Status.Failure, "update_until")
-        os.chdir(self.previous_directory)
+        raise NotImplementedError
 
     def finalize(self) -> None:
         if self._state == State.INITIALIZED:
-            self.previous_directory = os.getcwd()
+            previous_directory = os.getcwd()
             os.chdir(self.working_directory)
-            check_result(self.lib.finalize(), "finalize")
-            os.chdir(self.previous_directory)
+            execute_function(self.lib.finalize, [])
+            os.chdir(previous_directory)
             self._state = State.UNINITIALIZED
         else:
             raise Exception("Modflow is not initialized yet")
 
     def get_current_time(self) -> float:
         current_time = c_double(0.0)
-        check_result(self.lib.get_current_time(byref(current_time)), "get_current_time")
+        execute_function(self.lib.get_current_time, [byref(current_time)])
         return current_time.value
 
     def get_start_time(self) -> float:
         start_time = c_double(0.0)
-        check_result(self.lib.get_start_time(byref(start_time)), "get_start_time")
+        execute_function(self.lib.get_start_time, [byref(start_time)])
         return start_time.value
 
     def get_end_time(self) -> float:
         end_time = c_double(0.0)
-        check_result(self.lib.get_end_time(byref(end_time)), "get_end_time")
+        execute_function(self.lib.get_end_time, [byref(end_time)])
         return end_time.value
 
     def get_time_step(self) -> float:
         dt = c_double(0.0)
-        check_result(self.lib.get_time_step(byref(dt)), "get_time_step")
+        execute_function(self.lib.get_time_step, [byref(dt)])
         return dt.value
 
     def get_component_name(self) -> str:
@@ -154,9 +152,9 @@ class AmiWrapper(Ami):
 
     def get_var_type(self, name: str) -> str:
         var_type = create_string_buffer(self.MAXSTRLEN)
-        check_result(
-            self.lib.get_var_type(c_char_p(name.encode()), byref(var_type)),
-            "get_var_type",
+        execute_function(
+            self.lib.get_var_type,
+            [c_char_p(name.encode()), byref(var_type)],
             "for variable " + name,
         )
         return var_type.value.decode()
@@ -165,20 +163,18 @@ class AmiWrapper(Ami):
     def get_var_shape(self, name: str) -> np.ndarray:
         rank = self.get_var_rank(name)
         array = np.zeros(rank, dtype=np.int32)
-        check_result(
-            self.lib.get_var_shape(
-                c_char_p(name.encode()), c_void_p(array.ctypes.data)
-            ),
-            "get_var_shape",
+        execute_function(
+            self.lib.get_var_shape,
+            [c_char_p(name.encode()), c_void_p(array.ctypes.data)],
             "for variable " + name,
         )
         return array
 
     def get_var_rank(self, name: str) -> int:
         rank = c_int(0)
-        check_result(
-            self.lib.get_var_rank(c_char_p(name.encode()), byref(rank)),
-            "get_var_rank",
+        execute_function(
+            self.lib.get_var_rank,
+            [c_char_p(name.encode()), byref(rank)],
             "for variable " + name,
         )
         return rank.value
@@ -188,18 +184,18 @@ class AmiWrapper(Ami):
 
     def get_var_itemsize(self, name: str) -> int:
         item_size = c_int(0)
-        check_result(
-            self.lib.get_var_itemsize(c_char_p(name.encode()), byref(item_size)),
-            "get_var_itemsize",
+        execute_function(
+            self.lib.get_var_itemsize,
+            [c_char_p(name.encode()), byref(item_size)],
             "for variable " + name,
         )
         return item_size.value
 
     def get_var_nbytes(self, name: str) -> int:
         nbytes = c_int(0)
-        check_result(
-            self.lib.get_var_nbytes(c_char_p(name.encode()), byref(nbytes)),
-            "get_var_nbytes",
+        execute_function(
+            self.lib.get_var_nbytes,
+            [c_char_p(name.encode()), byref(nbytes)],
             "for variable " + name,
         )
         return nbytes.value
@@ -232,9 +228,9 @@ class AmiWrapper(Ami):
                 dtype=np.float64, ndim=ndim, shape=shape_tuple, flags="F"
             )
             values = arraytype()
-            check_result(
-                self.lib.get_value_ptr_double(c_char_p(name.encode()), byref(values)),
-                "get_value_ptr",
+            execute_function(
+                self.lib.get_value_ptr_double,
+                [c_char_p(name.encode()), byref(values)],
                 "for variable " + name,
             )
             return values.contents
@@ -243,9 +239,9 @@ class AmiWrapper(Ami):
                 dtype=np.int32, ndim=ndim, shape=shape_tuple, flags="F"
             )
             values = arraytype()
-            check_result(
-                self.lib.get_value_ptr_int(c_char_p(name.encode()), byref(values)),
-                "get_value_ptr",
+            execute_function(
+                self.lib.get_value_ptr_int,
+                [c_char_p(name.encode()), byref(values)],
                 "for variable " + name,
             )
             return values.contents
@@ -257,9 +253,9 @@ class AmiWrapper(Ami):
                 dtype=np.double, ndim=1, shape=(1,), flags="F"
             )
             values = arraytype()
-            check_result(
-                self.lib.get_value_ptr_double(c_char_p(name.encode()), byref(values)),
-                "get_value_ptr",
+            execute_function(
+                self.lib.get_value_ptr_double,
+                [c_char_p(name.encode()), byref(values)],
                 "for variable " + name,
             )
         elif vartype.lower().startswith("float"):
@@ -267,9 +263,9 @@ class AmiWrapper(Ami):
                 dtype=np.float, ndim=1, shape=(1,), flags="F"
             )
             values = arraytype()
-            check_result(
-                self.lib.get_value_ptr_float(c_char_p(name.encode()), byref(values)),
-                "get_value_ptr",
+            execute_function(
+                self.lib.get_value_ptr_float,
+                [c_char_p(name.encode()), byref(values)],
                 "for variable " + name,
             )
         elif vartype.lower().startswith("int"):
@@ -277,9 +273,9 @@ class AmiWrapper(Ami):
                 dtype=np.int32, ndim=1, shape=(1,), flags="F"
             )
             values = arraytype()
-            check_result(
-                self.lib.get_value_ptr_int(c_char_p(name.encode()), byref(values)),
-                "get_value_ptr",
+            execute_function(
+                self.lib.get_value_ptr_int,
+                [c_char_p(name.encode()), byref(values)],
                 "for variable " + name,
             )
         else:
@@ -303,9 +299,9 @@ class AmiWrapper(Ami):
     def get_grid_rank(self, grid: int) -> int:
         item_size = c_int(0)
         c_grid = c_int(grid)
-        check_result(
-            self.lib.get_grid_rank(byref(c_grid), byref(item_size)),
-            "get_grid_rank",
+        execute_function(
+            self.lib.get_grid_rank,
+            [byref(c_grid), byref(item_size)],
             "for id " + str(grid),
         )
         return item_size.value
@@ -316,18 +312,18 @@ class AmiWrapper(Ami):
     def get_grid_type(self, grid: int) -> str:
         grid_type = create_string_buffer(self.MAXSTRLEN)
         c_grid = c_int(grid)
-        check_result(
-            self.lib.get_grid_type(byref(c_grid), byref(grid_type)),
-            "get_grid_type",
+        execute_function(
+            self.lib.get_grid_type,
+            [byref(c_grid), byref(grid_type)],
             "for id " + str(grid),
         )
         return grid_type.value.decode()
 
     def get_grid_shape(self, grid: int, shape: np.ndarray) -> np.ndarray:
         c_grid = c_int(grid)
-        check_result(
-            self.lib.get_grid_shape(byref(c_grid), c_void_p(shape.ctypes.data)),
-            "get_grid_shape",
+        execute_function(
+            self.lib.get_grid_shape,
+            [byref(c_grid), c_void_p(shape.ctypes.data)],
             "for id " + str(id),
         )
         return shape
@@ -340,27 +336,27 @@ class AmiWrapper(Ami):
 
     def get_grid_x(self, grid: int, x: np.ndarray) -> np.ndarray:
         c_grid = c_int(grid)
-        check_result(
-            self.lib.get_grid_x(byref(c_grid), c_void_p(x.ctypes.data)),
-            "get_grid_x",
+        execute_function(
+            self.lib.get_grid_x,
+            [byref(c_grid), c_void_p(x.ctypes.data)],
             "for id " + str(id),
         )
         return x
 
     def get_grid_y(self, grid: int, y: np.ndarray) -> np.ndarray:
         c_grid = c_int(grid)
-        check_result(
-            self.lib.get_grid_y(byref(c_grid), c_void_p(y.ctypes.data)),
-            "get_grid_y",
+        execute_function(
+            self.lib.get_grid_y,
+            [byref(c_grid), c_void_p(y.ctypes.data)],
             "for id " + str(id),
         )
         return y
 
     def get_grid_z(self, grid: int, z: np.ndarray) -> np.ndarray:
         c_grid = c_int(grid)
-        check_result(
-            self.lib.get_grid_z(byref(c_grid), c_void_p(z.ctypes.data)),
-            "get_grid_z",
+        execute_function(
+            self.lib.get_grid_z,
+            [byref(c_grid), c_void_p(z.ctypes.data)],
             "for id " + str(id),
         )
         return z
@@ -392,64 +388,61 @@ class AmiWrapper(Ami):
     # here starts the AMI
     # ===========================
     def prepare_time_step(self, dt) -> None:
-        self.previous_directory = os.getcwd()
+        previous_directory = os.getcwd()
         os.chdir(self.working_directory)
         dt = c_double(dt)
-        check_result(self.lib.prepare_time_step(byref(dt)), "prepare_time_step")
-        os.chdir(self.previous_directory)
+        execute_function(self.lib.prepare_time_step, [byref(dt)])
+        os.chdir(previous_directory)
 
     def do_time_step(self) -> None:
-        self.previous_directory = os.getcwd()
+        previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.lib.do_time_step(), "do_time_step")
-        os.chdir(self.previous_directory)
+        execute_function(self.lib.do_time_step, [])
+        os.chdir(previous_directory)
 
     def finalize_time_step(self) -> None:
-        self.previous_directory = os.getcwd()
+        previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.lib.finalize_time_step(), "finalize_time_step")
-        os.chdir(self.previous_directory)
+        execute_function(self.lib.finalize_time_step, [])
+        os.chdir(previous_directory)
 
     def get_subcomponent_count(self) -> int:
         count = c_int(0)
-        check_result(
-            self.lib.get_subcomponent_count(byref(count)), "get_subcomponent_count"
-        )
+        execute_function(self.lib.get_subcomponent_count, [byref(count)])
         return count.value
 
     def prepare_solve(self, component_id) -> None:
         cid = c_int(component_id)
 
-        self.previous_directory = os.getcwd()
+        previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.lib.prepare_solve(byref(cid)), "prepare_solve")
-        os.chdir(self.previous_directory)
+        execute_function(self.lib.prepare_solve, [byref(cid)])
+        os.chdir(previous_directory)
 
     def solve(self, component_id) -> bool:
         cid = c_int(component_id)
         has_converged = c_int(0)
 
-        self.previous_directory = os.getcwd()
+        previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.lib.solve(byref(cid), byref(has_converged)), "solve")
-        os.chdir(self.previous_directory)
+        execute_function(self.lib.solve, [byref(cid), byref(has_converged)])
+        os.chdir(previous_directory)
 
         return has_converged.value == 1
 
     def finalize_solve(self, component_id) -> None:
         cid = c_int(component_id)
 
-        self.previous_directory = os.getcwd()
+        previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.lib.finalize_solve(byref(cid)), "finalize_solve")
-        os.chdir(self.previous_directory)
+        execute_function(self.lib.finalize_solve, [byref(cid)])
+        os.chdir(previous_directory)
 
 
-def check_result(result, function_name, detail=""):
+def execute_function(function, arguments, detail=""):
     """
-    Utility function to check the BMI status in the kernel
-    TODO_MJR: rename this, is executes the bmi call (and also checks the status)
+    Utility function to execute a BMI function in the kernel and checks its status
     """
-    if result != Status.SUCCESS:
-        msg = "MODFLOW 6 BMI, exception in: " + function_name + " (" + detail + ")"
+    if function(*arguments) != Status.SUCCESS:
+        msg = f"MODFLOW 6 BMI, exception in: {function.__name__} ({detail})"
         raise Exception(msg)
