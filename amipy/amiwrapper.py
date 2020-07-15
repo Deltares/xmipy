@@ -1,3 +1,4 @@
+import logging
 import os
 import platform
 import sys
@@ -11,13 +12,16 @@ from ctypes import (
     cdll,
     create_string_buffer,
 )
-from enum import Enum, unique, IntEnum
+from enum import Enum, IntEnum, unique
 from typing import Iterable, Tuple
 
 import numpy as np
 
 from amipy.ami import Ami
+from amipy.timers.timer import Timer
 from amipy.utils import SuppressStream
+
+logger = logging.getLogger(__name__)
 
 
 @unique
@@ -57,6 +61,14 @@ class AmiWrapper(Ami):
         self.MAXSTRLEN = self.get_constant_int("MAXSTRLEN")
         self.working_directory = "."
         self._state = State.UNINITIALIZED
+        self.timing = timing
+        self.libname = os.path.basename(lib_path)
+
+        if self.timing:
+            self.timer = Timer(
+                name=self.libname,
+                text="Elapsed time for {name}.{fn_name}: {seconds:0.4f} seconds",
+            )
 
     def __del__(self):
         if hasattr(self, "_state"):
@@ -76,6 +88,14 @@ class AmiWrapper(Ami):
                         dep_path + os.pathsep + os.environ["LD_LIBRARY_PATH"]
                     )
 
+    def report_timing_totals(self):
+        if self.timing:
+            total = self.timer.report_totals()
+            logger.info(f"Total elapsed time for {self.libname}: {total:0.4f} seconds")
+            return total
+        else:
+            raise Exception("Timing not activated")
+
     def get_constant_int(self, name: str) -> int:
         c_var = c_int.in_dll(self.lib, name)
         return c_var.value
@@ -88,7 +108,7 @@ class AmiWrapper(Ami):
         if self._state == State.UNINITIALIZED:
             previous_directory = os.getcwd()
             os.chdir(self.working_directory)
-            execute_function(self.lib.initialize, [config_file])
+            self.execute_function(self.lib.initialize, [config_file])
             os.chdir(previous_directory)
             self._state = State.INITIALIZED
         else:
@@ -97,7 +117,7 @@ class AmiWrapper(Ami):
     def update(self) -> None:
         previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        execute_function(self.lib.update, [])
+        self.execute_function(self.lib.update, [])
         os.chdir(previous_directory)
 
     def update_until(self, time: float) -> None:
@@ -107,7 +127,7 @@ class AmiWrapper(Ami):
         if self._state == State.INITIALIZED:
             previous_directory = os.getcwd()
             os.chdir(self.working_directory)
-            execute_function(self.lib.finalize, [])
+            self.execute_function(self.lib.finalize, [])
             os.chdir(previous_directory)
             self._state = State.UNINITIALIZED
         else:
@@ -115,22 +135,22 @@ class AmiWrapper(Ami):
 
     def get_current_time(self) -> float:
         current_time = c_double(0.0)
-        execute_function(self.lib.get_current_time, [byref(current_time)])
+        self.execute_function(self.lib.get_current_time, [byref(current_time)])
         return current_time.value
 
     def get_start_time(self) -> float:
         start_time = c_double(0.0)
-        execute_function(self.lib.get_start_time, [byref(start_time)])
+        self.execute_function(self.lib.get_start_time, [byref(start_time)])
         return start_time.value
 
     def get_end_time(self) -> float:
         end_time = c_double(0.0)
-        execute_function(self.lib.get_end_time, [byref(end_time)])
+        self.execute_function(self.lib.get_end_time, [byref(end_time)])
         return end_time.value
 
     def get_time_step(self) -> float:
         dt = c_double(0.0)
-        execute_function(self.lib.get_time_step, [byref(dt)])
+        self.execute_function(self.lib.get_time_step, [byref(dt)])
         return dt.value
 
     def get_component_name(self) -> str:
@@ -153,7 +173,7 @@ class AmiWrapper(Ami):
 
     def get_var_type(self, name: str) -> str:
         var_type = create_string_buffer(self.MAXSTRLEN)
-        execute_function(
+        self.execute_function(
             self.lib.get_var_type,
             [c_char_p(name.encode()), byref(var_type)],
             "for variable " + name,
@@ -164,7 +184,7 @@ class AmiWrapper(Ami):
     def get_var_shape(self, name: str) -> np.ndarray:
         rank = self.get_var_rank(name)
         array = np.zeros(rank, dtype=np.int32)
-        execute_function(
+        self.execute_function(
             self.lib.get_var_shape,
             [c_char_p(name.encode()), c_void_p(array.ctypes.data)],
             "for variable " + name,
@@ -173,7 +193,7 @@ class AmiWrapper(Ami):
 
     def get_var_rank(self, name: str) -> int:
         rank = c_int(0)
-        execute_function(
+        self.execute_function(
             self.lib.get_var_rank,
             [c_char_p(name.encode()), byref(rank)],
             "for variable " + name,
@@ -185,7 +205,7 @@ class AmiWrapper(Ami):
 
     def get_var_itemsize(self, name: str) -> int:
         item_size = c_int(0)
-        execute_function(
+        self.execute_function(
             self.lib.get_var_itemsize,
             [c_char_p(name.encode()), byref(item_size)],
             "for variable " + name,
@@ -194,7 +214,7 @@ class AmiWrapper(Ami):
 
     def get_var_nbytes(self, name: str) -> int:
         nbytes = c_int(0)
-        execute_function(
+        self.execute_function(
             self.lib.get_var_nbytes,
             [c_char_p(name.encode()), byref(nbytes)],
             "for variable " + name,
@@ -229,7 +249,7 @@ class AmiWrapper(Ami):
                 dtype=np.float64, ndim=ndim, shape=shape_tuple, flags="F"
             )
             values = arraytype()
-            execute_function(
+            self.execute_function(
                 self.lib.get_value_ptr_double,
                 [c_char_p(name.encode()), byref(values)],
                 "for variable " + name,
@@ -240,7 +260,7 @@ class AmiWrapper(Ami):
                 dtype=np.int32, ndim=ndim, shape=shape_tuple, flags="F"
             )
             values = arraytype()
-            execute_function(
+            self.execute_function(
                 self.lib.get_value_ptr_int,
                 [c_char_p(name.encode()), byref(values)],
                 "for variable " + name,
@@ -254,7 +274,7 @@ class AmiWrapper(Ami):
                 dtype=np.double, ndim=1, shape=(1,), flags="F"
             )
             values = arraytype()
-            execute_function(
+            self.execute_function(
                 self.lib.get_value_ptr_double,
                 [c_char_p(name.encode()), byref(values)],
                 "for variable " + name,
@@ -264,7 +284,7 @@ class AmiWrapper(Ami):
                 dtype=np.float, ndim=1, shape=(1,), flags="F"
             )
             values = arraytype()
-            execute_function(
+            self.execute_function(
                 self.lib.get_value_ptr_float,
                 [c_char_p(name.encode()), byref(values)],
                 "for variable " + name,
@@ -274,7 +294,7 @@ class AmiWrapper(Ami):
                 dtype=np.int32, ndim=1, shape=(1,), flags="F"
             )
             values = arraytype()
-            execute_function(
+            self.execute_function(
                 self.lib.get_value_ptr_int,
                 [c_char_p(name.encode()), byref(values)],
                 "for variable " + name,
@@ -300,7 +320,7 @@ class AmiWrapper(Ami):
     def get_grid_rank(self, grid: int) -> int:
         item_size = c_int(0)
         c_grid = c_int(grid)
-        execute_function(
+        self.execute_function(
             self.lib.get_grid_rank,
             [byref(c_grid), byref(item_size)],
             "for id " + str(grid),
@@ -313,7 +333,7 @@ class AmiWrapper(Ami):
     def get_grid_type(self, grid: int) -> str:
         grid_type = create_string_buffer(self.MAXSTRLEN)
         c_grid = c_int(grid)
-        execute_function(
+        self.execute_function(
             self.lib.get_grid_type,
             [byref(c_grid), byref(grid_type)],
             "for id " + str(grid),
@@ -322,7 +342,7 @@ class AmiWrapper(Ami):
 
     def get_grid_shape(self, grid: int, shape: np.ndarray) -> np.ndarray:
         c_grid = c_int(grid)
-        execute_function(
+        self.execute_function(
             self.lib.get_grid_shape,
             [byref(c_grid), c_void_p(shape.ctypes.data)],
             "for id " + str(id),
@@ -337,7 +357,7 @@ class AmiWrapper(Ami):
 
     def get_grid_x(self, grid: int, x: np.ndarray) -> np.ndarray:
         c_grid = c_int(grid)
-        execute_function(
+        self.execute_function(
             self.lib.get_grid_x,
             [byref(c_grid), c_void_p(x.ctypes.data)],
             "for id " + str(id),
@@ -346,7 +366,7 @@ class AmiWrapper(Ami):
 
     def get_grid_y(self, grid: int, y: np.ndarray) -> np.ndarray:
         c_grid = c_int(grid)
-        execute_function(
+        self.execute_function(
             self.lib.get_grid_y,
             [byref(c_grid), c_void_p(y.ctypes.data)],
             "for id " + str(id),
@@ -355,7 +375,7 @@ class AmiWrapper(Ami):
 
     def get_grid_z(self, grid: int, z: np.ndarray) -> np.ndarray:
         c_grid = c_int(grid)
-        execute_function(
+        self.execute_function(
             self.lib.get_grid_z,
             [byref(c_grid), c_void_p(z.ctypes.data)],
             "for id " + str(id),
@@ -392,24 +412,24 @@ class AmiWrapper(Ami):
         previous_directory = os.getcwd()
         os.chdir(self.working_directory)
         dt = c_double(dt)
-        execute_function(self.lib.prepare_time_step, [byref(dt)])
+        self.execute_function(self.lib.prepare_time_step, [byref(dt)])
         os.chdir(previous_directory)
 
     def do_time_step(self) -> None:
         previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        execute_function(self.lib.do_time_step, [])
+        self.execute_function(self.lib.do_time_step, [])
         os.chdir(previous_directory)
 
     def finalize_time_step(self) -> None:
         previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        execute_function(self.lib.finalize_time_step, [])
+        self.execute_function(self.lib.finalize_time_step, [])
         os.chdir(previous_directory)
 
     def get_subcomponent_count(self) -> int:
         count = c_int(0)
-        execute_function(self.lib.get_subcomponent_count, [byref(count)])
+        self.execute_function(self.lib.get_subcomponent_count, [byref(count)])
         return count.value
 
     def prepare_solve(self, component_id) -> None:
@@ -417,7 +437,7 @@ class AmiWrapper(Ami):
 
         previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        execute_function(self.lib.prepare_solve, [byref(cid)])
+        self.execute_function(self.lib.prepare_solve, [byref(cid)])
         os.chdir(previous_directory)
 
     def solve(self, component_id) -> bool:
@@ -426,7 +446,7 @@ class AmiWrapper(Ami):
 
         previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        execute_function(self.lib.solve, [byref(cid), byref(has_converged)])
+        self.execute_function(self.lib.solve, [byref(cid), byref(has_converged)])
         os.chdir(previous_directory)
 
         return has_converged.value == 1
@@ -436,17 +456,22 @@ class AmiWrapper(Ami):
 
         previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        execute_function(self.lib.finalize_solve, [byref(cid)])
+        self.execute_function(self.lib.finalize_solve, [byref(cid)])
         os.chdir(previous_directory)
 
+    def execute_function(self, function, arguments, detail=""):
+        """
+        Utility function to execute a BMI function in the kernel and checks its status
+        """
 
-def execute_function(function, arguments, detail=""):
-    """
-    Utility function to execute a BMI function in the kernel and checks its status
-    """
-    with SuppressStream(sys.stdout):
-        with SuppressStream(sys.stderr):
+        if self.timing:
+            self.timer.start(function.__name__)
+
+        try:
             if function(*arguments) != Status.SUCCESS:
                 msg = f"MODFLOW 6 BMI, exception in: {function.__name__} ({detail})"
                 raise Exception(msg)
+        finally:
+            if self.timing:
+                self.timer.stop(function.__name__)
 

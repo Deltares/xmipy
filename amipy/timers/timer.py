@@ -4,14 +4,16 @@ Adapted from https://pypi.org/project/codetiming/.
 """
 
 # Standard library imports
+import functools
 import math
 import time
 from contextlib import ContextDecorator
 from dataclasses import dataclass, field
 from typing import Any, Callable, ClassVar, Optional
+import logging
+from amipy.timers.timers import Timers
 
-# Codetiming imports
-from codetiming._timers import Timers
+logger = logging.getLogger(__name__)
 
 
 class TimerError(Exception):
@@ -22,43 +24,55 @@ class TimerError(Exception):
 class Timer:
     """Time your code using a class, context manager, or decorator"""
 
-    def __init__(self, text="Elapsed time: {:0.4f} seconds", logger=print):
+    def __init__(self, name: str, text: str):
+        self.name = name
         self.timers = Timers()
         self._start_time = {}
         self.text = text
-        self.logger = logger
         self.last = math.nan
 
-    def start(self, name) -> None:
+    def start(self, fn_name: str) -> None:
         """Start a new timer"""
-        if self._start_time[name] is not None:
+        if fn_name in self._start_time:
             raise TimerError(
-                f"Timer for {name} is already running. Use .stop() to stop it"
+                f"Timer for {fn_name} is already running. Use .stop() to stop it"
             )
 
-        self._start_time[name] = time.perf_counter()
+        self._start_time[fn_name] = time.perf_counter()
 
-    def stop(self, name) -> float:
+    def stop(self, fn_name: str) -> float:
         """Stop the timer, and report the elapsed time"""
-        if self._start_time[name] is None:
+        if fn_name not in self._start_time:
             raise TimerError(
-                f"Timer for {name} is not running yet. Use .start() to start it"
+                f"Timer for {fn_name} is not running yet. Use .start() to start it"
             )
 
         # Calculate elapsed time
-        self.last = time.perf_counter() - self._start_time[name]
-        self._start_time[name] = None
+        self.last = time.perf_counter() - self._start_time[fn_name]
+        del self._start_time[fn_name]
 
         # Report elapsed time
-        if self.logger:
-            attributes = {
-                "name": self.name,
-                "milliseconds": self.last * 1000,
-                "seconds": self.last,
-                "minutes": self.last / 60,
-            }
-            self.logger(self.text.format(self.last, **attributes))
-        if self.name:
-            self.timers.add(self.name, self.last)
+        attributes = {
+            "name": self.name,
+            "fn_name": fn_name,
+            "milliseconds": self.last * 1000,
+            "seconds": self.last,
+            "minutes": self.last / 60,
+        }
+        logger.debug(self.text.format(self.last, **attributes))
+        self.timers.add(fn_name, self.last)
 
         return self.last
+
+    def report_totals(self) -> float:
+        totals = {}
+        for fn_name in self.timers:
+            totals[fn_name] = self.timers.total(fn_name)
+
+        total = 0.0
+        for fn_name, seconds in sorted(totals.items(), key=lambda item: item[1]):
+            logger.info(
+                f"Total elapsed time for {self.name}.{fn_name}: {seconds:0.4f} seconds"
+            )
+            total += seconds
+        return total
