@@ -7,9 +7,6 @@ Adapted from https://pypi.org/project/codetiming/.
 import functools
 import math
 import time
-from contextlib import ContextDecorator
-from dataclasses import dataclass, field
-from typing import Any, Callable, ClassVar, Optional
 import logging
 from amipy.timers.timers import Timers
 
