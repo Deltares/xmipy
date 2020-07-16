@@ -1,3 +1,4 @@
+import logging
 import os
 import platform
 import sys
@@ -11,12 +12,15 @@ from ctypes import (
     cdll,
     create_string_buffer,
 )
-from enum import Enum, unique, IntEnum
+from enum import Enum, IntEnum, unique
 from typing import Iterable, Tuple
 
 import numpy as np
 
 from amipy.ami import Ami
+from amipy.timers.timer import Timer
+
+logger = logging.getLogger(__name__)
 
 
 @unique
@@ -37,7 +41,9 @@ class AmiWrapper(Ami):
     the kernels, and v.v.
     """
 
-    def __init__(self, lib_path: str, lib_dependencies: Iterable[str] = None):
+    def __init__(
+        self, lib_path: str, lib_dependencies: Iterable[str] = None, timing=False
+    ):
 
         self._add_lib_dependencies(lib_dependencies)
         if sys.version_info[0:2] < (3, 8):
@@ -53,8 +59,15 @@ class AmiWrapper(Ami):
 
         self.MAXSTRLEN = self.get_constant_int("MAXSTRLEN")
         self.working_directory = "."
-        self.previous_directory = "."
         self._state = State.UNINITIALIZED
+        self.timing = timing
+        self.libname = os.path.basename(lib_path)
+
+        if self.timing:
+            self.timer = Timer(
+                name=self.libname,
+                text="Elapsed time for {name}.{fn_name}: {seconds:0.4f} seconds",
+            )
 
     def __del__(self):
         if hasattr(self, "_state"):
@@ -74,6 +87,14 @@ class AmiWrapper(Ami):
                         dep_path + os.pathsep + os.environ["LD_LIBRARY_PATH"]
                     )
 
+    def report_timing_totals(self):
+        if self.timing:
+            total = self.timer.report_totals()
+            logger.info(f"Total elapsed time for {self.libname}: {total:0.4f} seconds")
+            return total
+        else:
+            raise Exception("Timing not activated")
+
     def get_constant_int(self, name: str) -> int:
         c_var = c_int.in_dll(self.lib, name)
         return c_var.value
@@ -84,54 +105,51 @@ class AmiWrapper(Ami):
 
     def initialize(self, config_file: str) -> None:
         if self._state == State.UNINITIALIZED:
-            self.previous_directory = os.getcwd()
+            previous_directory = os.getcwd()
             os.chdir(self.working_directory)
-            check_result(self.lib.initialize(config_file), "initialize")
-            os.chdir(self.previous_directory)
+            self.execute_function(self.lib.initialize, config_file)
+            os.chdir(previous_directory)
             self._state = State.INITIALIZED
         else:
             raise Exception("Modflow is already initialized")
 
     def update(self) -> None:
-        self.previous_directory = os.getcwd()
+        previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.lib.update(), "update")
-        os.chdir(self.previous_directory)
+        self.execute_function(self.lib.update)
+        os.chdir(previous_directory)
 
     def update_until(self, time: float) -> None:
-        self.previous_directory = os.getcwd()
-        os.chdir(self.working_directory)
-        check_result(Status.Failure, "update_until")
-        os.chdir(self.previous_directory)
+        raise NotImplementedError
 
     def finalize(self) -> None:
         if self._state == State.INITIALIZED:
-            self.previous_directory = os.getcwd()
+            previous_directory = os.getcwd()
             os.chdir(self.working_directory)
-            check_result(self.lib.finalize(), "finalize")
-            os.chdir(self.previous_directory)
+            self.execute_function(self.lib.finalize)
+            os.chdir(previous_directory)
             self._state = State.UNINITIALIZED
         else:
             raise Exception("Modflow is not initialized yet")
 
     def get_current_time(self) -> float:
         current_time = c_double(0.0)
-        check_result(self.lib.get_current_time(byref(current_time)), "get_current_time")
+        self.execute_function(self.lib.get_current_time, byref(current_time))
         return current_time.value
 
     def get_start_time(self) -> float:
         start_time = c_double(0.0)
-        check_result(self.lib.get_start_time(byref(start_time)), "get_start_time")
+        self.execute_function(self.lib.get_start_time, byref(start_time))
         return start_time.value
 
     def get_end_time(self) -> float:
         end_time = c_double(0.0)
-        check_result(self.lib.get_end_time(byref(end_time)), "get_end_time")
+        self.execute_function(self.lib.get_end_time, byref(end_time))
         return end_time.value
 
     def get_time_step(self) -> float:
         dt = c_double(0.0)
-        check_result(self.lib.get_time_step(byref(dt)), "get_time_step")
+        self.execute_function(self.lib.get_time_step, byref(dt))
         return dt.value
 
     def get_component_name(self) -> str:
@@ -154,10 +172,11 @@ class AmiWrapper(Ami):
 
     def get_var_type(self, name: str) -> str:
         var_type = create_string_buffer(self.MAXSTRLEN)
-        check_result(
-            self.lib.get_var_type(c_char_p(name.encode()), byref(var_type)),
-            "get_var_type",
-            "for variable " + name,
+        self.execute_function(
+            self.lib.get_var_type,
+            c_char_p(name.encode()),
+            byref(var_type),
+            detail="for variable " + name,
         )
         return var_type.value.decode()
 
@@ -165,21 +184,21 @@ class AmiWrapper(Ami):
     def get_var_shape(self, name: str) -> np.ndarray:
         rank = self.get_var_rank(name)
         array = np.zeros(rank, dtype=np.int32)
-        check_result(
-            self.lib.get_var_shape(
-                c_char_p(name.encode()), c_void_p(array.ctypes.data)
-            ),
-            "get_var_shape",
-            "for variable " + name,
+        self.execute_function(
+            self.lib.get_var_shape,
+            c_char_p(name.encode()),
+            c_void_p(array.ctypes.data),
+            detail="for variable " + name,
         )
         return array
 
     def get_var_rank(self, name: str) -> int:
         rank = c_int(0)
-        check_result(
-            self.lib.get_var_rank(c_char_p(name.encode()), byref(rank)),
-            "get_var_rank",
-            "for variable " + name,
+        self.execute_function(
+            self.lib.get_var_rank,
+            c_char_p(name.encode()),
+            byref(rank),
+            detail="for variable " + name,
         )
         return rank.value
 
@@ -188,19 +207,21 @@ class AmiWrapper(Ami):
 
     def get_var_itemsize(self, name: str) -> int:
         item_size = c_int(0)
-        check_result(
-            self.lib.get_var_itemsize(c_char_p(name.encode()), byref(item_size)),
-            "get_var_itemsize",
-            "for variable " + name,
+        self.execute_function(
+            self.lib.get_var_itemsize,
+            c_char_p(name.encode()),
+            byref(item_size),
+            detail="for variable " + name,
         )
         return item_size.value
 
     def get_var_nbytes(self, name: str) -> int:
         nbytes = c_int(0)
-        check_result(
-            self.lib.get_var_nbytes(c_char_p(name.encode()), byref(nbytes)),
-            "get_var_nbytes",
-            "for variable " + name,
+        self.execute_function(
+            self.lib.get_var_nbytes,
+            c_char_p(name.encode()),
+            byref(nbytes),
+            detail="for variable " + name,
         )
         return nbytes.value
 
@@ -232,10 +253,11 @@ class AmiWrapper(Ami):
                 dtype=np.float64, ndim=ndim, shape=shape_tuple, flags="F"
             )
             values = arraytype()
-            check_result(
-                self.lib.get_value_ptr_double(c_char_p(name.encode()), byref(values)),
-                "get_value_ptr",
-                "for variable " + name,
+            self.execute_function(
+                self.lib.get_value_ptr_double,
+                c_char_p(name.encode()),
+                byref(values),
+                detail="for variable " + name,
             )
             return values.contents
         elif vartype.lower().startswith("int"):
@@ -243,10 +265,11 @@ class AmiWrapper(Ami):
                 dtype=np.int32, ndim=ndim, shape=shape_tuple, flags="F"
             )
             values = arraytype()
-            check_result(
-                self.lib.get_value_ptr_int(c_char_p(name.encode()), byref(values)),
-                "get_value_ptr",
-                "for variable " + name,
+            self.execute_function(
+                self.lib.get_value_ptr_int,
+                c_char_p(name.encode()),
+                byref(values),
+                detail="for variable " + name,
             )
             return values.contents
 
@@ -257,30 +280,33 @@ class AmiWrapper(Ami):
                 dtype=np.double, ndim=1, shape=(1,), flags="F"
             )
             values = arraytype()
-            check_result(
-                self.lib.get_value_ptr_double(c_char_p(name.encode()), byref(values)),
-                "get_value_ptr",
-                "for variable " + name,
+            self.execute_function(
+                self.lib.get_value_ptr_double,
+                c_char_p(name.encode()),
+                byref(values),
+                detail="for variable " + name,
             )
         elif vartype.lower().startswith("float"):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.float, ndim=1, shape=(1,), flags="F"
             )
             values = arraytype()
-            check_result(
-                self.lib.get_value_ptr_float(c_char_p(name.encode()), byref(values)),
-                "get_value_ptr",
-                "for variable " + name,
+            self.execute_function(
+                self.lib.get_value_ptr_float,
+                c_char_p(name.encode()),
+                byref(values),
+                detail="for variable " + name,
             )
         elif vartype.lower().startswith("int"):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.int32, ndim=1, shape=(1,), flags="F"
             )
             values = arraytype()
-            check_result(
-                self.lib.get_value_ptr_int(c_char_p(name.encode()), byref(values)),
-                "get_value_ptr",
-                "for variable " + name,
+            self.execute_function(
+                self.lib.get_value_ptr_int,
+                c_char_p(name.encode()),
+                byref(values),
+                detail="for variable " + name,
             )
         else:
             raise Exception("Unsupported value type")
@@ -303,10 +329,11 @@ class AmiWrapper(Ami):
     def get_grid_rank(self, grid: int) -> int:
         item_size = c_int(0)
         c_grid = c_int(grid)
-        check_result(
-            self.lib.get_grid_rank(byref(c_grid), byref(item_size)),
-            "get_grid_rank",
-            "for id " + str(grid),
+        self.execute_function(
+            self.lib.get_grid_rank,
+            byref(c_grid),
+            byref(item_size),
+            detail="for id " + str(grid),
         )
         return item_size.value
 
@@ -316,19 +343,21 @@ class AmiWrapper(Ami):
     def get_grid_type(self, grid: int) -> str:
         grid_type = create_string_buffer(self.MAXSTRLEN)
         c_grid = c_int(grid)
-        check_result(
-            self.lib.get_grid_type(byref(c_grid), byref(grid_type)),
-            "get_grid_type",
-            "for id " + str(grid),
+        self.execute_function(
+            self.lib.get_grid_type,
+            byref(c_grid),
+            byref(grid_type),
+            detail="for id " + str(grid),
         )
         return grid_type.value.decode()
 
     def get_grid_shape(self, grid: int, shape: np.ndarray) -> np.ndarray:
         c_grid = c_int(grid)
-        check_result(
-            self.lib.get_grid_shape(byref(c_grid), c_void_p(shape.ctypes.data)),
-            "get_grid_shape",
-            "for id " + str(id),
+        self.execute_function(
+            self.lib.get_grid_shape,
+            byref(c_grid),
+            c_void_p(shape.ctypes.data),
+            detail="for id " + str(id),
         )
         return shape
 
@@ -340,28 +369,31 @@ class AmiWrapper(Ami):
 
     def get_grid_x(self, grid: int, x: np.ndarray) -> np.ndarray:
         c_grid = c_int(grid)
-        check_result(
-            self.lib.get_grid_x(byref(c_grid), c_void_p(x.ctypes.data)),
-            "get_grid_x",
-            "for id " + str(id),
+        self.execute_function(
+            self.lib.get_grid_x,
+            byref(c_grid),
+            c_void_p(x.ctypes.data),
+            detail="for id " + str(id),
         )
         return x
 
     def get_grid_y(self, grid: int, y: np.ndarray) -> np.ndarray:
         c_grid = c_int(grid)
-        check_result(
-            self.lib.get_grid_y(byref(c_grid), c_void_p(y.ctypes.data)),
-            "get_grid_y",
-            "for id " + str(id),
+        self.execute_function(
+            self.lib.get_grid_y,
+            byref(c_grid),
+            c_void_p(y.ctypes.data),
+            detail="for id " + str(id),
         )
         return y
 
     def get_grid_z(self, grid: int, z: np.ndarray) -> np.ndarray:
         c_grid = c_int(grid)
-        check_result(
-            self.lib.get_grid_z(byref(c_grid), c_void_p(z.ctypes.data)),
-            "get_grid_z",
-            "for id " + str(id),
+        self.execute_function(
+            self.lib.get_grid_z,
+            byref(c_grid),
+            c_void_p(z.ctypes.data),
+            detail="for id " + str(id),
         )
         return z
 
@@ -392,64 +424,69 @@ class AmiWrapper(Ami):
     # here starts the AMI
     # ===========================
     def prepare_time_step(self, dt) -> None:
-        self.previous_directory = os.getcwd()
+        previous_directory = os.getcwd()
         os.chdir(self.working_directory)
         dt = c_double(dt)
-        check_result(self.lib.prepare_time_step(byref(dt)), "prepare_time_step")
-        os.chdir(self.previous_directory)
+        self.execute_function(self.lib.prepare_time_step, byref(dt))
+        os.chdir(previous_directory)
 
     def do_time_step(self) -> None:
-        self.previous_directory = os.getcwd()
+        previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.lib.do_time_step(), "do_time_step")
-        os.chdir(self.previous_directory)
+        self.execute_function(self.lib.do_time_step)
+        os.chdir(previous_directory)
 
     def finalize_time_step(self) -> None:
-        self.previous_directory = os.getcwd()
+        previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.lib.finalize_time_step(), "finalize_time_step")
-        os.chdir(self.previous_directory)
+        self.execute_function(self.lib.finalize_time_step)
+        os.chdir(previous_directory)
 
     def get_subcomponent_count(self) -> int:
         count = c_int(0)
-        check_result(
-            self.lib.get_subcomponent_count(byref(count)), "get_subcomponent_count"
-        )
+        self.execute_function(self.lib.get_subcomponent_count, byref(count))
         return count.value
 
     def prepare_solve(self, component_id) -> None:
         cid = c_int(component_id)
 
-        self.previous_directory = os.getcwd()
+        previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.lib.prepare_solve(byref(cid)), "prepare_solve")
-        os.chdir(self.previous_directory)
+        self.execute_function(self.lib.prepare_solve, byref(cid))
+        os.chdir(previous_directory)
 
     def solve(self, component_id) -> bool:
         cid = c_int(component_id)
         has_converged = c_int(0)
 
-        self.previous_directory = os.getcwd()
+        previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.lib.solve(byref(cid), byref(has_converged)), "solve")
-        os.chdir(self.previous_directory)
+        self.execute_function(self.lib.solve, byref(cid), byref(has_converged))
+        os.chdir(previous_directory)
 
         return has_converged.value == 1
 
     def finalize_solve(self, component_id) -> None:
         cid = c_int(component_id)
 
-        self.previous_directory = os.getcwd()
+        previous_directory = os.getcwd()
         os.chdir(self.working_directory)
-        check_result(self.lib.finalize_solve(byref(cid)), "finalize_solve")
-        os.chdir(self.previous_directory)
+        self.execute_function(self.lib.finalize_solve, byref(cid))
+        os.chdir(previous_directory)
 
+    def execute_function(self, function, *args, detail=""):
+        """
+        Utility function to execute a BMI function in the kernel and checks its status
+        """
 
-def check_result(result, function_name, detail=""):
-    """
-    Utility function to check the BMI status in the kernel
-    TODO_MJR: rename this, is executes the bmi call (and also checks the status)
-    """
-    if result != Status.SUCCESS:
-        msg = "MODFLOW 6 BMI, exception in: " + function_name + " (" + detail + ")"
-        raise Exception(msg)
+        if self.timing:
+            self.timer.start(function.__name__)
+
+        try:
+            if function(*args) != Status.SUCCESS:
+                msg = f"MODFLOW 6 BMI, exception in: {function.__name__} ({detail})"
+                raise Exception(msg)
+        finally:
+            if self.timing:
+                self.timer.stop(function.__name__)
+
