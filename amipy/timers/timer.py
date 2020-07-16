@@ -17,7 +17,6 @@ class TimerError(Exception):
     """A custom exception used to report errors in use of Timer class"""
 
 
-@dataclass
 class Timer:
     """Time your code using a class, context manager, or decorator"""
 
