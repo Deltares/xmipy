@@ -2,7 +2,7 @@ from abc import abstractmethod
 from bmipy import Bmi
 
 
-class Ami(Bmi):
+class Xmi(Bmi):
     """
     This class extends the CSDMS Basic Model Interface
 
@@ -15,7 +15,7 @@ class Ami(Bmi):
       their own convergence loop
 
     It does not change anything in the BMI interface, so models implementing
-    the AMI interface are compatible with BMI
+    the XMI interface are compatible with BMI
 
     """
 

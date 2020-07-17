@@ -17,8 +17,8 @@ from typing import Iterable, Tuple
 
 import numpy as np
 
-from amipy.ami import Ami
-from amipy.timers.timer import Timer
+from xmipy.xmi import Xmi
+from xmipy.timers.timer import Timer
 
 logger = logging.getLogger(__name__)
 
@@ -35,9 +35,9 @@ class State(Enum):
     INITIALIZED = 2
 
 
-class AmiWrapper(Ami):
+class XmiWrapper(Xmi):
     """
-    This is the AMI (BMI++) wrapper for marshalling python types into
+    This is the XMI (BMI++) wrapper for marshalling python types into
     the kernels, and v.v.
     """
 
@@ -53,7 +53,7 @@ class AmiWrapper(Ami):
             # LoadLibraryEx flag: LOAD_WITH_ALTERED_SEARCH_PATH 0x08
             # -> uses the altered search path for resolving ddl dependencies
             # `winmode` has no effect while running on Linux or macOS
-            # Note: this could make amipy less secure (dll-injection)
+            # Note: this could make xmipy less secure (dll-injection)
             # Can we get it to work without this flag?
             self.lib = CDLL(lib_path, winmode=0x08)
 
@@ -421,7 +421,7 @@ class AmiWrapper(Ami):
         raise NotImplementedError
 
     # ===========================
-    # here starts the AMI
+    # here starts the XMI
     # ===========================
     def prepare_time_step(self, dt) -> None:
         previous_directory = os.getcwd()

@@ -2,7 +2,7 @@ import os
 import sys
 import getopt
 
-from amipy import AmiWrapper
+from xmipy import XmiWrapper
 
 # defaults
 mf6_dll = r"d:\checkouts\modflow6-mjr\bin\libmf6.dll"
@@ -28,7 +28,7 @@ model_dir = os.path.dirname(mf6_config_file)
 print("\n", "Change to model directory: ", model_dir, "\n")
 os.chdir(model_dir)
 
-mf6 = AmiWrapper(mf6_dll)
+mf6 = XmiWrapper(mf6_dll)
 
 # write output to screen:
 mf6.set_int("ISTDOUTTOFILE", 0)

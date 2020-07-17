@@ -38,7 +38,7 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           gfortran --version
-      - name: Install amipy
+      - name: Install xmipy
         run: |
           pip install -e .
       - name: Install test dependencies
@@ -48,7 +48,7 @@ jobs:
         # The flag -s stops pytest from capturing output
         # This is necessary until proper error reporting is implemented by Modflow
         run: |
-          pytest -s --cov=amipy --cov-report=xml tests/
+          pytest -s --cov=xmipy --cov-report=xml tests/
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
 

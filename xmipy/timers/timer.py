@@ -8,7 +8,7 @@ import functools
 import math
 import time
 import logging
-from amipy.timers.timers import Timers
+from xmipy.timers.timers import Timers
 
 logger = logging.getLogger(__name__)
 
