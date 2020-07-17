@@ -1,5 +1,5 @@
 import os
-from amipy import AmiWrapper
+from xmipy import XmiWrapper
 import math
 import pytest
 
@@ -7,7 +7,7 @@ import pytest
 def test_set_int(flopy_dis, modflow_lib_path):
     model_path, _ = flopy_dis
     os.chdir(model_path)
-    mf6 = AmiWrapper(modflow_lib_path)
+    mf6 = XmiWrapper(modflow_lib_path)
 
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
@@ -16,7 +16,7 @@ def test_set_int(flopy_dis, modflow_lib_path):
 def test_initialize(flopy_dis, modflow_lib_path):
     model_path, _ = flopy_dis
     os.chdir(model_path)
-    mf6 = AmiWrapper(modflow_lib_path)
+    mf6 = XmiWrapper(modflow_lib_path)
 
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
@@ -29,7 +29,7 @@ def test_initialize(flopy_dis, modflow_lib_path):
 def test_double_initialize(flopy_dis, modflow_lib_path):
     model_path, _ = flopy_dis
     os.chdir(model_path)
-    mf6 = AmiWrapper(modflow_lib_path)
+    mf6 = XmiWrapper(modflow_lib_path)
 
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
@@ -46,7 +46,7 @@ def test_double_initialize(flopy_dis, modflow_lib_path):
 def test_finalize_without_initialize(flopy_dis, modflow_lib_path):
     model_path, _ = flopy_dis
     os.chdir(model_path)
-    mf6 = AmiWrapper(modflow_lib_path)
+    mf6 = XmiWrapper(modflow_lib_path)
 
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
@@ -59,7 +59,7 @@ def test_finalize_without_initialize(flopy_dis, modflow_lib_path):
 def test_get_end_time(flopy_dis, modflow_lib_path):
     model_path, sim = flopy_dis
     os.chdir(model_path)
-    mf6 = AmiWrapper(modflow_lib_path)
+    mf6 = XmiWrapper(modflow_lib_path)
 
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)

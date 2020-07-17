@@ -2,7 +2,7 @@ import os
 import numpy as np
 
 import matplotlib.pyplot as plt
-from amipy import AmiWrapper
+from xmipy import XmiWrapper
 
 # for debugging
 print("PID: ", os.getpid(), "; continue? [y]")
@@ -20,7 +20,7 @@ model_dir = os.path.dirname(mf6_config_file)
 print("\n", "Change to model directory: ", model_dir, "\n")
 os.chdir(model_dir)
 
-mf6 = AmiWrapper(mf6_dll)
+mf6 = XmiWrapper(mf6_dll)
 
 # run the model
 mf6.initialize(mf6_config_file)
