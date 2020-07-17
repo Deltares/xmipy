@@ -56,6 +56,25 @@ def test_finalize_without_initialize(flopy_dis, modflow_lib_path):
         mf6.finalize()
 
 
+def test_get_start_time(flopy_dis, modflow_lib_path):
+    model_path, sim = flopy_dis
+    os.chdir(model_path)
+    mf6 = XmiWrapper(modflow_lib_path)
+
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    # Initialize
+    mf6_config_file = os.path.join(model_path, "mfsim.nam")
+    mf6.initialize(mf6_config_file)
+
+    # prescribed_start_time for modflow models is always 0
+    prescribed_start_time = 0.0
+
+    actual_start_time = mf6.get_start_time()
+    assert math.isclose(prescribed_start_time, actual_start_time)
+
+
 def test_get_end_time(flopy_dis, modflow_lib_path):
     model_path, sim = flopy_dis
     os.chdir(model_path)
@@ -71,7 +90,7 @@ def test_get_end_time(flopy_dis, modflow_lib_path):
     # Get prescribed_end_time from TDIS package
     tdis = sim.get_package("TDIS")
     perioddata = tdis.perioddata.array
-    prescribed_end_time = 0
+    prescribed_end_time = 0.0
     for perlen, _, _ in perioddata:
         prescribed_end_time += perlen
 
