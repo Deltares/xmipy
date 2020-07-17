@@ -1,5 +1,5 @@
 import sys
-from setuptools import find_packages, setup
+from setuptools import find_namespace_packages, setup
 import os
 
 
@@ -31,7 +31,7 @@ setup(
     license="CC0",
     platforms="Windows, Mac OS-X, Linux",
     install_requires=["bmipy", "numpy"],
-    packages=find_packages(exclude=("tests", "examples")),
+    packages=find_namespace_packages(exclude=("tests", "examples")),
     version=__version__,
     classifiers=["Topic :: Scientific/Engineering :: Hydrology"],
 )
