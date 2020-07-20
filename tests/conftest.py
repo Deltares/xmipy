@@ -27,7 +27,7 @@ def modflow_lib_path(tmp_path_factory):
 
 
 @pytest.fixture(scope="function")
-def flopy_dis(tmp_path):
+def flopy_dis(tmp_path, modflow_lib_path):
     name = "test_model_dis"
     sim = flopy.mf6.MFSimulation(sim_name=name, sim_ws=str(tmp_path))
 
@@ -35,11 +35,11 @@ def flopy_dis(tmp_path):
     flopy.mf6.ModflowTdis(sim, time_units="DAYS", nper=2, perioddata=tdis_rc)
     flopy.mf6.ModflowIms(sim)
     gwf = flopy.mf6.ModflowGwf(sim, modelname=name, save_flows=True)
-    flopy.mf6.ModflowGwfdis(gwf, nrow=10, ncol=10)
+    flopy.mf6.ModflowGwfdis(gwf, nrow=9, ncol=10)
     flopy.mf6.ModflowGwfic(gwf)
     flopy.mf6.ModflowGwfnpf(gwf, save_specific_discharge=True)
     flopy.mf6.ModflowGwfchd(
-        gwf, stress_period_data=[[(0, 0, 0), 1.0], [(0, 9, 9), 0.0]]
+        gwf, stress_period_data=[[(0, 2, 0), 1.0], [(0, 6, 8), 0.0]]
     )
     budget_file = name + ".bud"
     head_file = name + ".hds"
@@ -50,5 +50,5 @@ def flopy_dis(tmp_path):
         saverecord=[("HEAD", "ALL"), ("BUDGET", "ALL")],
     )
     sim.write_simulation()
-    model_dir = str(tmp_path)
-    return (model_dir, sim)
+    model_path = str(tmp_path)
+    return (model_path, sim)
