@@ -43,7 +43,11 @@ jobs:
           pip install -e .
       - name: Install test dependencies
         run: |
-          pip install -r test_dependencies.txt
+          pip install requests
+          pip install https://github.com/modflowpy/pymake/zipball/master
+          pip install https://github.com/modflowpy/flopy/zipball/develop
+          pip install pytest
+          pip install pytest-cov
       - name: Test with pytest
         # The flag -s stops pytest from capturing output
         # This is necessary until proper error reporting is implemented by Modflow
