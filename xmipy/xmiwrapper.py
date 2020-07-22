@@ -103,7 +103,7 @@ class XmiWrapper(Xmi):
         c_var = c_int.in_dll(self.lib, name)
         c_var.value = value
 
-    def initialize(self, config_file: str) -> None:
+    def initialize(self, config_file: str = "") -> None:
         if self._state == State.UNINITIALIZED:
             previous_directory = os.getcwd()
             os.chdir(self.working_directory)
