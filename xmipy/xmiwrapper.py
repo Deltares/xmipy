@@ -42,7 +42,11 @@ class XmiWrapper(Xmi):
     """
 
     def __init__(
-        self, lib_path: str, lib_dependencies: Iterable[str] = None, timing=False
+        self,
+        lib_path: str,
+        lib_dependencies: Iterable[str] = None,
+        working_directory: str = ".",
+        timing: bool = False,
     ):
 
         self._add_lib_dependencies(lib_dependencies)
@@ -58,7 +62,7 @@ class XmiWrapper(Xmi):
             self.lib = CDLL(lib_path, winmode=0x08)
 
         self.MAXSTRLEN = self.get_constant_int("MAXSTRLEN")
-        self.working_directory = "."
+        self.working_directory = working_directory
         self._state = State.UNINITIALIZED
         self.timing = timing
         self.libname = os.path.basename(lib_path)
@@ -103,7 +107,7 @@ class XmiWrapper(Xmi):
         c_var = c_int.in_dll(self.lib, name)
         c_var.value = value
 
-    def initialize(self, config_file: str) -> None:
+    def initialize(self, config_file: str = "") -> None:
         if self._state == State.UNINITIALIZED:
             previous_directory = os.getcwd()
             os.chdir(self.working_directory)
