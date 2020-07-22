@@ -28,7 +28,7 @@ def modflow_lib_path(tmp_path_factory):
 
 @pytest.fixture(scope="function")
 def flopy_dis(tmp_path, modflow_lib_path):
-    name = "test_model_dis"
+    name = "TEST_MODEL_DIS"
     sim = flopy.mf6.MFSimulation(sim_name=name, sim_ws=str(tmp_path))
 
     tdis_rc = [(6.0, 2, 1.0), (6.0, 3, 1.0)]
