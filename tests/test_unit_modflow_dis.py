@@ -127,6 +127,32 @@ def test_get_current_time(flopy_dis, modflow_lib_path):
     assert math.isclose(prescribed_current_time, actual_current_time)
 
 
+def test_get_var_type_double(flopy_dis, modflow_lib_path):
+    os.chdir(flopy_dis.sim_path)
+    mf6 = XmiWrapper(modflow_lib_path)
+
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    # Initialize
+    mf6.initialize()
+    var_type = mf6.get_var_type("SLN_1/X")
+    assert var_type == "DOUBLE (90)"
+
+
+def test_get_var_type_int(flopy_dis, modflow_lib_path):
+    os.chdir(flopy_dis.sim_path)
+    mf6 = XmiWrapper(modflow_lib_path)
+
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    # Initialize
+    mf6.initialize()
+    var_type = mf6.get_var_type("SLN_1/IACTIVE")
+    assert var_type == "INTEGER (90)"
+
+
 def test_get_value_ptr_sln(flopy_dis, modflow_lib_path):
     """`flopy_dis` sets constant head values.
        This test checks if these can be properly extracted with origin="SLN"."""
@@ -177,8 +203,7 @@ def test_get_value_ptr_modelname(flopy_dis, modflow_lib_path):
         assert math.isclose(presciped_head, actual_head[head_index])
 
 
-def test_get_var_grid(flopy_dis, modflow_lib_path):
-    """Tests if the the grid type can be extracted"""
+def test_get_value_ptr_scalar(flopy_dis, modflow_lib_path):
 
     os.chdir(flopy_dis.sim_path)
     mf6 = XmiWrapper(modflow_lib_path)
@@ -189,11 +214,30 @@ def test_get_var_grid(flopy_dis, modflow_lib_path):
     # Initialize
     mf6.initialize()
 
-    # TODO: Find a better way to get the grid id than hardcoding one variable
-    grid_id = mf6.get_var_grid(flopy_dis.model_name + " NPF/K11")
+    mf6.update()
+    grid_id = mf6.get_value_ptr_scalar(flopy_dis.model_name + "/ID")
 
-    # Only one model is defined => grid_id should be 1
-    assert grid_id == 1
+    # Only one model is defined => id should be 1
+    # grid_id[0], because even scalars are defined as arrays
+    assert grid_id[0] == 1
+
+
+def test_get_var_grid(flopy_dis, modflow_lib_path):
+    """Tests if the the grid id can be extracted"""
+
+    os.chdir(flopy_dis.sim_path)
+    mf6 = XmiWrapper(modflow_lib_path)
+
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    # Initialize
+    mf6.initialize()
+
+    prescriped_grid_id = mf6.get_var_grid(flopy_dis.model_name + " NPF/K11")
+    actual_grid_id = mf6.get_value_ptr(flopy_dis.model_name + "/ID")
+
+    assert prescriped_grid_id == actual_grid_id[0]
 
 
 def test_get_grid_type(flopy_dis, modflow_lib_path):
