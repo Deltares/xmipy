@@ -172,7 +172,14 @@ class XmiWrapper(Xmi):
         raise NotImplementedError
 
     def get_var_grid(self, name: str) -> int:
-        raise NotImplementedError
+        grid_id = c_int(0)
+        self.execute_function(
+            self.lib.get_var_grid,
+            c_char_p(name.encode()),
+            byref(grid_id),
+            detail="for variable " + name,
+        )
+        return grid_id.value
 
     def get_var_type(self, name: str) -> str:
         var_type = create_string_buffer(self.MAXSTRLEN)

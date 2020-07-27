@@ -31,11 +31,6 @@ def get_version(rel_path):
 long_description = read("README.md")
 
 
-# ensure minimum version of Python is running
-if sys.version_info[0:2] < (3, 6):
-    raise RuntimeError("Python >= 3.6 is required")
-
-
 setup(
     name="xmipy",
     description="xmipy is an extension to the bmipy Python package.",
@@ -46,7 +41,8 @@ setup(
     url="https://github.com/Deltares/xmipy.git",
     license="CC0",
     platforms="Windows, Mac OS-X, Linux",
-    install_requires=["bmipy", "numpy"],
+    install_requires=["bmipy", "numpy", "dataclasses; python_version == '3.6'"],
+    python_requires=">=3.6",
     packages=find_namespace_packages(exclude=("tests", "examples")),
     version=get_version("xmipy/__init__.py"),
     classifiers=["Topic :: Scientific/Engineering :: Hydrology"],
