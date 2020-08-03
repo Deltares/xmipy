@@ -5,38 +5,31 @@ import pytest
 
 
 def test_set_int(flopy_dis, modflow_lib_path):
-    model_path, _ = flopy_dis
-    os.chdir(model_path)
+    os.chdir(flopy_dis.sim_path)
     mf6 = XmiWrapper(modflow_lib_path)
-
-    # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
 
 def test_initialize(flopy_dis, modflow_lib_path):
-    model_path, _ = flopy_dis
-    os.chdir(model_path)
+    os.chdir(flopy_dis.sim_path)
     mf6 = XmiWrapper(modflow_lib_path)
 
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
     # Run initialize
-    mf6_config_file = os.path.join(model_path, "mfsim.nam")
-    mf6.initialize(mf6_config_file)
+    mf6.initialize()
 
 
 def test_double_initialize(flopy_dis, modflow_lib_path):
-    model_path, _ = flopy_dis
-    os.chdir(model_path)
+    os.chdir(flopy_dis.sim_path)
     mf6 = XmiWrapper(modflow_lib_path)
 
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
     # Run initialize
-    mf6_config_file = os.path.join(model_path, "mfsim.nam")
-    mf6.initialize(mf6_config_file)
+    mf6.initialize()
 
     # Test if initialize fails, if initialize was called a second time
     with pytest.raises(Exception):
@@ -44,8 +37,7 @@ def test_double_initialize(flopy_dis, modflow_lib_path):
 
 
 def test_finalize_without_initialize(flopy_dis, modflow_lib_path):
-    model_path, _ = flopy_dis
-    os.chdir(model_path)
+    os.chdir(flopy_dis.sim_path)
     mf6 = XmiWrapper(modflow_lib_path)
 
     # Write output to screen:
@@ -57,16 +49,14 @@ def test_finalize_without_initialize(flopy_dis, modflow_lib_path):
 
 
 def test_get_start_time(flopy_dis, modflow_lib_path):
-    model_path, sim = flopy_dis
-    os.chdir(model_path)
+    os.chdir(flopy_dis.sim_path)
     mf6 = XmiWrapper(modflow_lib_path)
 
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
     # Initialize
-    mf6_config_file = os.path.join(model_path, "mfsim.nam")
-    mf6.initialize(mf6_config_file)
+    mf6.initialize()
 
     # prescribed_start_time for modflow models is always 0
     prescribed_start_time = 0.0
@@ -76,22 +66,17 @@ def test_get_start_time(flopy_dis, modflow_lib_path):
 
 
 def test_get_end_time(flopy_dis, modflow_lib_path):
-    model_path, sim = flopy_dis
-    os.chdir(model_path)
+    os.chdir(flopy_dis.sim_path)
     mf6 = XmiWrapper(modflow_lib_path)
 
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
     # Initialize
-    mf6_config_file = os.path.join(model_path, "mfsim.nam")
-    mf6.initialize(mf6_config_file)
+    mf6.initialize()
 
-    # Get prescribed_end_time from TDIS package
-    tdis = sim.get_package("TDIS")
-    perioddata = tdis.perioddata.array
     prescribed_end_time = 0.0
-    for perlen, _, _ in perioddata:
+    for perlen, _, _ in flopy_dis.tdis_rc:
         prescribed_end_time += perlen
 
     actual_end_time = mf6.get_end_time()
@@ -99,32 +84,28 @@ def test_get_end_time(flopy_dis, modflow_lib_path):
 
 
 def test_update(flopy_dis, modflow_lib_path):
-    model_path, sim = flopy_dis
-    os.chdir(model_path)
+    os.chdir(flopy_dis.sim_path)
     mf6 = XmiWrapper(modflow_lib_path)
 
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
     # Initialize
-    mf6_config_file = os.path.join(model_path, "mfsim.nam")
-    mf6.initialize(mf6_config_file)
+    mf6.initialize()
 
     # Advance model by single time step
     mf6.update()
 
 
 def test_get_current_time(flopy_dis, modflow_lib_path):
-    model_path, sim = flopy_dis
-    os.chdir(model_path)
+    os.chdir(flopy_dis.sim_path)
     mf6 = XmiWrapper(modflow_lib_path)
 
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
     # Initialize
-    mf6_config_file = os.path.join(model_path, "mfsim.nam")
-    mf6.initialize(mf6_config_file)
+    mf6.initialize()
 
     # Advance model by single time step
     mf6.update()
@@ -132,10 +113,7 @@ def test_get_current_time(flopy_dis, modflow_lib_path):
     # prescribed_start_time for modflow models is always 0
     start_time = 0.0
 
-    # Get prescribed_end_time from TDIS package
-    tdis = sim.get_package("TDIS")
-    perioddata = tdis.perioddata.array
-    perlen, nstp, tsmult = perioddata[0]
+    perlen, nstp, tsmult = flopy_dis.tdis_rc[0]
 
     if math.isclose(tsmult, 1):
         prescribed_current_time = start_time + perlen / nstp
@@ -149,35 +127,54 @@ def test_get_current_time(flopy_dis, modflow_lib_path):
     assert math.isclose(prescribed_current_time, actual_current_time)
 
 
-def test_get_value_ptr_sln(flopy_dis, modflow_lib_path):
-    """`flopy_dis` sets constant head values.
-       This test checks if these can be properly extracted with origin="SLN"."""
-
-    model_path, sim = flopy_dis
-    os.chdir(model_path)
+def test_get_var_type_double(flopy_dis, modflow_lib_path):
+    os.chdir(flopy_dis.sim_path)
     mf6 = XmiWrapper(modflow_lib_path)
 
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
     # Initialize
-    mf6_config_file = os.path.join(model_path, "mfsim.nam")
-    mf6.initialize(mf6_config_file)
+    mf6.initialize()
+    var_type = mf6.get_var_type("SLN_1/X")
+    assert var_type == "DOUBLE (90)"
 
-    model = sim.get_model(sim.name)
-    chd = model.get_package("chd_0")
-    stress_period_data = chd.stress_period_data.array[0]
 
-    # TODO: Refactor this as soon as `get_var_grid` is implemented
-    dis = model.get_package("dis")
-    len_column = len(dis.delr.array)
+def test_get_var_type_int(flopy_dis, modflow_lib_path):
+    os.chdir(flopy_dis.sim_path)
+    mf6 = XmiWrapper(modflow_lib_path)
+
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    # Initialize
+    mf6.initialize()
+    var_type = mf6.get_var_type("SLN_1/IACTIVE")
+    assert var_type == "INTEGER (90)"
+
+
+def test_get_value_ptr_sln(flopy_dis, modflow_lib_path):
+    """`flopy_dis` sets constant head values.
+       This test checks if these can be properly extracted with origin="SLN"."""
+
+    os.chdir(flopy_dis.sim_path)
+    mf6 = XmiWrapper(modflow_lib_path)
+
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    # Initialize
+    mf6.initialize()
+
+    stress_period_data = flopy_dis.stress_period_data
+    ncol = flopy_dis.ncol
 
     mf6.update()
     actual_head = mf6.get_value_ptr("SLN_1/X")
 
     for cell_id, presciped_head in stress_period_data:
         layer, row, column = cell_id
-        head_index = column + row * len_column
+        head_index = column + row * ncol
         assert math.isclose(presciped_head, actual_head[head_index])
 
 
@@ -185,29 +182,78 @@ def test_get_value_ptr_modelname(flopy_dis, modflow_lib_path):
     """`flopy_dis` sets constant head values.
        This test checks if these can be properly extracted with origin=modelname."""
 
-    model_path, sim = flopy_dis
-    os.chdir(model_path)
+    os.chdir(flopy_dis.sim_path)
     mf6 = XmiWrapper(modflow_lib_path)
 
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
     # Initialize
-    mf6_config_file = os.path.join(model_path, "mfsim.nam")
-    mf6.initialize(mf6_config_file)
+    mf6.initialize()
 
-    model = sim.get_model(sim.name)
-    chd = model.get_package("chd_0")
-    stress_period_data = chd.stress_period_data.array[0]
-
-    # TODO: Refactor this as soon as `get_var_grid` is implemented
-    dis = model.get_package("dis")
-    len_column = len(dis.delr.array)
+    stress_period_data = flopy_dis.stress_period_data
+    ncol = flopy_dis.ncol
 
     mf6.update()
-    actual_head = mf6.get_value_ptr(sim.name + "/X")
+    actual_head = mf6.get_value_ptr(flopy_dis.model_name + "/X")
 
     for cell_id, presciped_head in stress_period_data:
         layer, row, column = cell_id
-        head_index = column + row * len_column
+        head_index = column + row * ncol
         assert math.isclose(presciped_head, actual_head[head_index])
+
+
+def test_get_value_ptr_scalar(flopy_dis, modflow_lib_path):
+
+    os.chdir(flopy_dis.sim_path)
+    mf6 = XmiWrapper(modflow_lib_path)
+
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    # Initialize
+    mf6.initialize()
+
+    mf6.update()
+    grid_id = mf6.get_value_ptr_scalar(flopy_dis.model_name + "/ID")
+
+    # Only one model is defined => id should be 1
+    # grid_id[0], because even scalars are defined as arrays
+    assert grid_id[0] == 1
+
+
+def test_get_var_grid(flopy_dis, modflow_lib_path):
+    """Tests if the the grid id can be extracted"""
+
+    os.chdir(flopy_dis.sim_path)
+    mf6 = XmiWrapper(modflow_lib_path)
+
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    # Initialize
+    mf6.initialize()
+
+    prescriped_grid_id = mf6.get_var_grid(flopy_dis.model_name + " NPF/K11")
+    actual_grid_id = mf6.get_value_ptr(flopy_dis.model_name + "/ID")
+
+    assert prescriped_grid_id == actual_grid_id[0]
+
+
+def test_get_grid_type(flopy_dis, modflow_lib_path):
+    """Tests if the the grid type can be extracted"""
+
+    os.chdir(flopy_dis.sim_path)
+    mf6 = XmiWrapper(modflow_lib_path)
+
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    # Initialize
+    mf6.initialize()
+
+    # TODO: Find a better way to get the grid id than hardcoding one variable
+    grid_id = mf6.get_var_grid(flopy_dis.model_name + " NPF/K11")
+    grid_type = mf6.get_grid_type(grid_id)
+
+    assert grid_type == "rectilinear"
