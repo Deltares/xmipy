@@ -492,15 +492,12 @@ class XmiWrapper(Xmi):
                         subcomponent_name="") -> str:
         var_address = create_string_buffer(self.LENVARADDRESS)
         self.execute_function(self.lib.get_var_address,
-                                c_char_p(component_name.encode()),
-                                c_char_p(subcomponent_name.encode()),
-                                c_char_p(var_name.encode()),
-                                byref(var_address))
+                              c_char_p(component_name.encode()),
+                              c_char_p(subcomponent_name.encode()),
+                              c_char_p(var_name.encode()),
+                              byref(var_address))
 
         return var_address.value.decode()
-
-
-
 
     def execute_function(self, function, *args, detail=""):
         """
