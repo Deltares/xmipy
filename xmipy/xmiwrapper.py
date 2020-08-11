@@ -355,7 +355,7 @@ class XmiWrapper(Xmi):
         raise NotImplementedError
 
     def get_grid_type(self, grid: int) -> str:
-        grid_type = create_string_buffer(self.LENVARTYPE)
+        grid_type = create_string_buffer(self.LENGRIDTYPE)
         c_grid = c_int(grid)
         self.execute_function(
             self.lib.get_grid_type,
