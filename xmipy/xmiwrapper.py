@@ -61,7 +61,10 @@ class XmiWrapper(Xmi):
             # Can we get it to work without this flag?
             self.lib = CDLL(lib_path, winmode=0x08)
 
-        self.MAXSTRLEN = self.get_constant_int("MAXSTRLEN")
+        self.LENVARTYPE = self.get_constant_int("BMI_LENVARTYPE")
+        self.LENGRIDTYPE = self.get_constant_int("BMI_LENGRIDTYPE")
+        self.LENVARADDRESS = self.get_constant_int("BMI_LENVARADDRESS")
+
         self.working_directory = working_directory
         self._state = State.UNINITIALIZED
         self.timing = timing
@@ -182,7 +185,7 @@ class XmiWrapper(Xmi):
         return grid_id.value
 
     def get_var_type(self, name: str) -> str:
-        var_type = create_string_buffer(self.MAXSTRLEN)
+        var_type = create_string_buffer(self.LENVARTYPE)
         self.execute_function(
             self.lib.get_var_type,
             c_char_p(name.encode()),
@@ -352,7 +355,7 @@ class XmiWrapper(Xmi):
         raise NotImplementedError
 
     def get_grid_type(self, grid: int) -> str:
-        grid_type = create_string_buffer(self.MAXSTRLEN)
+        grid_type = create_string_buffer(self.LENVARTYPE)
         c_grid = c_int(grid)
         self.execute_function(
             self.lib.get_grid_type,
@@ -484,6 +487,20 @@ class XmiWrapper(Xmi):
         os.chdir(self.working_directory)
         self.execute_function(self.lib.finalize_solve, byref(cid))
         os.chdir(previous_directory)
+
+    def get_var_address(self, var_name: str, component_name: str,
+                        subcomponent_name="") -> str:
+        var_address = create_string_buffer(self.LENVARADDRESS)
+        self.execute_function(self.lib.get_var_address,
+                                c_char_p(component_name.encode()),
+                                c_char_p(subcomponent_name.encode()),
+                                c_char_p(var_name.encode()),
+                                byref(var_address))
+
+        return var_address.value.decode()
+
+
+
 
     def execute_function(self, function, *args, detail=""):
         """
