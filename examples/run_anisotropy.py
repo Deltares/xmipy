@@ -26,9 +26,13 @@ mf6 = XmiWrapper(mf6_dll)
 mf6.initialize(mf6_config_file)
 
 # get some 'pointers' to MF6 internal data
-head = mf6.get_value_ptr("TESTJE/X")
-spdis = mf6.get_value_ptr("TESTJE NPF/SPDIS")
-init_head = mf6.get_value_ptr("TESTJE IC/STRT")
+head_tag = mf6.get_var_address("X", "TESTJE")
+head = mf6.get_value_ptr(head_tag)
+spdis_tag = mf6.get_var_address("SPDIS", "TESTJE", "NPF")
+spdis = mf6.get_value_ptr(spdis_tag)
+init_head_tag = mf6.get_var_address("STRT", "TESTJE", "IC")
+init_head = mf6.get_value_ptr(init_head_tag)
+
 rndm_head = 1.0 + np.random.rand(10, 10)
 init_head = rndm_head
 

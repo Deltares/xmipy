@@ -1,6 +1,5 @@
 import os
 import matplotlib.pyplot as plt
-
 from xmipy import XmiWrapper
 
 # for debugging
@@ -12,7 +11,7 @@ if debug_native:
         exit(0)
 
 # defaults
-mf6_dll = r"d:\checkouts\modflow6-mjr\bin\libmf6d.dll"
+mf6_dll = r"d:\checkouts\modflow6-mjr\bin\libmf6.dll"
 mf6_config_file = r"d:\Data\Models\mf6\multilayer\mfsim.nam"
 
 # load the wrapper and cd to model dir
@@ -27,16 +26,22 @@ mf6 = XmiWrapper(mf6_dll)
 mf6.initialize(mf6_config_file)
 
 # get some 'pointers' to MF6 internal data
-head = mf6.get_value_ptr("SLN_1/X")
-shape = mf6.get_var_shape("FLOW15 RCH-1/BOUND")
-recharge = mf6.get_value_ptr("FLOW15 RCH-1/BOUND")
-sc2 = mf6.get_value_ptr("FLOW15 STO/SC2")
-N_sc2 = mf6.get_var_shape("FLOW15 STO/SC2")
-update_sc2 = mf6.get_value_ptr("FLOW15 STO/IRESETSC2")
-max_iter_arr = mf6.get_value_ptr("SLN_1/MXITER")
+head_tag = mf6.get_var_address("X", "SLN_1")
+head = mf6.get_value_ptr(head_tag)
+rch_tag = mf6.get_var_address("BOUND", "FLOW15", "RCH-1")
+shape = mf6.get_var_shape(rch_tag)
+recharge = mf6.get_value_ptr(rch_tag)
+sc2_tag = mf6.get_var_address("SC2", "FLOW15", "STO")
+sc2 = mf6.get_value_ptr(sc2_tag)
+N_sc2 = mf6.get_var_shape(sc2_tag)
+sc2reset_tag = mf6.get_var_address("IRESETSC2", "FLOW15", "STO")
+update_sc2 = mf6.get_value_ptr(sc2reset_tag)
+mxit_tag = mf6.get_var_address("MXITER", "SLN_1")
+max_iter_arr = mf6.get_value_ptr(mxit_tag)
 
 # at some point we would need access to this stuff as well...
-nodeuser = mf6.get_value_ptr("FLOW15 DIS/NODEUSER")
+nodeuser_tag = mf6.get_var_address("NODEUSER", "FLOW15", "DIS")
+nodeuser = mf6.get_value_ptr(nodeuser_tag)
 
 # time loopy
 start_time = mf6.get_start_time()
