@@ -136,7 +136,9 @@ def test_get_var_type_double(flopy_dis, modflow_lib_path):
 
     # Initialize
     mf6.initialize()
-    var_type = mf6.get_var_type("SLN_1/X")
+
+    head_tag = mf6.get_var_address("X", "SLN_1")
+    var_type = mf6.get_var_type(head_tag)
     assert var_type == "DOUBLE (90)"
 
 
@@ -149,7 +151,9 @@ def test_get_var_type_int(flopy_dis, modflow_lib_path):
 
     # Initialize
     mf6.initialize()
-    var_type = mf6.get_var_type("SLN_1/IACTIVE")
+
+    iactive_tag = mf6.get_var_address("IACTIVE", "SLN_1")
+    var_type = mf6.get_var_type(iactive_tag)
     assert var_type == "INTEGER (90)"
 
 
@@ -170,7 +174,8 @@ def test_get_value_ptr_sln(flopy_dis, modflow_lib_path):
     ncol = flopy_dis.ncol
 
     mf6.update()
-    actual_head = mf6.get_value_ptr("SLN_1/X")
+    head_tag = mf6.get_var_address("X", "SLN_1")
+    actual_head = mf6.get_value_ptr(head_tag)
 
     for cell_id, presciped_head in stress_period_data:
         layer, row, column = cell_id
@@ -195,7 +200,8 @@ def test_get_value_ptr_modelname(flopy_dis, modflow_lib_path):
     ncol = flopy_dis.ncol
 
     mf6.update()
-    actual_head = mf6.get_value_ptr(flopy_dis.model_name + "/X")
+    head_tag = mf6.get_var_address("X", flopy_dis.model_name)
+    actual_head = mf6.get_value_ptr(head_tag)
 
     for cell_id, presciped_head in stress_period_data:
         layer, row, column = cell_id
@@ -215,7 +221,8 @@ def test_get_value_ptr_scalar(flopy_dis, modflow_lib_path):
     mf6.initialize()
 
     mf6.update()
-    grid_id = mf6.get_value_ptr_scalar(flopy_dis.model_name + "/ID")
+    id_tag = mf6.get_var_address("ID", flopy_dis.model_name)
+    grid_id = mf6.get_value_ptr_scalar(id_tag)
 
     # Only one model is defined => id should be 1
     # grid_id[0], because even scalars are defined as arrays
@@ -234,8 +241,12 @@ def test_get_var_grid(flopy_dis, modflow_lib_path):
     # Initialize
     mf6.initialize()
 
-    prescriped_grid_id = mf6.get_var_grid(flopy_dis.model_name + " NPF/K11")
-    actual_grid_id = mf6.get_value_ptr(flopy_dis.model_name + "/ID")
+    # Getting the grid id from the model, requires specifying one variable
+    k11_tag = mf6.get_var_address("K11", flopy_dis.model_name, "NPF")
+    prescriped_grid_id = mf6.get_var_grid(k11_tag)
+
+    id_tag = mf6.get_var_address("ID", flopy_dis.model_name)
+    actual_grid_id = mf6.get_value_ptr(id_tag)
 
     assert prescriped_grid_id == actual_grid_id[0]
 
@@ -252,8 +263,9 @@ def test_get_grid_type(flopy_dis, modflow_lib_path):
     # Initialize
     mf6.initialize()
 
-    # TODO: Find a better way to get the grid id than hardcoding one variable
-    grid_id = mf6.get_var_grid(flopy_dis.model_name + " NPF/K11")
+    # Getting the grid id from the model, requires specifying one variable
+    k11_tag = mf6.get_var_address("K11", flopy_dis.model_name, "NPF")
+    grid_id = mf6.get_var_grid(k11_tag)
     grid_type = mf6.get_grid_type(grid_id)
 
     assert grid_type == "rectilinear"
