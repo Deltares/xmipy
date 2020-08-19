@@ -19,6 +19,7 @@ import numpy as np
 
 from xmipy.xmi import Xmi
 from xmipy.timers.timer import Timer
+from xmipy.utils import cd
 
 logger = logging.getLogger(__name__)
 
@@ -108,30 +109,24 @@ class XmiWrapper(Xmi):
 
     def initialize(self, config_file: str = "") -> None:
         if self._state == State.UNINITIALIZED:
-            previous_directory = os.getcwd()
-            os.chdir(self.working_directory)
-            self.execute_function(self.lib.initialize, config_file)
-            os.chdir(previous_directory)
-            self._state = State.INITIALIZED
+            with cd(self.working_directory):
+                self.execute_function(self.lib.initialize, config_file)
+                self._state = State.INITIALIZED
         else:
             raise Exception("Modflow is already initialized")
 
     def update(self) -> None:
-        previous_directory = os.getcwd()
-        os.chdir(self.working_directory)
-        self.execute_function(self.lib.update)
-        os.chdir(previous_directory)
+        with cd(self.working_directory):
+            self.execute_function(self.lib.update)
 
     def update_until(self, time: float) -> None:
         raise NotImplementedError
 
     def finalize(self) -> None:
         if self._state == State.INITIALIZED:
-            previous_directory = os.getcwd()
-            os.chdir(self.working_directory)
-            self.execute_function(self.lib.finalize)
-            os.chdir(previous_directory)
-            self._state = State.UNINITIALIZED
+            with cd(self.working_directory):
+                self.execute_function(self.lib.finalize)
+                self._state = State.UNINITIALIZED
         else:
             raise Exception("Modflow is not initialized yet")
 
@@ -436,23 +431,17 @@ class XmiWrapper(Xmi):
     # here starts the XMI
     # ===========================
     def prepare_time_step(self, dt) -> None:
-        previous_directory = os.getcwd()
-        os.chdir(self.working_directory)
-        dt = c_double(dt)
-        self.execute_function(self.lib.prepare_time_step, byref(dt))
-        os.chdir(previous_directory)
+        with cd(self.working_directory):
+            dt = c_double(dt)
+            self.execute_function(self.lib.prepare_time_step, byref(dt))
 
     def do_time_step(self) -> None:
-        previous_directory = os.getcwd()
-        os.chdir(self.working_directory)
-        self.execute_function(self.lib.do_time_step)
-        os.chdir(previous_directory)
+        with cd(self.working_directory):
+            self.execute_function(self.lib.do_time_step)
 
     def finalize_time_step(self) -> None:
-        previous_directory = os.getcwd()
-        os.chdir(self.working_directory)
-        self.execute_function(self.lib.finalize_time_step)
-        os.chdir(previous_directory)
+        with cd(self.working_directory):
+            self.execute_function(self.lib.finalize_time_step)
 
     def get_subcomponent_count(self) -> int:
         count = c_int(0)
@@ -461,30 +450,21 @@ class XmiWrapper(Xmi):
 
     def prepare_solve(self, component_id) -> None:
         cid = c_int(component_id)
-
-        previous_directory = os.getcwd()
-        os.chdir(self.working_directory)
-        self.execute_function(self.lib.prepare_solve, byref(cid))
-        os.chdir(previous_directory)
+        with cd(self.working_directory):
+            self.execute_function(self.lib.prepare_solve, byref(cid))
 
     def solve(self, component_id) -> bool:
         cid = c_int(component_id)
         has_converged = c_int(0)
-
-        previous_directory = os.getcwd()
-        os.chdir(self.working_directory)
-        self.execute_function(self.lib.solve, byref(cid), byref(has_converged))
-        os.chdir(previous_directory)
-
+        with cd(self.working_directory):
+            self.execute_function(self.lib.solve, byref(cid), byref(has_converged))
         return has_converged.value == 1
 
     def finalize_solve(self, component_id) -> None:
         cid = c_int(component_id)
 
-        previous_directory = os.getcwd()
-        os.chdir(self.working_directory)
-        self.execute_function(self.lib.finalize_solve, byref(cid))
-        os.chdir(previous_directory)
+        with cd(self.working_directory):
+            self.execute_function(self.lib.finalize_solve, byref(cid))
 
     def get_var_address(
         self, var_name: str, component_name: str, subcomponent_name=""
