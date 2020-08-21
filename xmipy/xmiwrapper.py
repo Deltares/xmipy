@@ -45,12 +45,12 @@ class XmiWrapper(Xmi):
     def __init__(
         self,
         lib_path: str,
-        lib_dependencies: Iterable[str] = None,
+        lib_dependency: str = None,
         working_directory: str = ".",
         timing: bool = False,
     ):
 
-        self._add_lib_dependencies(lib_dependencies)
+        self._add_lib_dependency(lib_dependency)
         if sys.version_info[0:2] < (3, 8):
             # Python version < 3.8
             self.lib = CDLL(lib_path)
@@ -79,17 +79,15 @@ class XmiWrapper(Xmi):
                 self.finalize()
 
     @staticmethod
-    def _add_lib_dependencies(lib_dependencies):
-        if lib_dependencies:
+    def _add_lib_dependency(lib_dependency):
+        if lib_dependency:
             if platform.system() == "Windows":
-                for dep_path in lib_dependencies:
-                    os.environ["PATH"] = dep_path + os.pathsep + os.environ["PATH"]
+                os.environ["PATH"] = lib_dependency + os.pathsep + os.environ["PATH"]
             else:
                 # Assume a Unix-like system
-                for dep_path in lib_dependencies:
-                    os.environ["LD_LIBRARY_PATH"] = (
-                        dep_path + os.pathsep + os.environ["LD_LIBRARY_PATH"]
-                    )
+                os.environ["LD_LIBRARY_PATH"] = (
+                    lib_dependency + os.pathsep + os.environ["LD_LIBRARY_PATH"]
+                )
 
     def report_timing_totals(self):
         if self.timing:
