@@ -264,6 +264,18 @@ class XmiWrapper(Xmi):
                 detail="for variable " + name,
             )
             return values.contents
+        elif vartype.lower().startswith("float"):
+            arraytype = np.ctypeslib.ndpointer(
+                dtype=np.float32, ndim=ndim, shape=shape_tuple, flags="F"
+            )
+            values = arraytype()
+            self.execute_function(
+                self.lib.get_value_ptr_float,
+                c_char_p(name.encode()),
+                byref(values),
+                detail="for variable " + name,
+            )
+            return values.contents
         elif vartype.lower().startswith("int"):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.int32, ndim=ndim, shape=shape_tuple, flags="F"
