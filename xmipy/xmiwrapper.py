@@ -85,9 +85,12 @@ class XmiWrapper(Xmi):
                 os.environ["PATH"] = lib_dependency + os.pathsep + os.environ["PATH"]
             else:
                 # Assume a Unix-like system
-                os.environ["LD_LIBRARY_PATH"] = (
-                    lib_dependency + os.pathsep + os.environ["LD_LIBRARY_PATH"]
-                )
+                if "LD_LIBRARY_PATH" in os.environ:
+                    os.environ["LD_LIBRARY_PATH"] = (
+                        lib_dependency + os.pathsep + os.environ["LD_LIBRARY_PATH"]
+                    )
+                else:
+                    os.environ["LD_LIBRARY_PATH"] = lib_dependency
 
     def report_timing_totals(self):
         if self.timing:
