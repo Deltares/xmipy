@@ -1,7 +1,7 @@
 from xmipy import XmiWrapper
 
 
-def test_get_get_var_address(flopy_dis, modflow_lib_path):
+def test_get_var_address(flopy_dis, modflow_lib_path):
     mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
 
     # Write output to screen:
@@ -12,3 +12,135 @@ def test_get_get_var_address(flopy_dis, modflow_lib_path):
 
     head_tag = mf6.get_var_address("X", "SLN_1")
     assert head_tag == "SLN_1/X"
+
+
+def test_prepare_time_step(flopy_dis, modflow_lib_path):
+    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
+
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    # Initialize
+    mf6.initialize()
+
+    dt = mf6.get_time_step()
+    mf6.prepare_time_step(dt)
+
+
+def test_get_subcomponent_count(flopy_dis, modflow_lib_path):
+    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
+
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    # Initialize
+    mf6.initialize()
+
+    n_solutions = mf6.get_subcomponent_count()
+
+    # Modflow 6 BMI does only support the use of a single solution groups
+    assert n_solutions == 1
+
+
+def test_prepare_solve(flopy_dis, modflow_lib_path):
+    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
+
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    # Initialize
+    mf6.initialize()
+
+    # Prepare solve
+    sol_id = 1
+    mf6.prepare_solve(sol_id)
+
+
+def test_solve(flopy_dis, modflow_lib_path):
+    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
+
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    # Initialize
+    mf6.initialize()
+
+    # Prepare solve
+    sol_id = 1
+    mf6.prepare_solve(sol_id)
+
+    # Get max iteration
+    mxit_tag = mf6.get_var_address("MXITER", "SLN_1")
+    max_iter_arr = mf6.get_value_ptr(mxit_tag)
+    max_iter = max_iter_arr[0]
+
+    kiter = 0
+    while kiter < max_iter:
+        has_converged = mf6.solve(sol_id)
+        kiter += 1
+
+        if has_converged:
+            break
+
+    assert has_converged
+
+
+def test_finalize_solve(flopy_dis, modflow_lib_path):
+    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
+
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    # Initialize
+    mf6.initialize()
+
+    # Prepare solve
+    sol_id = 1
+    mf6.prepare_solve(sol_id)
+
+    # Get max iteration
+    mxit_tag = mf6.get_var_address("MXITER", "SLN_1")
+    max_iter_arr = mf6.get_value_ptr(mxit_tag)
+    max_iter = max_iter_arr[0]
+
+    kiter = 0
+    while kiter < max_iter:
+        has_converged = mf6.solve(sol_id)
+        kiter += 1
+
+        if has_converged:
+            break
+
+    assert has_converged
+    mf6.finalize_solve(sol_id)
+
+
+def test_finalize_time_step(flopy_dis, modflow_lib_path):
+    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
+
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    # Initialize
+    mf6.initialize()
+
+    # Prepare solve
+    sol_id = 1
+    mf6.prepare_solve(sol_id)
+
+    # Get max iteration
+    mxit_tag = mf6.get_var_address("MXITER", "SLN_1")
+    max_iter_arr = mf6.get_value_ptr(mxit_tag)
+    max_iter = max_iter_arr[0]
+
+    kiter = 0
+    while kiter < max_iter:
+        has_converged = mf6.solve(sol_id)
+        kiter += 1
+
+        if has_converged:
+            break
+
+    assert has_converged
+    mf6.finalize_solve(sol_id)
+    mf6.finalize_time_step()
