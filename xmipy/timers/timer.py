@@ -5,16 +5,14 @@ Adapted from https://pypi.org/project/codetiming/.
 
 # Standard library imports
 import functools
+import logging
 import math
 import time
-import logging
+
+from xmipy.errors import TimerError
 from xmipy.timers.timers import Timers
 
 logger = logging.getLogger(__name__)
-
-
-class TimerError(Exception):
-    """A custom exception used to report errors in use of Timer class"""
 
 
 class Timer:
