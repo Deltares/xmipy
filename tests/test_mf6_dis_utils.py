@@ -1,6 +1,9 @@
-from xmipy import XmiWrapper
-import pytest
 import math
+
+import pytest
+
+from xmipy import XmiWrapper
+from xmipy.errors import TimerError
 
 
 def test_timing_initialize(flopy_dis, modflow_lib_path):
@@ -43,7 +46,7 @@ def test_deactivated_timing(flopy_dis, modflow_lib_path):
     # Run initialize
     mf6.initialize()
 
-    with pytest.raises(Exception):
+    with pytest.raises(TimerError):
         mf6.report_timing_totals()
 
 

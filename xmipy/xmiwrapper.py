@@ -17,9 +17,10 @@ from typing import Iterable, Tuple
 
 import numpy as np
 
-from xmipy.xmi import Xmi
+from xmipy.errors import InputError, TimerError, XMIError
 from xmipy.timers.timer import Timer
 from xmipy.utils import cd
+from xmipy.xmi import Xmi
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +99,7 @@ class XmiWrapper(Xmi):
             logger.info(f"Total elapsed time for {self.libname}: {total:0.4f} seconds")
             return total
         else:
-            raise Exception("Timing not activated")
+            raise TimerError("Timing not activated")
 
     def get_constant_int(self, name: str) -> int:
         c_var = c_int.in_dll(self.lib, name)
@@ -114,7 +115,7 @@ class XmiWrapper(Xmi):
                 self.execute_function(self.lib.initialize, config_file)
                 self._state = State.INITIALIZED
         else:
-            raise Exception("Modflow is already initialized")
+            raise InputError("Modflow is already initialized")
 
     def update(self) -> None:
         with cd(self.working_directory):
@@ -129,7 +130,7 @@ class XmiWrapper(Xmi):
                 self.execute_function(self.lib.finalize)
                 self._state = State.UNINITIALIZED
         else:
-            raise Exception("Modflow is not initialized yet")
+            raise InputError("Modflow is not initialized yet")
 
     def get_current_time(self) -> float:
         current_time = c_double(0.0)
@@ -328,7 +329,7 @@ class XmiWrapper(Xmi):
                 detail="for variable " + name,
             )
         else:
-            raise Exception("Unsupported value type")
+            raise InputError("Unsupported value type")
 
         return values.contents
 
@@ -505,8 +506,7 @@ class XmiWrapper(Xmi):
         try:
             if function(*args) != Status.SUCCESS:
                 msg = f"MODFLOW 6 BMI, exception in: {function.__name__} ({detail})"
-                raise Exception(msg)
+                raise XMIError(msg)
         finally:
             if self.timing:
                 self.timer.stop(function.__name__)
-

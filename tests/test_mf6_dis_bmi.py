@@ -1,8 +1,11 @@
-import os
-from xmipy import XmiWrapper
 import math
-import pytest
+import os
+
 import numpy as np
+import pytest
+
+from xmipy import XmiWrapper
+from xmipy.errors import InputError, XMIError
 
 
 def test_set_int(flopy_dis, modflow_lib_path):
@@ -30,7 +33,7 @@ def test_double_initialize(flopy_dis, modflow_lib_path):
     mf6.initialize()
 
     # Test if initialize fails, if initialize was called a second time
-    with pytest.raises(Exception):
+    with pytest.raises(InputError):
         mf6.initialize()
 
 
@@ -41,7 +44,7 @@ def test_finalize_without_initialize(flopy_dis, modflow_lib_path):
     mf6.set_int("ISTDOUTTOFILE", 0)
 
     # Test if finalize fails, if initialize was not called yet
-    with pytest.raises(Exception):
+    with pytest.raises(InputError):
         mf6.finalize()
 
 
