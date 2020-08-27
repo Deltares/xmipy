@@ -14,12 +14,15 @@ def test_timing_initialize(flopy_dis, modflow_lib_path):
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
-    # Run initialize
-    mf6.initialize()
+    try:
+        # Run initialize
+        mf6.initialize()
 
-    total = mf6.report_timing_totals()
+        total = mf6.report_timing_totals()
 
-    assert total > 0.0
+        assert total > 0.0
+    finally:
+        mf6.finalize()
 
 
 def test_timing_nothing(flopy_dis, modflow_lib_path):
@@ -43,11 +46,14 @@ def test_deactivated_timing(flopy_dis, modflow_lib_path):
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
-    # Run initialize
-    mf6.initialize()
+    try:
+        # Run initialize
+        mf6.initialize()
 
-    with pytest.raises(TimerError):
-        mf6.report_timing_totals()
+        with pytest.raises(TimerError):
+            mf6.report_timing_totals()
+    finally:
+        mf6.finalize()
 
 
 def test_dependencies(flopy_dis, modflow_lib_path):

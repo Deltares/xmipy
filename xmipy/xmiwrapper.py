@@ -74,11 +74,6 @@ class XmiWrapper(Xmi):
                 text="Elapsed time for {name}.{fn_name}: {seconds:0.4f} seconds",
             )
 
-    def __del__(self):
-        if hasattr(self, "_state"):
-            if self._state == State.INITIALIZED:
-                self.finalize()
-
     @staticmethod
     def _add_lib_dependency(lib_dependency):
         if lib_dependency:
@@ -115,7 +110,7 @@ class XmiWrapper(Xmi):
                 self.execute_function(self.lib.initialize, config_file)
                 self._state = State.INITIALIZED
         else:
-            raise InputError("Modflow is already initialized")
+            raise InputError("The library is already initialized")
 
     def update(self) -> None:
         with cd(self.working_directory):
@@ -130,7 +125,7 @@ class XmiWrapper(Xmi):
                 self.execute_function(self.lib.finalize)
                 self._state = State.UNINITIALIZED
         else:
-            raise InputError("Modflow is not initialized yet")
+            raise InputError("The library is not initialized yet")
 
     def get_current_time(self) -> float:
         current_time = c_double(0.0)
