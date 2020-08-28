@@ -21,49 +21,35 @@ class Xmi(Bmi):
 
     @abstractmethod
     def prepare_time_step(self, dt) -> None:
-        """
-
-        """
+        """"""
         ...
 
     @abstractmethod
     def do_time_step(self) -> None:
-        """
-
-        """
+        """"""
         ...
 
     @abstractmethod
     def finalize_time_step(self) -> None:
-        """
-
-        """
+        """"""
         ...
 
     @abstractmethod
     def get_subcomponent_count(self) -> int:
-        """
-
-        """
+        """"""
         ...
 
     @abstractmethod
     def prepare_solve(self, component_id) -> None:
-        """
-
-        """
+        """"""
         ...
 
     @abstractmethod
     def solve(self, component_id) -> bool:
-        """
-
-        """
+        """"""
         ...
 
     @abstractmethod
     def finalize_solve(self, component_id) -> None:
-        """
-
-        """
+        """"""
         ...
