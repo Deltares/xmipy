@@ -69,4 +69,3 @@ jobs:
           pip install flake8
       - name: Run flake8
         run: flake8
-      - uses: psf/black@stable

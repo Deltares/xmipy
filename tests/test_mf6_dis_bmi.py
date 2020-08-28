@@ -153,7 +153,7 @@ def test_get_var_type_int(flopy_dis, modflow_lib_path):
 
 def test_get_value_ptr_sln(flopy_dis, modflow_lib_path):
     """`flopy_dis` sets constant head values.
-       This test checks if these can be properly extracted with origin="SLN"."""
+    This test checks if these can be properly extracted with origin="SLN"."""
 
     mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
 
@@ -178,7 +178,7 @@ def test_get_value_ptr_sln(flopy_dis, modflow_lib_path):
 
 def test_get_value_ptr_modelname(flopy_dis, modflow_lib_path):
     """`flopy_dis` sets constant head values.
-       This test checks if these can be properly extracted with origin=modelname."""
+    This test checks if these can be properly extracted with origin=modelname."""
 
     mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
 
