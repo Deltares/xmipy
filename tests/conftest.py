@@ -23,9 +23,7 @@ def modflow_lib_path(tmp_path_factory):
         url += "mac.zip"
         lib_path = tmp_path / "libmf6.so"
 
-    pymake.download_and_unzip(
-        url=url, pth=str(tmp_path),
-    )
+    pymake.download_and_unzip(url=url, pth=str(tmp_path))
     return str(lib_path)
 
 
