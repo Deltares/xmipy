@@ -19,8 +19,11 @@ def test_initialize(flopy_dis, modflow_lib_path):
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
-    # Run initialize
-    mf6.initialize()
+    try:
+        # Run initialize
+        mf6.initialize()
+    finally:
+        mf6.finalize()
 
 
 def test_double_initialize(flopy_dis, modflow_lib_path):
@@ -28,13 +31,15 @@ def test_double_initialize(flopy_dis, modflow_lib_path):
 
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
-
-    # Run initialize
-    mf6.initialize()
-
-    # Test if initialize fails, if initialize was called a second time
-    with pytest.raises(InputError):
+    try:
+        # Run initialize
         mf6.initialize()
+
+        # Test if initialize fails, if initialize was called a second time
+        with pytest.raises(InputError):
+            mf6.initialize()
+    finally:
+        mf6.finalize()
 
 
 def test_finalize_without_initialize(flopy_dis, modflow_lib_path):
@@ -54,14 +59,17 @@ def test_get_start_time(flopy_dis, modflow_lib_path):
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
-    # Initialize
-    mf6.initialize()
+    try:
+        # Initialize
+        mf6.initialize()
 
-    # prescribed_start_time for modflow models is always 0
-    prescribed_start_time = 0.0
+        # prescribed_start_time for modflow models is always 0
+        prescribed_start_time = 0.0
 
-    actual_start_time = mf6.get_start_time()
-    assert math.isclose(prescribed_start_time, actual_start_time)
+        actual_start_time = mf6.get_start_time()
+        assert math.isclose(prescribed_start_time, actual_start_time)
+    finally:
+        mf6.finalize()
 
 
 def test_get_end_time(flopy_dis, modflow_lib_path):
@@ -70,15 +78,18 @@ def test_get_end_time(flopy_dis, modflow_lib_path):
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
-    # Initialize
-    mf6.initialize()
+    try:
+        # Initialize
+        mf6.initialize()
 
-    prescribed_end_time = 0.0
-    for perlen, _, _ in flopy_dis.tdis_rc:
-        prescribed_end_time += perlen
+        prescribed_end_time = 0.0
+        for perlen, _, _ in flopy_dis.tdis_rc:
+            prescribed_end_time += perlen
 
-    actual_end_time = mf6.get_end_time()
-    assert math.isclose(prescribed_end_time, actual_end_time)
+        actual_end_time = mf6.get_end_time()
+        assert math.isclose(prescribed_end_time, actual_end_time)
+    finally:
+        mf6.finalize()
 
 
 def test_update(flopy_dis, modflow_lib_path):
@@ -87,11 +98,14 @@ def test_update(flopy_dis, modflow_lib_path):
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
-    # Initialize
-    mf6.initialize()
+    try:
+        # Initialize
+        mf6.initialize()
 
-    # Advance model by single time step
-    mf6.update()
+        # Advance model by single time step
+        mf6.update()
+    finally:
+        mf6.finalize()
 
 
 def test_get_current_time(flopy_dis, modflow_lib_path):
@@ -100,27 +114,30 @@ def test_get_current_time(flopy_dis, modflow_lib_path):
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
-    # Initialize
-    mf6.initialize()
+    try:
+        # Initialize
+        mf6.initialize()
 
-    # Advance model by single time step
-    mf6.update()
+        # Advance model by single time step
+        mf6.update()
 
-    # prescribed_start_time for modflow models is always 0
-    start_time = 0.0
+        # prescribed_start_time for modflow models is always 0
+        start_time = 0.0
 
-    perlen, nstp, tsmult = flopy_dis.tdis_rc[0]
+        perlen, nstp, tsmult = flopy_dis.tdis_rc[0]
 
-    if math.isclose(tsmult, 1):
-        prescribed_current_time = start_time + perlen / nstp
-    else:
-        prescribed_current_time = start_time + perlen * (tsmult - 1.0) / (
-            tsmult ** nstp - 1.0
-        )
+        if math.isclose(tsmult, 1):
+            prescribed_current_time = start_time + perlen / nstp
+        else:
+            prescribed_current_time = start_time + perlen * (tsmult - 1.0) / (
+                tsmult ** nstp - 1.0
+            )
 
-    actual_current_time = mf6.get_current_time()
+        actual_current_time = mf6.get_current_time()
 
-    assert math.isclose(prescribed_current_time, actual_current_time)
+        assert math.isclose(prescribed_current_time, actual_current_time)
+    finally:
+        mf6.finalize()
 
 
 def test_get_var_type_double(flopy_dis, modflow_lib_path):
@@ -129,12 +146,15 @@ def test_get_var_type_double(flopy_dis, modflow_lib_path):
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
-    # Initialize
-    mf6.initialize()
+    try:
+        # Initialize
+        mf6.initialize()
 
-    head_tag = mf6.get_var_address("X", "SLN_1")
-    var_type = mf6.get_var_type(head_tag)
-    assert var_type == "DOUBLE (90)"
+        head_tag = mf6.get_var_address("X", "SLN_1")
+        var_type = mf6.get_var_type(head_tag)
+        assert var_type == "DOUBLE (90)"
+    finally:
+        mf6.finalize()
 
 
 def test_get_var_type_int(flopy_dis, modflow_lib_path):
@@ -143,12 +163,15 @@ def test_get_var_type_int(flopy_dis, modflow_lib_path):
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
-    # Initialize
-    mf6.initialize()
+    try:
+        # Initialize
+        mf6.initialize()
 
-    iactive_tag = mf6.get_var_address("IACTIVE", "SLN_1")
-    var_type = mf6.get_var_type(iactive_tag)
-    assert var_type == "INTEGER (90)"
+        iactive_tag = mf6.get_var_address("IACTIVE", "SLN_1")
+        var_type = mf6.get_var_type(iactive_tag)
+        assert var_type == "INTEGER (90)"
+    finally:
+        mf6.finalize()
 
 
 def test_get_value_ptr_sln(flopy_dis, modflow_lib_path):
@@ -160,20 +183,23 @@ def test_get_value_ptr_sln(flopy_dis, modflow_lib_path):
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
-    # Initialize
-    mf6.initialize()
+    try:
+        # Initialize
+        mf6.initialize()
 
-    stress_period_data = flopy_dis.stress_period_data
-    ncol = flopy_dis.ncol
+        stress_period_data = flopy_dis.stress_period_data
+        ncol = flopy_dis.ncol
 
-    mf6.update()
-    head_tag = mf6.get_var_address("X", "SLN_1")
-    actual_head = mf6.get_value_ptr(head_tag)
+        mf6.update()
+        head_tag = mf6.get_var_address("X", "SLN_1")
+        actual_head = mf6.get_value_ptr(head_tag)
 
-    for cell_id, presciped_head in stress_period_data:
-        layer, row, column = cell_id
-        head_index = column + row * ncol
-        assert math.isclose(presciped_head, actual_head[head_index])
+        for cell_id, presciped_head in stress_period_data:
+            layer, row, column = cell_id
+            head_index = column + row * ncol
+            assert math.isclose(presciped_head, actual_head[head_index])
+    finally:
+        mf6.finalize()
 
 
 def test_get_value_ptr_modelname(flopy_dis, modflow_lib_path):
@@ -185,20 +211,23 @@ def test_get_value_ptr_modelname(flopy_dis, modflow_lib_path):
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
-    # Initialize
-    mf6.initialize()
+    try:
+        # Initialize
+        mf6.initialize()
 
-    stress_period_data = flopy_dis.stress_period_data
-    ncol = flopy_dis.ncol
+        stress_period_data = flopy_dis.stress_period_data
+        ncol = flopy_dis.ncol
 
-    mf6.update()
-    head_tag = mf6.get_var_address("X", flopy_dis.model_name)
-    actual_head = mf6.get_value_ptr(head_tag)
+        mf6.update()
+        head_tag = mf6.get_var_address("X", flopy_dis.model_name)
+        actual_head = mf6.get_value_ptr(head_tag)
 
-    for cell_id, presciped_head in stress_period_data:
-        layer, row, column = cell_id
-        head_index = column + row * ncol
-        assert math.isclose(presciped_head, actual_head[head_index])
+        for cell_id, presciped_head in stress_period_data:
+            layer, row, column = cell_id
+            head_index = column + row * ncol
+            assert math.isclose(presciped_head, actual_head[head_index])
+    finally:
+        mf6.finalize()
 
 
 def test_get_value_ptr_scalar(flopy_dis, modflow_lib_path):
@@ -208,16 +237,19 @@ def test_get_value_ptr_scalar(flopy_dis, modflow_lib_path):
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
-    # Initialize
-    mf6.initialize()
+    try:
+        # Initialize
+        mf6.initialize()
 
-    mf6.update()
-    id_tag = mf6.get_var_address("ID", flopy_dis.model_name)
-    grid_id = mf6.get_value_ptr_scalar(id_tag)
+        mf6.update()
+        id_tag = mf6.get_var_address("ID", flopy_dis.model_name)
+        grid_id = mf6.get_value_ptr_scalar(id_tag)
 
-    # Only one model is defined => id should be 1
-    # grid_id[0], because even scalars are defined as arrays
-    assert grid_id[0] == 1
+        # Only one model is defined => id should be 1
+        # grid_id[0], because even scalars are defined as arrays
+        assert grid_id[0] == 1
+    finally:
+        mf6.finalize()
 
 
 def test_get_var_grid(flopy_dis, modflow_lib_path):
@@ -228,17 +260,20 @@ def test_get_var_grid(flopy_dis, modflow_lib_path):
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
-    # Initialize
-    mf6.initialize()
+    try:
+        # Initialize
+        mf6.initialize()
 
-    # Getting the grid id from the model, requires specifying one variable
-    k11_tag = mf6.get_var_address("K11", flopy_dis.model_name, "NPF")
-    prescriped_grid_id = mf6.get_var_grid(k11_tag)
+        # Getting the grid id from the model, requires specifying one variable
+        k11_tag = mf6.get_var_address("K11", flopy_dis.model_name, "NPF")
+        prescriped_grid_id = mf6.get_var_grid(k11_tag)
 
-    id_tag = mf6.get_var_address("ID", flopy_dis.model_name)
-    actual_grid_id = mf6.get_value_ptr(id_tag)
+        id_tag = mf6.get_var_address("ID", flopy_dis.model_name)
+        actual_grid_id = mf6.get_value_ptr(id_tag)
 
-    assert prescriped_grid_id == actual_grid_id[0]
+        assert prescriped_grid_id == actual_grid_id[0]
+    finally:
+        mf6.finalize()
 
 
 def test_get_grid_type(flopy_dis, modflow_lib_path):
@@ -249,15 +284,18 @@ def test_get_grid_type(flopy_dis, modflow_lib_path):
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
-    # Initialize
-    mf6.initialize()
+    try:
+        # Initialize
+        mf6.initialize()
 
-    # Getting the grid id from the model, requires specifying one variable
-    k11_tag = mf6.get_var_address("K11", flopy_dis.model_name, "NPF")
-    grid_id = mf6.get_var_grid(k11_tag)
-    grid_type = mf6.get_grid_type(grid_id)
+        # Getting the grid id from the model, requires specifying one variable
+        k11_tag = mf6.get_var_address("K11", flopy_dis.model_name, "NPF")
+        grid_id = mf6.get_var_grid(k11_tag)
+        grid_type = mf6.get_grid_type(grid_id)
 
-    assert grid_type == "rectilinear"
+        assert grid_type == "rectilinear"
+    finally:
+        mf6.finalize()
 
 
 def test_get_component_name(flopy_dis, modflow_lib_path):
