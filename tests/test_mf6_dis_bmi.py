@@ -431,14 +431,27 @@ def test_set_value_at_indices(flopy_dis, modflow_lib_path):
 
 
 def test_get_grid_size(flopy_dis, modflow_lib_path):
-    """Expects to be implemented as soon as `get_grid_size` is implemented"""
+    """Tests if the the grid size can be extracted"""
+
     mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
 
     # Write output to screen:
     mf6.set_int("ISTDOUTTOFILE", 0)
 
-    with pytest.raises(NotImplementedError):
-        mf6.get_grid_size(1)
+    try:
+        mf6.initialize()
+
+        prescribed_grid_size = flopy_dis.nrow * flopy_dis.ncol
+
+        # Getting the grid id from the model, requires specifying one variable
+        k11_tag = mf6.get_var_address("K11", flopy_dis.model_name, "NPF")
+        grid_id = mf6.get_var_grid(k11_tag)
+
+        actual_grid_size = mf6.get_grid_size(grid_id)
+
+        assert prescribed_grid_size == actual_grid_size
+    finally:
+        mf6.finalize()
 
 
 def test_get_grid_spacing(flopy_dis, modflow_lib_path):
