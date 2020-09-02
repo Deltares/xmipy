@@ -342,18 +342,26 @@ class XmiWrapper(Xmi):
         raise NotImplementedError
 
     def get_grid_rank(self, grid: int) -> int:
-        item_size = c_int(0)
+        grid_rank = c_int(0)
         c_grid = c_int(grid)
         self.execute_function(
             self.lib.get_grid_rank,
             byref(c_grid),
-            byref(item_size),
+            byref(grid_rank),
             detail="for id " + str(grid),
         )
-        return item_size.value
+        return grid_rank.value
 
     def get_grid_size(self, grid: int) -> int:
-        raise NotImplementedError
+        grid_size = c_int(0)
+        c_grid = c_int(grid)
+        self.execute_function(
+            self.lib.get_grid_size,
+            byref(c_grid),
+            byref(grid_size),
+            detail="for id " + str(grid),
+        )
+        return grid_size.value
 
     def get_grid_type(self, grid: int) -> str:
         len_grid_type = self.get_constant_int("BMI_LENGRIDTYPE")
