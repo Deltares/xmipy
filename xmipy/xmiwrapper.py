@@ -381,7 +381,7 @@ class XmiWrapper(Xmi):
             self.lib.get_grid_shape,
             byref(c_grid),
             c_void_p(shape.ctypes.data),
-            detail="for id " + str(id),
+            detail="for id " + str(grid),
         )
         return shape
 
@@ -397,7 +397,7 @@ class XmiWrapper(Xmi):
             self.lib.get_grid_x,
             byref(c_grid),
             c_void_p(x.ctypes.data),
-            detail="for id " + str(id),
+            detail="for id " + str(grid),
         )
         return x
 
@@ -407,7 +407,7 @@ class XmiWrapper(Xmi):
             self.lib.get_grid_y,
             byref(c_grid),
             c_void_p(y.ctypes.data),
-            detail="for id " + str(id),
+            detail="for id " + str(grid),
         )
         return y
 
@@ -417,18 +417,34 @@ class XmiWrapper(Xmi):
             self.lib.get_grid_z,
             byref(c_grid),
             c_void_p(z.ctypes.data),
-            detail="for id " + str(id),
+            detail="for id " + str(grid),
         )
         return z
 
     def get_grid_node_count(self, grid: int) -> int:
-        raise NotImplementedError
+        grid_node_count = c_int(0)
+        c_grid = c_int(grid)
+        self.execute_function(
+            self.lib.get_grid_node_count,
+            byref(c_grid),
+            byref(grid_node_count),
+            detail="for id " + str(grid),
+        )
+        return grid_node_count.value
 
     def get_grid_edge_count(self, grid: int) -> int:
         raise NotImplementedError
 
     def get_grid_face_count(self, grid: int) -> int:
-        raise NotImplementedError
+        grid_face_count = c_int(0)
+        c_grid = c_int(grid)
+        self.execute_function(
+            self.lib.get_grid_face_count,
+            byref(c_grid),
+            byref(grid_face_count),
+            detail="for id " + str(grid),
+        )
+        return grid_face_count.value
 
     def get_grid_edge_nodes(self, grid: int, edge_nodes: np.ndarray) -> np.ndarray:
         raise NotImplementedError
@@ -437,12 +453,26 @@ class XmiWrapper(Xmi):
         raise NotImplementedError
 
     def get_grid_face_nodes(self, grid: int, face_nodes: np.ndarray) -> np.ndarray:
-        raise NotImplementedError
+        c_grid = c_int(grid)
+        self.execute_function(
+            self.lib.get_grid_face_nodes,
+            byref(c_grid),
+            c_void_p(face_nodes.ctypes.data),
+            detail="for id " + str(grid),
+        )
+        return face_nodes
 
     def get_grid_nodes_per_face(
         self, grid: int, nodes_per_face: np.ndarray
     ) -> np.ndarray:
-        raise NotImplementedError
+        c_grid = c_int(grid)
+        self.execute_function(
+            self.lib.get_grid_nodes_per_face,
+            byref(c_grid),
+            c_void_p(nodes_per_face.ctypes.data),
+            detail="for id " + str(grid),
+        )
+        return nodes_per_face
 
     # ===========================
     # here starts the XMI
