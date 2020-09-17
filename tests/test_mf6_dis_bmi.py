@@ -277,7 +277,7 @@ def test_get_var_grid(flopy_dis, modflow_lib_path):
 
 
 def test_get_grid_type(flopy_dis, modflow_lib_path):
-    """Tests if the the grid type can be extracted"""
+    """Tests if the grid type can be extracted"""
 
     mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
 
@@ -476,17 +476,6 @@ def test_get_grid_origin(flopy_dis, modflow_lib_path):
         mf6.get_grid_origin(1, np.zeros((1, 1)))
 
 
-def test_get_grid_node_count(flopy_dis, modflow_lib_path):
-    """Expects to be implemented as soon as `get_grid_node_count` is implemented"""
-    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
-
-    # Write output to screen:
-    mf6.set_int("ISTDOUTTOFILE", 0)
-
-    with pytest.raises(NotImplementedError):
-        mf6.get_grid_node_count(1)
-
-
 def test_get_grid_edge_count(flopy_dis, modflow_lib_path):
     """Expects to be implemented as soon as `get_grid_edge_count` is implemented"""
     mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
@@ -496,17 +485,6 @@ def test_get_grid_edge_count(flopy_dis, modflow_lib_path):
 
     with pytest.raises(NotImplementedError):
         mf6.get_grid_edge_count(1)
-
-
-def test_get_grid_face_count(flopy_dis, modflow_lib_path):
-    """Expects to be implemented as soon as `get_grid_face_count` is implemented"""
-    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
-
-    # Write output to screen:
-    mf6.set_int("ISTDOUTTOFILE", 0)
-
-    with pytest.raises(NotImplementedError):
-        mf6.get_grid_face_count(1)
 
 
 def test_get_grid_edge_nodes(flopy_dis, modflow_lib_path):
@@ -529,14 +507,3 @@ def test_get_grid_face_edges(flopy_dis, modflow_lib_path):
 
     with pytest.raises(NotImplementedError):
         mf6.get_grid_face_edges(1, np.zeros((1, 1)))
-
-
-def test_get_grid_face_nodes(flopy_dis, modflow_lib_path):
-    """Expects to be implemented as soon as `get_grid_face_nodes` is implemented"""
-    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
-
-    # Write output to screen:
-    mf6.set_int("ISTDOUTTOFILE", 0)
-
-    with pytest.raises(NotImplementedError):
-        mf6.get_grid_face_nodes(1, np.zeros((1, 1)))

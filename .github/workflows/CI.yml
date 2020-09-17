@@ -52,7 +52,7 @@ jobs:
         # The flag -s stops pytest from capturing output
         # This is necessary until proper error reporting is implemented by Modflow
         run: |
-          pytest -s --cov=xmipy --cov-report=xml tests/
+          pytest -vs --cov=xmipy --cov-report=xml tests/
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
 
