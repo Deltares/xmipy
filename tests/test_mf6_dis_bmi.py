@@ -430,6 +430,30 @@ def test_set_value_at_indices(flopy_dis, modflow_lib_path):
         mf6.set_value_at_indices("", np.zeros((1, 1)), np.zeros((1, 1)))
 
 
+def test_get_grid_rank(flopy_dis, modflow_lib_path):
+    """Tests if the the grid rank can be extracted"""
+
+    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
+
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    try:
+        mf6.initialize()
+
+        prescribed_grid_rank = flopy_dis.rank
+
+        # Getting the grid id from the model, requires specifying one variable
+        k11_tag = mf6.get_var_address("K11", flopy_dis.model_name, "NPF")
+        grid_id = mf6.get_var_grid(k11_tag)
+
+        actual_grid_rank = mf6.get_grid_rank(grid_id)
+
+        assert prescribed_grid_rank == actual_grid_rank
+    finally:
+        mf6.finalize()
+
+
 def test_get_grid_size(flopy_dis, modflow_lib_path):
     """Tests if the the grid size can be extracted"""
 
