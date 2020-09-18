@@ -441,7 +441,10 @@ def test_get_grid_rank(flopy_dis, modflow_lib_path):
     try:
         mf6.initialize()
 
-        prescribed_grid_rank = flopy_dis.rank
+        if flopy_dis.nlay == 1:
+            prescribed_grid_rank = 2
+        else:
+            prescribed_grid_rank = 3
 
         # Getting the grid id from the model, requires specifying one variable
         k11_tag = mf6.get_var_address("K11", flopy_dis.model_name, "NPF")

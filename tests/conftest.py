@@ -38,6 +38,7 @@ class FlopyDis:
     model_name: str
     nrow: int
     ncol: int
+    nlay: int
     stress_period_data: List[Any]
 
 
@@ -54,6 +55,7 @@ def flopy_dis(tmp_path, modflow_lib_path):
         model_name="TEST_MODEL_DIS",
         nrow=9,
         ncol=10,
+        nlay=1,
         stress_period_data=[[(0, 2, 0), 1.0], [(0, 6, 8), 0.0]],
     )
     flopy.mf6.ModflowTdis(sim, time_units="DAYS", nper=2, perioddata=flopy_dis.tdis_rc)
