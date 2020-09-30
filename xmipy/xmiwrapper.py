@@ -151,16 +151,52 @@ class XmiWrapper(Xmi):
         raise NotImplementedError
 
     def get_input_item_count(self) -> int:
-        raise NotImplementedError
+        count = c_int(0)
+        self.execute_function(self.lib.get_input_item_count, byref(count))
+        return count.value
 
     def get_output_item_count(self) -> int:
-        raise NotImplementedError
+        count = c_int(0)
+        self.execute_function(self.lib.get_output_item_count, byref(count))
+        return count.value
 
     def get_input_var_names(self) -> Tuple[str]:
-        raise NotImplementedError
+        len_address = self.get_constant_int("BMI_LENVARADDRESS")
+        nr_input_vars = self.get_input_item_count()
+        len_names = nr_input_vars * len_address
+        names = create_string_buffer(len_names)
+
+        # get a (1-dim) char array (char*) containing the input variable
+        # names as \x00 terminated sub-strings
+        self.execute_function(self.lib.get_input_var_names, byref(names))
+
+        # decode
+        input_vars = [
+            names[i * len_address : (i + 1) * len_address]
+            .split(b"\0", 1)[0]
+            .decode("ascii")
+            for i in range(nr_input_vars)
+        ]
+        return tuple(input_vars)
 
     def get_output_var_names(self) -> Tuple[str]:
-        raise NotImplementedError
+        len_address = self.get_constant_int("BMI_LENVARADDRESS")
+        nr_output_vars = self.get_output_item_count()
+        len_names = nr_output_vars * len_address
+        names = create_string_buffer(len_names)
+
+        # get a (1-dim) char array (char*) containing the output variable
+        # names as \x00 terminated sub-strings
+        self.execute_function(self.lib.get_output_var_names, byref(names))
+
+        # decode
+        output_vars = [
+            names[i * len_address : (i + 1) * len_address]
+            .split(b"\0", 1)[0]
+            .decode("ascii")
+            for i in range(nr_output_vars)
+        ]
+        return tuple(output_vars)
 
     def get_var_grid(self, name: str) -> int:
         grid_id = c_int(0)
