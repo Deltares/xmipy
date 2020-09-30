@@ -5,6 +5,7 @@ import sys
 from ctypes import (
     CDLL,
     byref,
+    POINTER,
     c_char_p,
     c_double,
     c_int,
@@ -334,7 +335,23 @@ class XmiWrapper(Xmi):
         raise NotImplementedError
 
     def set_value(self, name: str, values: np.ndarray) -> None:
-        raise NotImplementedError
+        if not values.flags["F"]:
+            raise InputError("Array should have fortran layout")
+
+        vartype = self.get_var_type(name)
+        if vartype.lower().startswith("double"):
+            if values.dtype != np.float64:
+                raise InputError("Array should have float64 elements")
+            self.execute_function(
+                self.lib.set_value_double,
+                c_char_p(name.encode()),
+                byref(values.ctypes.data_as(POINTER(c_double))),
+                detail="for variable " + name,
+            )
+        elif vartype.lower().startswith("int"):
+            raise NotImplementedError()
+        else:
+            raise InputError("Unsupported value type")
 
     def set_value_at_indices(
         self, name: str, inds: np.ndarray, src: np.ndarray

@@ -409,14 +409,27 @@ def test_get_value_at_indices(flopy_dis, modflow_lib_path):
 
 
 def test_set_value(flopy_dis, modflow_lib_path):
-    """Expects to be implemented as soon as `set_value` is implemented"""
     mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
 
-    # Write output to screen:
-    mf6.set_int("ISTDOUTTOFILE", 0)
+    try:
+        # Initialize
+        mf6.initialize()
 
-    with pytest.raises(NotImplementedError):
-        mf6.set_value("", np.zeros((1, 1)))
+        # 1D double array
+        head_tag = mf6.get_var_address("X", flopy_dis.model_name)
+        orig_head = mf6.get_value_ptr(head_tag)
+        new_head = 2.0 * orig_head
+        mf6.set_value(head_tag, new_head)
+        assert np.array_equal(orig_head, new_head)
+
+        # 1D integer array
+        with pytest.raises(NotImplementedError):
+            mxit_tag = mf6.get_var_address("MXITER", "SLN_1")
+            arr_int = np.zeros(shape=(1,), dtype=np.int32)
+            mf6.set_value(mxit_tag, arr_int)
+
+    finally:
+        mf6.finalize()
 
 
 def test_set_value_at_indices(flopy_dis, modflow_lib_path):
