@@ -422,6 +422,11 @@ def test_set_value(flopy_dis, modflow_lib_path):
         mf6.set_value(head_tag, new_head)
         assert np.array_equal(orig_head, new_head)
 
+        # can't set through solution variable:
+        head_sln_tag = mf6.get_var_address("X", "SLN_1")
+        with pytest.raises(XMIError):
+            mf6.set_value(head_sln_tag, new_head)
+
         # 1D integer array
         with pytest.raises(NotImplementedError):
             mxit_tag = mf6.get_var_address("MXITER", "SLN_1")
