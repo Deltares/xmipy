@@ -310,47 +310,56 @@ def test_get_component_name(flopy_dis, modflow_lib_path):
 
 
 def test_get_input_item_count(flopy_dis, modflow_lib_path):
-    """Expects to be implemented as soon as `get_input_item_count` is implemented"""
     mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
 
-    # Write output to screen:
-    mf6.set_int("ISTDOUTTOFILE", 0)
+    try:
+        # Initialize
+        mf6.initialize()
+        assert mf6.get_input_item_count() > 0
 
-    with pytest.raises(NotImplementedError):
-        mf6.get_input_item_count()
+    finally:
+        mf6.finalize()
 
 
 def test_get_output_item_count(flopy_dis, modflow_lib_path):
-    """Expects to be implemented as soon as `get_output_item_count` is implemented"""
     mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
 
-    # Write output to screen:
-    mf6.set_int("ISTDOUTTOFILE", 0)
+    try:
+        # Initialize
+        mf6.initialize()
+        assert mf6.get_output_item_count() > 0
 
-    with pytest.raises(NotImplementedError):
-        mf6.get_output_item_count()
+    finally:
+        mf6.finalize()
 
 
 def test_get_input_var_names(flopy_dis, modflow_lib_path):
-    """Expects to be implemented as soon as `get_input_var_names` is implemented"""
     mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
 
-    # Write output to screen:
-    mf6.set_int("ISTDOUTTOFILE", 0)
+    try:
+        # Initialize
+        mf6.initialize()
 
-    with pytest.raises(NotImplementedError):
-        mf6.get_input_var_names()
+        var_names = mf6.get_input_var_names()
+        assert "TEST_MODEL_DIS/X" in var_names
+
+    finally:
+        mf6.finalize()
 
 
 def test_get_output_var_names(flopy_dis, modflow_lib_path):
-    """Expects to be implemented as soon as `get_output_var_names` is implemented"""
     mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
 
-    # Write output to screen:
-    mf6.set_int("ISTDOUTTOFILE", 0)
+    try:
+        # Initialize
+        mf6.initialize()
 
-    with pytest.raises(NotImplementedError):
-        mf6.get_output_var_names()
+        var_names = mf6.get_output_var_names()
+        assert "TEST_MODEL_DIS/X" in var_names  # this is readwrite
+        assert "SLN_1/IA" in var_names  # and this is readonly
+
+    finally:
+        mf6.finalize()
 
 
 def test_get_var_units(flopy_dis, modflow_lib_path):
