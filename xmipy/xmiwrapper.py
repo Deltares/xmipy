@@ -271,30 +271,31 @@ class XmiWrapper(Xmi):
     def get_time_units(self) -> str:
         raise NotImplementedError
 
-    def get_value(self, name: str, dest: np.ndarray) -> np.ndarray:
-        if not dest.flags["C"]:
-            raise InputError("Array should have C layout")
-        vartype = self.get_var_type(name)
-        if vartype.lower().startswith("double"):
-            if dest.dtype != np.float64:
-                raise InputError("Array should have float64 elements")
+    def get_value(self, name: str) -> np.ndarray:
+
+        var_type = self.get_var_type(name)
+        var_shape = self.get_var_shape(name)
+
+        if var_type.lower().startswith("double"):
+            values = np.empty(shape=var_shape, dtype=np.float64, order="C")
             self.execute_function(
                 self.lib.get_value_double,
                 c_char_p(name.encode()),
-                byref(dest.ctypes.data_as(POINTER(c_double))),
+                byref(values.ctypes.data_as(POINTER(c_double))),
                 detail="for variable " + name,
             )
-        elif vartype.lower().startswith("int"):
-            if dest.dtype != np.int:
-                raise InputError("Array should have integer elements")
+        elif var_type.lower().startswith("int"):
+            values = np.empty(shape=var_shape, dtype=np.int, order="C")
             self.execute_function(
                 self.lib.get_value_int,
                 c_char_p(name.encode()),
-                byref(dest.ctypes.data_as(POINTER(c_int))),
+                byref(values.ctypes.data_as(POINTER(c_int))),
                 detail="for variable " + name,
             )
         else:
             raise InputError("Unsupported value type")
+
+        return values
 
     def get_value_ptr(self, name: str) -> np.ndarray:
 

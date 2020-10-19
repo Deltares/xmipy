@@ -375,12 +375,11 @@ def test_get_value_double(flopy_dis, modflow_lib_path):
         some_output_var = next(
             var for var in mf6.get_output_var_names() if var.endswith("/X")
         )
-        tgt_arr = np.zeros(shape=mf6.get_var_shape(some_output_var))
-        mf6.get_value(some_output_var, tgt_arr)
+        copy_arr = mf6.get_value(some_output_var)
 
         # compare to array in MODFLOW memory:
         orig_arr = mf6.get_value_ptr(some_output_var)
-        assert np.array_equal(tgt_arr, orig_arr)
+        assert np.array_equal(copy_arr, orig_arr)
 
     finally:
         mf6.finalize()
@@ -397,8 +396,7 @@ def test_get_value_int(flopy_dis_idomain, modflow_lib_path):
         nodes_reduced_tag = next(
             var for var in mf6.get_output_var_names() if var.endswith("/NODEREDUCED")
         )
-        tgt_arr = np.zeros(shape=mf6.get_var_shape(nodes_reduced_tag), dtype=int)
-        mf6.get_value(nodes_reduced_tag, tgt_arr)
+        tgt_arr = mf6.get_value(nodes_reduced_tag)
 
         # compare to array in MODFLOW memory:
         orig_arr = mf6.get_value_ptr(nodes_reduced_tag)
