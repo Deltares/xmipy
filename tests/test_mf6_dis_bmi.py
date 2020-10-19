@@ -450,9 +450,6 @@ def test_set_value_sideeffect(flopy_gwf_sto, modflow_lib_path):
         lib_path=modflow_lib_path, working_directory=flopy_gwf_sto.sim_path
     )
 
-    # Write output to screen:
-    mf6.set_int("ISTDOUTTOFILE", 0)
-
     try:
         # Initialize
         mf6.initialize()
@@ -464,12 +461,9 @@ def test_set_value_sideeffect(flopy_gwf_sto, modflow_lib_path):
         sc2 = mf6.get_value_ptr(sc2_tag)
 
         orig_sc1 = sc1.copy()
-        new_sc1 = sc1 / area
 
-        # sc1,sc2 cannot be set until sto_rp() has been called,
-        # this happens inside prepare_time_step():
-        # dt = 0.0
-        # mf6.prepare_time_step(dt)
+        new_sc1 = np.zeros(shape=mf6.get_var_shape(sc2_tag))
+        new_sc1[:] = sc1 / area
 
         # setting storage should trigger the conversion again,
         # such that the sc1 values end up the same:
@@ -482,8 +476,6 @@ def test_set_value_sideeffect(flopy_gwf_sto, modflow_lib_path):
         mf6.set_value(sc2_tag, new_sc2)
         assert np.array_equal(sc2, orig_sc2)
 
-        # mf6.do_time_step()
-        # mf6.finalize_time_step()
         mf6.update()
     finally:
         mf6.finalize()
