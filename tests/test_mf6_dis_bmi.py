@@ -385,6 +385,27 @@ def test_get_value_double(flopy_dis, modflow_lib_path):
         mf6.finalize()
 
 
+def test_get_value_double_inplace(flopy_dis, modflow_lib_path):
+    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
+
+    try:
+        mf6.initialize()
+
+        some_output_var = next(
+            var for var in mf6.get_output_var_names() if var.endswith("/X")
+        )
+        copy_arr = mf6.get_value_ptr(some_output_var).copy()
+        copy_arr[:] = -99999.0
+        mf6.get_value(some_output_var, copy_arr)
+
+        # compare to array in MODFLOW memory:
+        orig_arr = mf6.get_value_ptr(some_output_var)
+        assert np.array_equal(copy_arr, orig_arr)
+
+    finally:
+        mf6.finalize()
+
+
 def test_get_value_int(flopy_dis_idomain, modflow_lib_path):
     mf6 = XmiWrapper(
         lib_path=modflow_lib_path, working_directory=flopy_dis_idomain.sim_path
@@ -401,6 +422,28 @@ def test_get_value_int(flopy_dis_idomain, modflow_lib_path):
         # compare to array in MODFLOW memory:
         orig_arr = mf6.get_value_ptr(nodes_reduced_tag)
         assert np.array_equal(tgt_arr, orig_arr)
+
+    finally:
+        mf6.finalize()
+
+
+def test_get_value_int_scalar(flopy_dis_idomain, modflow_lib_path):
+    mf6 = XmiWrapper(
+        lib_path=modflow_lib_path, working_directory=flopy_dis_idomain.sim_path
+    )
+
+    try:
+        mf6.initialize()
+
+        # get scalar variable:
+        id_tag = next(var for var in mf6.get_output_var_names() if var.endswith("/ID"))
+        assert mf6.get_var_rank(id_tag) == 0
+
+        tgt = mf6.get_value(id_tag)
+
+        # compare with value in MODFLOW memory:
+        orig = mf6.get_value_ptr(id_tag)
+        assert np.array_equal(tgt, orig)
 
     finally:
         mf6.finalize()
