@@ -272,7 +272,29 @@ class XmiWrapper(Xmi):
         raise NotImplementedError
 
     def get_value(self, name: str, dest: np.ndarray) -> np.ndarray:
-        raise NotImplementedError
+        if not dest.flags["C"]:
+            raise InputError("Array should have C layout")
+        vartype = self.get_var_type(name)
+        if vartype.lower().startswith("double"):
+            if dest.dtype != np.float64:
+                raise InputError("Array should have float64 elements")
+            self.execute_function(
+                self.lib.get_value_double,
+                c_char_p(name.encode()),
+                byref(dest.ctypes.data_as(POINTER(c_double))),
+                detail="for variable " + name,
+            )
+        elif vartype.lower().startswith("int"):
+            if dest.dtype != np.int:
+                raise InputError("Array should have integer elements")
+            self.execute_function(
+                self.lib.get_value_int,
+                c_char_p(name.encode()),
+                byref(dest.ctypes.data_as(POINTER(c_int))),
+                detail="for variable " + name,
+            )
+        else:
+            raise InputError("Unsupported value type")
 
     def get_value_ptr(self, name: str) -> np.ndarray:
 

@@ -173,34 +173,6 @@ def test_get_var_type_int(flopy_dis, modflow_lib_path):
         mf6.finalize()
 
 
-def test_get_value_ptr_sln(flopy_dis, modflow_lib_path):
-    """`flopy_dis` sets constant head values.
-    This test checks if these can be properly extracted with origin="SLN"."""
-
-    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
-
-    # Write output to screen:
-    mf6.set_int("ISTDOUTTOFILE", 0)
-
-    try:
-        # Initialize
-        mf6.initialize()
-
-        stress_period_data = flopy_dis.stress_period_data
-        ncol = flopy_dis.ncol
-
-        mf6.update()
-        head_tag = mf6.get_var_address("X", "SLN_1")
-        actual_head = mf6.get_value_ptr(head_tag)
-
-        for cell_id, presciped_head in stress_period_data:
-            layer, row, column = cell_id
-            head_index = column + row * ncol
-            assert math.isclose(presciped_head, actual_head[head_index])
-    finally:
-        mf6.finalize()
-
-
 def test_get_value_ptr_modelname(flopy_dis, modflow_lib_path):
     """`flopy_dis` sets constant head values.
     This test checks if these can be properly extracted with origin=modelname."""
@@ -394,15 +366,46 @@ def test_get_time_units(flopy_dis, modflow_lib_path):
         mf6.get_time_units()
 
 
-def test_get_value(flopy_dis, modflow_lib_path):
-    """Expects to be implemented as soon as `get_value` is implemented"""
+def test_get_value_double(flopy_dis, modflow_lib_path):
     mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
 
-    # Write output to screen:
-    mf6.set_int("ISTDOUTTOFILE", 0)
+    try:
+        mf6.initialize()
 
-    with pytest.raises(NotImplementedError):
-        mf6.get_value("", np.zeros((1, 1)))
+        some_output_var = next(
+            var for var in mf6.get_output_var_names() if var.endswith("/X")
+        )
+        tgt_arr = np.zeros(shape=mf6.get_var_shape(some_output_var))
+        mf6.get_value(some_output_var, tgt_arr)
+
+        # compare to array in MODFLOW memory:
+        orig_arr = mf6.get_value_ptr(some_output_var)
+        assert np.array_equal(tgt_arr, orig_arr)
+
+    finally:
+        mf6.finalize()
+
+
+def test_get_value_int(flopy_dis_idomain, modflow_lib_path):
+    mf6 = XmiWrapper(
+        lib_path=modflow_lib_path, working_directory=flopy_dis_idomain.sim_path
+    )
+
+    try:
+        mf6.initialize()
+
+        nodes_reduced_tag = next(
+            var for var in mf6.get_output_var_names() if var.endswith("/NODEREDUCED")
+        )
+        tgt_arr = np.zeros(shape=mf6.get_var_shape(nodes_reduced_tag), dtype=int)
+        mf6.get_value(nodes_reduced_tag, tgt_arr)
+
+        # compare to array in MODFLOW memory:
+        orig_arr = mf6.get_value_ptr(nodes_reduced_tag)
+        assert np.array_equal(tgt_arr, orig_arr)
+
+    finally:
+        mf6.finalize()
 
 
 def test_get_value_at_indices(flopy_dis, modflow_lib_path):
