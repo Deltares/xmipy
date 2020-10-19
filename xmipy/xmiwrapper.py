@@ -271,8 +271,47 @@ class XmiWrapper(Xmi):
     def get_time_units(self) -> str:
         raise NotImplementedError
 
-    def get_value(self, name: str, dest: np.ndarray) -> np.ndarray:
-        raise NotImplementedError
+    def get_value(self, name: str, dest: np.ndarray = None) -> np.ndarray:
+        # make sure that optional array is of correct layout:
+        if dest is not None:
+            if not dest.flags["C"]:
+                raise InputError("Array should have C layout")
+
+        # first deal with scalars
+        rank = self.get_var_rank(name)
+        if rank == 0:
+            src = self.get_value_ptr_scalar(name)
+            if dest is None:
+                return self.get_value_ptr_scalar(name).copy()
+            else:
+                dest[0] = src[0]
+                return dest
+
+        var_type = self.get_var_type(name)
+        var_shape = self.get_var_shape(name)
+
+        if var_type.lower().startswith("double"):
+            if dest is None:
+                dest = np.empty(shape=var_shape, dtype=np.float64, order="C")
+            self.execute_function(
+                self.lib.get_value_double,
+                c_char_p(name.encode()),
+                byref(dest.ctypes.data_as(POINTER(c_double))),
+                detail="for variable " + name,
+            )
+        elif var_type.lower().startswith("int"):
+            if dest is None:
+                dest = np.empty(shape=var_shape, dtype=np.int, order="C")
+            self.execute_function(
+                self.lib.get_value_int,
+                c_char_p(name.encode()),
+                byref(dest.ctypes.data_as(POINTER(c_int))),
+                detail="for variable " + name,
+            )
+        else:
+            raise InputError("Unsupported value type")
+
+        return dest
 
     def get_value_ptr(self, name: str) -> np.ndarray:
 
@@ -290,7 +329,7 @@ class XmiWrapper(Xmi):
 
         if vartype.lower().startswith("double"):
             arraytype = np.ctypeslib.ndpointer(
-                dtype=np.float64, ndim=ndim, shape=shape_tuple, flags="F"
+                dtype=np.float64, ndim=ndim, shape=shape_tuple, flags="C"
             )
             values = arraytype()
             self.execute_function(
@@ -302,7 +341,7 @@ class XmiWrapper(Xmi):
             return values.contents
         elif vartype.lower().startswith("float"):
             arraytype = np.ctypeslib.ndpointer(
-                dtype=np.float32, ndim=ndim, shape=shape_tuple, flags="F"
+                dtype=np.float32, ndim=ndim, shape=shape_tuple, flags="C"
             )
             values = arraytype()
             self.execute_function(
@@ -314,7 +353,7 @@ class XmiWrapper(Xmi):
             return values.contents
         elif vartype.lower().startswith("int"):
             arraytype = np.ctypeslib.ndpointer(
-                dtype=np.int32, ndim=ndim, shape=shape_tuple, flags="F"
+                dtype=np.int32, ndim=ndim, shape=shape_tuple, flags="C"
             )
             values = arraytype()
             self.execute_function(
@@ -329,7 +368,7 @@ class XmiWrapper(Xmi):
         vartype = self.get_var_type(name)
         if vartype.lower().startswith("double"):
             arraytype = np.ctypeslib.ndpointer(
-                dtype=np.double, ndim=1, shape=(1,), flags="F"
+                dtype=np.double, ndim=1, shape=(1,), flags="C"
             )
             values = arraytype()
             self.execute_function(
@@ -340,7 +379,7 @@ class XmiWrapper(Xmi):
             )
         elif vartype.lower().startswith("float"):
             arraytype = np.ctypeslib.ndpointer(
-                dtype=np.float, ndim=1, shape=(1,), flags="F"
+                dtype=np.float, ndim=1, shape=(1,), flags="C"
             )
             values = arraytype()
             self.execute_function(
@@ -351,7 +390,7 @@ class XmiWrapper(Xmi):
             )
         elif vartype.lower().startswith("int"):
             arraytype = np.ctypeslib.ndpointer(
-                dtype=np.int32, ndim=1, shape=(1,), flags="F"
+                dtype=np.int32, ndim=1, shape=(1,), flags="C"
             )
             values = arraytype()
             self.execute_function(
@@ -371,9 +410,8 @@ class XmiWrapper(Xmi):
         raise NotImplementedError
 
     def set_value(self, name: str, values: np.ndarray) -> None:
-        if not values.flags["F"]:
-            raise InputError("Array should have fortran layout")
-
+        if not values.flags["C"]:
+            raise InputError("Array should have C layout")
         vartype = self.get_var_type(name)
         if vartype.lower().startswith("double"):
             if values.dtype != np.float64:
