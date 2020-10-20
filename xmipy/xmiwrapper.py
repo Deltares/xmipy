@@ -301,7 +301,7 @@ class XmiWrapper(Xmi):
             )
         elif var_type.lower().startswith("int"):
             if dest is None:
-                dest = np.empty(shape=var_shape, dtype=np.int, order="C")
+                dest = np.empty(shape=var_shape, dtype=np.int32, order="C")
             self.execute_function(
                 self.lib.get_value_int,
                 c_char_p(name.encode()),
