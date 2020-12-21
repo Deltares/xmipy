@@ -480,10 +480,11 @@ def test_set_value(flopy_dis, modflow_lib_path):
             mf6.set_value(head_sln_tag, new_head)
 
         # 1D integer array
-        with pytest.raises(NotImplementedError):
-            mxit_tag = mf6.get_var_address("MXITER", "SLN_1")
-            arr_int = np.zeros(shape=(1,), dtype=np.int32)
-            mf6.set_value(mxit_tag, arr_int)
+        mxit_tag = mf6.get_var_address("MXITER", "SLN_1")
+        arr_int = np.zeros(shape=(1,), dtype=np.int32)
+        arr_int[0] = 999
+        mf6.set_value(mxit_tag, arr_int)
+        assert mf6.get_value(mxit_tag)[0] == 999
 
     finally:
         mf6.finalize()
