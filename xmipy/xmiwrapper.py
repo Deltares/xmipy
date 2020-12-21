@@ -423,7 +423,14 @@ class XmiWrapper(Xmi):
                 detail="for variable " + name,
             )
         elif vartype.lower().startswith("int"):
-            raise NotImplementedError()
+            if values.dtype != np.int32:
+                raise InputError("Array should have int32 elements")
+            self.execute_function(
+                self.lib.set_value_int,
+                c_char_p(name.encode()),
+                byref(values.ctypes.data_as(POINTER(c_int))),
+                detail="for variable " + name,
+            )
         else:
             raise InputError("Unsupported value type")
 
