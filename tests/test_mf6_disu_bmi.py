@@ -84,9 +84,6 @@ def test_get_grid_nodes_per_face(flopy_disu, modflow_lib_path):
 
 
 def test_get_grid_face_nodes(flopy_disu, modflow_lib_path):
-    assert True
-    return
-    # todo: fix this test
     """Tests if the grid_face_nodes can be extracted"""
     mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_disu.sim_path)
 
