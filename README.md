@@ -5,7 +5,7 @@
 
 
 `xmipy` is an extension to [bmipy](https://pypi.org/project/bmipy/) including an implementation of the abstract methods.
-The extended interface is required to couple certain hydrological kernels, particularly MODFLOW 6. Currently it is a joint development of the USGS and Deltares. The [imod_coupler](https://github.com/Deltares/imod_coupler) uses it, for example, to couple Modflow 6 and MetaSWAP.
+Changed. The extended interface is required to couple certain hydrological kernels, particularly MODFLOW 6. Currently it is a joint development of the USGS and Deltares. The [imod_coupler](https://github.com/Deltares/imod_coupler) uses it, for example, to couple Modflow 6 and MetaSWAP.
 
 `xmipy` can be installed by running
 ```
