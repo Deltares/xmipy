@@ -31,7 +31,7 @@ jobs:
         shell: bash
         if: runner.os == 'macOS'
         run: |
-          sudo ln -fs /usr/local/gfortran/bin/gfortran-10 /usr/local/bin/gfortran
+          sudo ln -fs /usr/local/bin/gfortran-10 /usr/local/bin/gfortran
           gfortran --version
       - name: Install and print system dependencies (Windows)
         if: runner.os == 'Windows'
