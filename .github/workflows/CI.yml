@@ -23,16 +23,13 @@ jobs:
       - name: Install and print system dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
-          sudo ln -fs /usr/bin/gfortran-9 /usr/local/bin/gfortran
+          sudo ln -fs /usr/bin/gfortran-10 /usr/local/bin/gfortran
           gfortran --version
       - name: Install and print system dependencies (macOS)
         shell: bash
         if: runner.os == 'macOS'
         run: |
-          brew cask install gfortran
-          sudo ln -fs /usr/local/gfortran/bin/gfortran /usr/local/bin/gfortran
-          sudo ln -fs /usr/local/gfortran/bin/gcc /usr/local/bin/gcc
-          sudo ln -fs /usr/local/gfortran/bin/g++ /usr/local/bin/g++
+          sudo ln -fs /usr/local/gfortran/bin/gfortran-10 /usr/local/bin/gfortran
           gfortran --version
       - name: Install and print system dependencies (Windows)
         if: runner.os == 'Windows'
