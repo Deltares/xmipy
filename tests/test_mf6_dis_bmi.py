@@ -4,7 +4,12 @@ import numpy as np
 import pytest
 
 from xmipy import XmiWrapper
-from xmipy.errors import InputError, XMIError
+from xmipy.errors import InputError
+
+
+def test_get_component_name(flopy_dis, modflow_lib_path):
+    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
+    assert mf6.get_component_name() == "MODFLOW 6"
 
 
 def test_set_int(flopy_dis, modflow_lib_path):
@@ -267,17 +272,6 @@ def test_get_grid_type(flopy_dis, modflow_lib_path):
         assert grid_type == "rectilinear"
     finally:
         mf6.finalize()
-
-
-def test_get_component_name(flopy_dis, modflow_lib_path):
-    """Expects to be implemented as soon as `get_component_name` is implemented"""
-    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
-
-    # Write output to screen:
-    mf6.set_int("ISTDOUTTOFILE", 0)
-
-    with pytest.raises(NotImplementedError):
-        mf6.get_component_name()
 
 
 def test_get_input_item_count(flopy_dis, modflow_lib_path):

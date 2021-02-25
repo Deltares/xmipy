@@ -149,7 +149,10 @@ class XmiWrapper(Xmi):
         return dt.value
 
     def get_component_name(self) -> str:
-        raise NotImplementedError
+        len_name = self.get_constant_int("BMI_LENCOMPONENTNAME")
+        component_name = create_string_buffer(len_name)
+        self.execute_function(self.lib.get_component_name, byref(component_name))
+        return component_name.value.decode("ascii")
 
     def get_input_item_count(self) -> int:
         count = c_int(0)
@@ -593,19 +596,19 @@ class XmiWrapper(Xmi):
         self.execute_function(self.lib.get_subcomponent_count, byref(count))
         return count.value
 
-    def prepare_solve(self, component_id) -> None:
+    def prepare_solve(self, component_id=1) -> None:
         cid = c_int(component_id)
         with cd(self.working_directory):
             self.execute_function(self.lib.prepare_solve, byref(cid))
 
-    def solve(self, component_id) -> bool:
+    def solve(self, component_id=1) -> bool:
         cid = c_int(component_id)
         has_converged = c_int(0)
         with cd(self.working_directory):
             self.execute_function(self.lib.solve, byref(cid), byref(has_converged))
         return has_converged.value == 1
 
-    def finalize_solve(self, component_id) -> None:
+    def finalize_solve(self, component_id=1) -> None:
         cid = c_int(component_id)
 
         with cd(self.working_directory):
@@ -614,6 +617,10 @@ class XmiWrapper(Xmi):
     def get_var_address(
         self, var_name: str, component_name: str, subcomponent_name=""
     ) -> str:
+        var_name = var_name.upper()
+        component_name = component_name.upper()
+        subcomponent_name = subcomponent_name.upper()
+
         len_var_address = self.get_constant_int("BMI_LENVARADDRESS")
         var_address = create_string_buffer(len_var_address)
         self.execute_function(
@@ -636,7 +643,28 @@ class XmiWrapper(Xmi):
 
         try:
             if function(*args) != Status.SUCCESS:
-                msg = f"MODFLOW 6 BMI, exception in: {function.__name__} ({detail})"
+                msg = f"BMI exception in: {function.__name__} ({detail})"
+
+                # try to get detailed error msg, beware:
+                # directly call CDLL methods to avoid recursion
+                try:
+                    len_err_msg = self.get_constant_int("BMI_LENERRMESSAGE")
+                    err_msg = create_string_buffer(len_err_msg)
+                    self.lib.get_last_bmi_error(byref(err_msg))
+
+                    len_name = self.get_constant_int("BMI_LENCOMPONENTNAME")
+                    component_name = create_string_buffer(len_name)
+                    self.lib.get_component_name(byref(component_name))
+
+                    print(
+                        "--- Kernel message ("
+                        + component_name.value.decode()
+                        + ") ---\n=> "
+                        + err_msg.value.decode()
+                    )
+                except AttributeError as e:
+                    print("--- Kernel message ---\n" + "=> no details ...")
+
                 raise XMIError(msg)
         finally:
             if self.timing:

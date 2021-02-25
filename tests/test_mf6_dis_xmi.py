@@ -13,6 +13,10 @@ def test_get_var_address(flopy_dis, modflow_lib_path):
 
         head_tag = mf6.get_var_address("X", "SLN_1")
         assert head_tag == "SLN_1/X"
+
+        # with lowercase should work too
+        k11_tag = mf6.get_var_address("k11", flopy_dis.model_name.lower(), "NPF")
+        assert k11_tag == flopy_dis.model_name.upper() + "/NPF/K11"
     finally:
         mf6.finalize()
 
@@ -131,6 +135,10 @@ def test_finalize_solve(flopy_dis, modflow_lib_path):
         mf6.finalize_solve(sol_id)
     finally:
         mf6.finalize()
+
+
+def test_solve_default_solution_id(flopy_dis, modflow_lib_path):
+    assert False
 
 
 def test_finalize_time_step(flopy_dis, modflow_lib_path):
