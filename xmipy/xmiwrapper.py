@@ -662,7 +662,7 @@ class XmiWrapper(Xmi):
                         + ") ---\n=> "
                         + err_msg.value.decode()
                     )
-                except AttributeError as e:
+                except AttributeError:
                     print("--- Kernel message ---\n" + "=> no details ...")
 
                 raise XMIError(msg)

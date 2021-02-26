@@ -138,7 +138,39 @@ def test_finalize_solve(flopy_dis, modflow_lib_path):
 
 
 def test_solve_default_solution_id(flopy_dis, modflow_lib_path):
-    assert False
+    """Should no longer be needed to put in the solution id,
+    when there is only one (or you want to use the first one
+    in the sequence"""
+    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
+
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    try:
+        # Initialize
+        mf6.initialize()
+
+        #
+        mf6.prepare_solve()
+
+        # Get max iteration
+        mxit_tag = mf6.get_var_address("MXITER", "SLN_1")
+        max_iter_arr = mf6.get_value_ptr(mxit_tag)
+        max_iter = max_iter_arr[0]
+
+        kiter = 0
+        while kiter < max_iter:
+            has_converged = mf6.solve()
+            kiter += 1
+
+            if has_converged:
+                break
+
+        assert has_converged
+
+        mf6.finalize_solve()
+    finally:
+        mf6.finalize()
 
 
 def test_finalize_time_step(flopy_dis, modflow_lib_path):
