@@ -4,7 +4,12 @@ import numpy as np
 import pytest
 
 from xmipy import XmiWrapper
-from xmipy.errors import InputError, XMIError
+from xmipy.errors import InputError
+
+
+def test_get_component_name(flopy_dis, modflow_lib_path):
+    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
+    assert mf6.get_component_name() == "MODFLOW 6"
 
 
 def test_set_int(flopy_dis, modflow_lib_path):
@@ -269,17 +274,6 @@ def test_get_grid_type(flopy_dis, modflow_lib_path):
         mf6.finalize()
 
 
-def test_get_component_name(flopy_dis, modflow_lib_path):
-    """Expects to be implemented as soon as `get_component_name` is implemented"""
-    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
-
-    # Write output to screen:
-    mf6.set_int("ISTDOUTTOFILE", 0)
-
-    with pytest.raises(NotImplementedError):
-        mf6.get_component_name()
-
-
 def test_get_input_item_count(flopy_dis, modflow_lib_path):
     mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
 
@@ -473,11 +467,6 @@ def test_set_value(flopy_dis, modflow_lib_path):
         new_head = 2.0 * orig_head
         mf6.set_value(head_tag, new_head)
         assert np.array_equal(orig_head, new_head)
-
-        # can't set through solution variable:
-        head_sln_tag = mf6.get_var_address("X", "SLN_1")
-        with pytest.raises(XMIError):
-            mf6.set_value(head_sln_tag, new_head)
 
         # 1D integer array
         mxit_tag = mf6.get_var_address("MXITER", "SLN_1")
