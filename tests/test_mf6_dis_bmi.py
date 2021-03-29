@@ -479,42 +479,6 @@ def test_set_value(flopy_dis, modflow_lib_path):
         mf6.finalize()
 
 
-def test_set_value_sideeffect(flopy_gwf_sto, modflow_lib_path):
-    mf6 = XmiWrapper(
-        lib_path=modflow_lib_path, working_directory=flopy_gwf_sto.sim_path
-    )
-
-    try:
-        # Initialize
-        mf6.initialize()
-
-        area = 100.0
-        sc1_tag = next(var for var in mf6.get_input_var_names() if var.endswith("/SC1"))
-        sc1 = mf6.get_value_ptr(sc1_tag)
-        sc2_tag = next(var for var in mf6.get_input_var_names() if var.endswith("/SC2"))
-        sc2 = mf6.get_value_ptr(sc2_tag)
-
-        orig_sc1 = sc1.copy()
-
-        new_sc1 = np.zeros(shape=mf6.get_var_shape(sc2_tag))
-        new_sc1[:] = sc1 / area
-
-        # setting storage should trigger the conversion again,
-        # such that the sc1 values end up the same:
-        mf6.set_value(sc1_tag, new_sc1)
-        assert np.array_equal(sc1, orig_sc1)
-
-        # same for SC2
-        orig_sc2 = sc2.copy()
-        new_sc2 = sc2 / area
-        mf6.set_value(sc2_tag, new_sc2)
-        assert np.array_equal(sc2, orig_sc2)
-
-        mf6.update()
-    finally:
-        mf6.finalize()
-
-
 def test_set_value_at_indices(flopy_dis, modflow_lib_path):
     """Expects to be implemented as soon as `set_value_at_indices` is implemented"""
     mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
