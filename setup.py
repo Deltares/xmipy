@@ -41,12 +41,7 @@ setup(
     url="https://github.com/Deltares/xmipy.git",
     license="CC0",
     platforms="Windows, Mac OS-X, Linux",
-    install_requires=[
-        "bmipy",
-        "numpy",
-        "dataclasses; python_version == '3.6'",
-        "pytest",
-    ],
+    install_requires=["bmipy", "numpy", "dataclasses; python_version == '3.6'"],
     python_requires=">=3.6",
     packages=find_namespace_packages(exclude=("tests", "examples")),
     version=get_version("xmipy/__init__.py"),
