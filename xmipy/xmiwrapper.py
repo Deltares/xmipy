@@ -131,6 +131,8 @@ class XmiWrapper(Xmi):
                 self._state = State.UNINITIALIZED
             try:
                 FreeLibrary(self.lib._handle)
+            except:
+                pass
         else:
             raise InputError("The library is not initialized yet")
 
