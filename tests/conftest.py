@@ -21,7 +21,7 @@ def modflow_lib_path(tmp_path_factory):
         lib_path = tmp_path / "libmf6.so"
     elif sysinfo == "Darwin":
         url += "mac.zip"
-        lib_path = tmp_path / "libmf6.so"
+        lib_path = tmp_path / "libmf6.dylib"
 
     pymake.download_and_unzip(url=url, pth=str(tmp_path))
     return str(lib_path)
