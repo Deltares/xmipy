@@ -1,11 +1,12 @@
-import pytest
 import platform
-import flopy
-import pymake
 from dataclasses import dataclass
-from typing import List, Tuple, Any
-from flopy.mf6 import MFSimulation
+from typing import Any, List, Tuple
+
+import flopy
 import numpy as np
+import pymake
+import pytest
+from flopy.mf6 import MFSimulation
 
 
 @pytest.fixture(scope="session")

@@ -2,7 +2,7 @@ name: Continuous integration
 
 on:
   push:
-    branches: 
+    branches:
       - develop
       - master
   pull_request:
@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.8', '3.9', '3.10']
+        python-version: ["3.8", "3.9", "3.10"]
         os: [ubuntu-20.04, macos-latest, windows-latest]
 
     steps:
@@ -40,16 +40,13 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           gfortran --version
-      - name: Install xmipy
+        # Remove as soon as https://github.com/modflowpy/pymake/issues/111 is fixed
+      - name: Install numpy
         run: |
-          pip install -e .
+          pip install numpy
       - name: Install test dependencies
         run: |
-          pip install requests
-          pip install https://github.com/modflowpy/pymake/zipball/master
-          pip install https://github.com/modflowpy/flopy/zipball/develop
-          pip install pytest
-          pip install pytest-cov
+          pip install -e ".[tests]"
       - name: Test with pytest
         # The flag -s stops pytest from capturing output
         # This is necessary until proper error reporting is implemented by Modflow
@@ -59,18 +56,19 @@ jobs:
         uses: codecov/codecov-action@v1
 
   lint:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.8
         uses: actions/setup-python@v1
         with:
           python-version: 3.8
-      - name: Install packages
+      - name: Install lint dependencies
         run: |
-          pip install black
-          pip install flake8
+          pip install -e ".[lint]"
       - name: Run black
         run: black --check .
+      - name: Run isort
+        run: isort --check .
       - name: Run flake8
         run: flake8

@@ -4,8 +4,8 @@ import platform
 import sys
 from ctypes import (
     CDLL,
-    byref,
     POINTER,
+    byref,
     c_char_p,
     c_double,
     c_int,

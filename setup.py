@@ -1,7 +1,8 @@
-import sys
-from setuptools import find_namespace_packages, setup
 import codecs
 import os.path
+import sys
+
+from setuptools import find_namespace_packages, setup
 
 # edit author dictionary as necessary
 author_dict = {
@@ -41,8 +42,16 @@ setup(
     url="https://github.com/Deltares/xmipy.git",
     license="CC0",
     platforms="Windows, Mac OS-X, Linux",
-    install_requires=["bmipy", "numpy", "dataclasses; python_version == '3.6'"],
-    python_requires=">=3.6",
+    install_requires=["bmipy", "numpy"],
+    extras_require={
+        "tests": ["pytest", "pytest-cov", "requests", "mfpymake", "flopy"],
+        "lint": [
+            "flake8",
+            "black",
+            "isort",
+        ],
+    },
+    python_requires=">=3.7",
     packages=find_namespace_packages(exclude=("tests", "examples")),
     version=get_version("xmipy/__init__.py"),
     classifiers=["Topic :: Scientific/Engineering :: Hydrology"],
