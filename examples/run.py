@@ -1,6 +1,6 @@
+import getopt
 import os
 import sys
-import getopt
 
 from xmipy import XmiWrapper
 

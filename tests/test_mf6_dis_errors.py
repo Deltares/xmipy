@@ -1,9 +1,9 @@
+from ctypes import POINTER, c_char
+
 import pytest
 
 from xmipy import XmiWrapper
 from xmipy.errors import XMIError
-
-from ctypes import c_char, POINTER
 
 
 def test_err_unknown_var(flopy_dis, modflow_lib_path):
