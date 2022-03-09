@@ -13,6 +13,12 @@ from ctypes import (
     cdll,
     create_string_buffer,
 )
+
+FreeLibrary = None
+try:
+    import _ctypes.FreeLibrary
+except Exception:
+    pass
 from enum import Enum, IntEnum, unique
 from typing import Iterable, Tuple
 
@@ -125,6 +131,10 @@ class XmiWrapper(Xmi):
             with cd(self.working_directory):
                 self.execute_function(self.lib.finalize)
                 self._state = State.UNINITIALIZED
+            try:
+                FreeLibrary(self.lib._handle)
+            except Exception:
+                pass
         else:
             raise InputError("The library is not initialized yet")
 
