@@ -40,10 +40,6 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           gfortran --version
-        # Remove as soon as https://github.com/modflowpy/pymake/issues/111 is fixed
-      - name: Install numpy
-        run: |
-          pip install numpy
       - name: Install test dependencies
         run: |
           pip install -e ".[tests]"
