@@ -1,5 +1,7 @@
 import os
+
 import matplotlib.pyplot as plt
+
 from xmipy import XmiWrapper
 
 # for debugging
