@@ -30,6 +30,10 @@ jobs:
         run: |
           sudo ln -fs /usr/bin/gfortran-10 /usr/local/bin/gfortran
           gfortran --version
+      # Remove as soon as https://github.com/modflowpy/pymake/issues/111 is fixed
+      - name: Install numpy
+        run: |
+          pip install numpy
       - name: Install and print system dependencies (macOS)
         shell: bash
         if: runner.os == 'macOS'
