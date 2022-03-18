@@ -1,11 +1,12 @@
 import os
 from contextlib import contextmanager
+from pathlib import Path
 
 
 @contextmanager
-def cd(newdir):
-    prevdir = os.getcwd()
-    os.chdir(os.path.expanduser(newdir))
+def cd(newdir: Path):
+    prevdir = Path().cwd()
+    os.chdir(newdir)
     try:
         yield
     finally:

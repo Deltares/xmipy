@@ -14,15 +14,12 @@ from ctypes import (
     create_string_buffer,
 )
 
-FreeLibrary = None
-try:
-    import _ctypes.FreeLibrary
-except Exception:
-    pass
 from enum import Enum, IntEnum, unique
 from typing import Iterable, Tuple
 
 import numpy as np
+from pathlib import Path
+from typing import Optional
 
 from xmipy.errors import InputError, TimerError, XMIError
 from xmipy.timers.timer import Timer
@@ -52,25 +49,28 @@ class XmiWrapper(Xmi):
 
     def __init__(
         self,
-        lib_path: str,
-        lib_dependency: str = None,
-        working_directory: str = ".",
+        lib_path: str | Path,
+        lib_dependency: Optional[str | Path] = None,
+        working_directory: Optional[str | Path] = None,
         timing: bool = False,
     ):
 
         self._add_lib_dependency(lib_dependency)
         if sys.version_info[0:2] < (3, 8):
             # Python version < 3.8
-            self.lib = CDLL(lib_path)
+            self.lib = CDLL(str(lib_path))
         else:
             # LoadLibraryEx flag: LOAD_WITH_ALTERED_SEARCH_PATH 0x08
-            # -> uses the altered search path for resolving ddl dependencies
+            # -> uses the altered search path for resolving dll dependencies
             # `winmode` has no effect while running on Linux or macOS
             # Note: this could make xmipy less secure (dll-injection)
             # Can we get it to work without this flag?
-            self.lib = CDLL(lib_path, winmode=0x08)
+            self.lib = CDLL(str(lib_path), winmode=0x08)
 
-        self.working_directory = working_directory
+        if working_directory:
+            self.working_directory = Path(working_directory)
+        else:
+            self.working_directory = Path().cwd()
         self._state = State.UNINITIALIZED
         self.timing = timing
         self.libname = os.path.basename(lib_path)
@@ -82,8 +82,9 @@ class XmiWrapper(Xmi):
             )
 
     @staticmethod
-    def _add_lib_dependency(lib_dependency):
+    def _add_lib_dependency(lib_dependency: Optional[str | Path]):
         if lib_dependency:
+            lib_dependency = str(lib_dependency)
             if platform.system() == "Windows":
                 os.environ["PATH"] = lib_dependency + os.pathsep + os.environ["PATH"]
             else:
@@ -131,10 +132,6 @@ class XmiWrapper(Xmi):
             with cd(self.working_directory):
                 self.execute_function(self.lib.finalize)
                 self._state = State.UNINITIALIZED
-            try:
-                FreeLibrary(self.lib._handle)
-            except Exception:
-                pass
         else:
             raise InputError("The library is not initialized yet")
 
@@ -174,7 +171,7 @@ class XmiWrapper(Xmi):
         self.execute_function(self.lib.get_output_item_count, byref(count))
         return count.value
 
-    def get_input_var_names(self) -> Tuple[str]:
+    def get_input_var_names(self) -> tuple[str]:
         len_address = self.get_constant_int("BMI_LENVARADDRESS")
         nr_input_vars = self.get_input_item_count()
         len_names = nr_input_vars * len_address
@@ -376,6 +373,8 @@ class XmiWrapper(Xmi):
                 detail="for variable " + name,
             )
             return values.contents
+        else:
+            raise InputError(f"Given {vartype=} is invalid.")
 
     def get_value_ptr_scalar(self, name: str) -> np.ndarray:
         vartype = self.get_var_type(name)
@@ -392,7 +391,7 @@ class XmiWrapper(Xmi):
             )
         elif vartype.lower().startswith("float"):
             arraytype = np.ctypeslib.ndpointer(
-                dtype=np.float, ndim=1, shape=(1,), flags="C"
+                dtype=float, ndim=1, shape=(1,), flags="C"
             )
             values = arraytype()
             self.execute_function(
