@@ -40,10 +40,6 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           gfortran --version
-        # Remove as soon as https://github.com/modflowpy/pymake/issues/111 is fixed
-      - name: Install numpy
-        run: |
-          pip install numpy
       - name: Install test dependencies
         run: |
           pip install -e ".[tests]"
@@ -59,10 +55,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.8
+      - name: Set up Python
         uses: actions/setup-python@v1
-        with:
-          python-version: 3.8
       - name: Install lint dependencies
         run: |
           pip install -e ".[lint]"
@@ -70,5 +64,5 @@ jobs:
         run: black --check .
       - name: Run isort
         run: isort --check .
-      - name: Run flake8
-        run: flake8
+      - name: Run mypy
+        run: mypy --check .
