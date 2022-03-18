@@ -15,7 +15,7 @@ from ctypes import (
 )
 from enum import Enum, IntEnum, unique
 from pathlib import Path
-from typing import Iterable, Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import numpy as np
 
@@ -47,9 +47,9 @@ class XmiWrapper(Xmi):
 
     def __init__(
         self,
-        lib_path: str | Path,
-        lib_dependency: Optional[str | Path] = None,
-        working_directory: Optional[str | Path] = None,
+        lib_path: Union[str, Path],
+        lib_dependency: Union[str, Path, None] = None,
+        working_directory: Union[str, Path, None] = None,
         timing: bool = False,
     ):
 
