@@ -69,4 +69,4 @@ jobs:
       - name: Run isort
         run: isort --check .
       - name: Run mypy
-        run: mypy --check .
+        run: mypy --check --ignore-missing-imports .
