@@ -322,7 +322,7 @@ class XmiWrapper(Xmi):
 
         return dest
 
-    def get_value_ptr(self, name: str) -> NDArray:
+    def get_value_ptr(self, name: str):
 
         # first scalars
         rank = self.get_var_rank(name)
@@ -375,7 +375,7 @@ class XmiWrapper(Xmi):
         else:
             raise InputError(f"Given {vartype=} is invalid.")
 
-    def get_value_ptr_scalar(self, name: str) -> NDArray:
+    def get_value_ptr_scalar(self, name: str):
         vartype = self.get_var_type(name)
         if vartype.lower().startswith("double"):
             arraytype = np.ctypeslib.ndpointer(
