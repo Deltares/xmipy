@@ -13,13 +13,11 @@ from ctypes import (
     cdll,
     create_string_buffer,
 )
-
 from enum import Enum, IntEnum, unique
-from typing import Iterable, Tuple
+from pathlib import Path
+from typing import Iterable, Optional, Tuple
 
 import numpy as np
-from pathlib import Path
-from typing import Optional
 
 from xmipy.errors import InputError, TimerError, XMIError
 from xmipy.timers.timer import Timer
