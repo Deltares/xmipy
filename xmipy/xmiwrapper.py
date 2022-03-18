@@ -182,7 +182,7 @@ class XmiWrapper(Xmi):
 
         # decode
         input_vars = (
-            names[i * len_address : (i + 1) * len_address]
+            names[i * len_address : (i + 1) * len_address]  # type: ignore
             .split(b"\0", 1)[0]
             .decode("ascii")
             for i in range(nr_input_vars)
@@ -201,7 +201,7 @@ class XmiWrapper(Xmi):
 
         # decode
         output_vars = [
-            names[i * len_address : (i + 1) * len_address]
+            names[i * len_address : (i + 1) * len_address]  # type: ignore
             .split(b"\0", 1)[0]
             .decode("ascii")
             for i in range(nr_output_vars)
