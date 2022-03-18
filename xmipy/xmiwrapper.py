@@ -15,9 +15,10 @@ from ctypes import (
 )
 from enum import Enum, IntEnum, unique
 from pathlib import Path
-from typing import Optional, Tuple, Union
+from typing import Union
 
 import numpy as np
+from numpy.typing import NDArray
 
 from xmipy.errors import InputError, TimerError, XMIError
 from xmipy.timers.timer import Timer
@@ -53,7 +54,8 @@ class XmiWrapper(Xmi):
         timing: bool = False,
     ):
 
-        self._add_lib_dependency(lib_dependency)
+        if lib_dependency:
+            self._add_lib_dependency(lib_dependency)
         if sys.version_info[0:2] < (3, 8):
             # Python version < 3.8
             self.lib = CDLL(str(lib_path))
@@ -80,21 +82,20 @@ class XmiWrapper(Xmi):
             )
 
     @staticmethod
-    def _add_lib_dependency(lib_dependency: Optional[str | Path]):
-        if lib_dependency:
-            lib_dependency = str(lib_dependency)
-            if platform.system() == "Windows":
-                os.environ["PATH"] = lib_dependency + os.pathsep + os.environ["PATH"]
+    def _add_lib_dependency(lib_dependency: Union[str, Path]):
+        lib_dependency = str(lib_dependency)
+        if platform.system() == "Windows":
+            os.environ["PATH"] = lib_dependency + os.pathsep + os.environ["PATH"]
+        else:
+            # Assume a Unix-like system
+            if "LD_LIBRARY_PATH" in os.environ:
+                os.environ["LD_LIBRARY_PATH"] = (
+                    lib_dependency + os.pathsep + os.environ["LD_LIBRARY_PATH"]
+                )
             else:
-                # Assume a Unix-like system
-                if "LD_LIBRARY_PATH" in os.environ:
-                    os.environ["LD_LIBRARY_PATH"] = (
-                        lib_dependency + os.pathsep + os.environ["LD_LIBRARY_PATH"]
-                    )
-                else:
-                    os.environ["LD_LIBRARY_PATH"] = lib_dependency
+                os.environ["LD_LIBRARY_PATH"] = lib_dependency
 
-    def report_timing_totals(self):
+    def report_timing_totals(self) -> float:
         if self.timing:
             total = self.timer.report_totals()
             logger.info(f"Total elapsed time for {self.libname}: {total:0.4f} seconds")
@@ -169,7 +170,7 @@ class XmiWrapper(Xmi):
         self.execute_function(self.lib.get_output_item_count, byref(count))
         return count.value
 
-    def get_input_var_names(self) -> tuple[str]:
+    def get_input_var_names(self):
         len_address = self.get_constant_int("BMI_LENVARADDRESS")
         nr_input_vars = self.get_input_item_count()
         len_names = nr_input_vars * len_address
@@ -180,15 +181,15 @@ class XmiWrapper(Xmi):
         self.execute_function(self.lib.get_input_var_names, byref(names))
 
         # decode
-        input_vars = [
+        input_vars = (
             names[i * len_address : (i + 1) * len_address]
             .split(b"\0", 1)[0]
             .decode("ascii")
             for i in range(nr_input_vars)
-        ]
+        )
         return tuple(input_vars)
 
-    def get_output_var_names(self) -> Tuple[str]:
+    def get_output_var_names(self):
         len_address = self.get_constant_int("BMI_LENVARADDRESS")
         nr_output_vars = self.get_output_item_count()
         len_names = nr_output_vars * len_address
@@ -229,7 +230,7 @@ class XmiWrapper(Xmi):
         return var_type.value.decode()
 
     # strictly speaking not BMI...
-    def get_var_shape(self, name: str) -> np.ndarray:
+    def get_var_shape(self, name: str) -> NDArray:
         rank = self.get_var_rank(name)
         array = np.zeros(rank, dtype=np.int32)
         self.execute_function(
@@ -279,7 +280,7 @@ class XmiWrapper(Xmi):
     def get_time_units(self) -> str:
         raise NotImplementedError
 
-    def get_value(self, name: str, dest: np.ndarray = None) -> np.ndarray:
+    def get_value(self, name: str, dest: NDArray = None) -> NDArray:
         # make sure that optional array is of correct layout:
         if dest is not None:
             if not dest.flags["C"]:
@@ -321,7 +322,7 @@ class XmiWrapper(Xmi):
 
         return dest
 
-    def get_value_ptr(self, name: str) -> np.ndarray:
+    def get_value_ptr(self, name: str) -> NDArray:
 
         # first scalars
         rank = self.get_var_rank(name)
@@ -374,7 +375,7 @@ class XmiWrapper(Xmi):
         else:
             raise InputError(f"Given {vartype=} is invalid.")
 
-    def get_value_ptr_scalar(self, name: str) -> np.ndarray:
+    def get_value_ptr_scalar(self, name: str) -> NDArray:
         vartype = self.get_var_type(name)
         if vartype.lower().startswith("double"):
             arraytype = np.ctypeslib.ndpointer(
@@ -414,12 +415,10 @@ class XmiWrapper(Xmi):
 
         return values.contents
 
-    def get_value_at_indices(
-        self, name: str, dest: np.ndarray, inds: np.ndarray
-    ) -> np.ndarray:
+    def get_value_at_indices(self, name: str, dest: NDArray, inds: NDArray) -> NDArray:
         raise NotImplementedError
 
-    def set_value(self, name: str, values: np.ndarray) -> None:
+    def set_value(self, name: str, values: NDArray) -> None:
         if not values.flags["C"]:
             raise InputError("Array should have C layout")
         vartype = self.get_var_type(name)
@@ -444,9 +443,7 @@ class XmiWrapper(Xmi):
         else:
             raise InputError("Unsupported value type")
 
-    def set_value_at_indices(
-        self, name: str, inds: np.ndarray, src: np.ndarray
-    ) -> None:
+    def set_value_at_indices(self, name: str, inds: NDArray, src: NDArray) -> None:
         raise NotImplementedError
 
     def get_grid_rank(self, grid: int) -> int:
@@ -483,7 +480,7 @@ class XmiWrapper(Xmi):
         )
         return grid_type.value.decode()
 
-    def get_grid_shape(self, grid: int, shape: np.ndarray) -> np.ndarray:
+    def get_grid_shape(self, grid: int, shape: NDArray) -> NDArray:
         c_grid = c_int(grid)
         self.execute_function(
             self.lib.get_grid_shape,
@@ -493,13 +490,13 @@ class XmiWrapper(Xmi):
         )
         return shape
 
-    def get_grid_spacing(self, grid: int, spacing: np.ndarray) -> np.ndarray:
+    def get_grid_spacing(self, grid: int, spacing: NDArray) -> NDArray:
         raise NotImplementedError
 
-    def get_grid_origin(self, grid: int, origin: np.ndarray) -> np.ndarray:
+    def get_grid_origin(self, grid: int, origin: NDArray) -> NDArray:
         raise NotImplementedError
 
-    def get_grid_x(self, grid: int, x: np.ndarray) -> np.ndarray:
+    def get_grid_x(self, grid: int, x: NDArray) -> NDArray:
         c_grid = c_int(grid)
         self.execute_function(
             self.lib.get_grid_x,
@@ -509,7 +506,7 @@ class XmiWrapper(Xmi):
         )
         return x
 
-    def get_grid_y(self, grid: int, y: np.ndarray) -> np.ndarray:
+    def get_grid_y(self, grid: int, y: NDArray) -> NDArray:
         c_grid = c_int(grid)
         self.execute_function(
             self.lib.get_grid_y,
@@ -519,7 +516,7 @@ class XmiWrapper(Xmi):
         )
         return y
 
-    def get_grid_z(self, grid: int, z: np.ndarray) -> np.ndarray:
+    def get_grid_z(self, grid: int, z: NDArray) -> NDArray:
         c_grid = c_int(grid)
         self.execute_function(
             self.lib.get_grid_z,
@@ -554,13 +551,13 @@ class XmiWrapper(Xmi):
         )
         return grid_face_count.value
 
-    def get_grid_edge_nodes(self, grid: int, edge_nodes: np.ndarray) -> np.ndarray:
+    def get_grid_edge_nodes(self, grid: int, edge_nodes: NDArray) -> NDArray:
         raise NotImplementedError
 
-    def get_grid_face_edges(self, grid: int, face_edges: np.ndarray) -> np.ndarray:
+    def get_grid_face_edges(self, grid: int, face_edges: NDArray) -> NDArray:
         raise NotImplementedError
 
-    def get_grid_face_nodes(self, grid: int, face_nodes: np.ndarray) -> np.ndarray:
+    def get_grid_face_nodes(self, grid: int, face_nodes: NDArray) -> NDArray:
         c_grid = c_int(grid)
         self.execute_function(
             self.lib.get_grid_face_nodes,
@@ -570,9 +567,7 @@ class XmiWrapper(Xmi):
         )
         return face_nodes
 
-    def get_grid_nodes_per_face(
-        self, grid: int, nodes_per_face: np.ndarray
-    ) -> np.ndarray:
+    def get_grid_nodes_per_face(self, grid: int, nodes_per_face: NDArray) -> NDArray:
         c_grid = c_int(grid)
         self.execute_function(
             self.lib.get_grid_nodes_per_face,
