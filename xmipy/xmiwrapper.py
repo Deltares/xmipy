@@ -323,7 +323,6 @@ class XmiWrapper(Xmi):
         return dest
 
     def get_value_ptr(self, name: str):
-
         # first scalars
         rank = self.get_var_rank(name)
         if rank == 0:

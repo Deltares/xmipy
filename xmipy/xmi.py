@@ -21,7 +21,7 @@ class Xmi(Bmi):
     """
 
     @abstractmethod
-    def prepare_time_step(self, dt) -> None:
+    def prepare_time_step(self, dt: float) -> None:
         """ """
         ...
 
@@ -41,16 +41,16 @@ class Xmi(Bmi):
         ...
 
     @abstractmethod
-    def prepare_solve(self, component_id) -> None:
+    def prepare_solve(self, component_id: int) -> None:
         """ """
         ...
 
     @abstractmethod
-    def solve(self, component_id) -> bool:
+    def solve(self, component_id: int) -> bool:
         """ """
         ...
 
     @abstractmethod
-    def finalize_solve(self, component_id) -> None:
+    def finalize_solve(self, component_id: int) -> None:
         """ """
         ...
