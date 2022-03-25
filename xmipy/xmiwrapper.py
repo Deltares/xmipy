@@ -15,7 +15,7 @@ from ctypes import (
 )
 from enum import Enum, IntEnum, unique
 from pathlib import Path
-from typing import Union
+from typing import Any, Callable, Union
 
 import numpy as np
 from numpy.typing import NDArray
@@ -82,7 +82,7 @@ class XmiWrapper(Xmi):
             )
 
     @staticmethod
-    def _add_lib_dependency(lib_dependency: Union[str, Path]):
+    def _add_lib_dependency(lib_dependency: Union[str, Path]) -> None:
         lib_dependency = str(lib_dependency)
         if platform.system() == "Windows":
             os.environ["PATH"] = lib_dependency + os.pathsep + os.environ["PATH"]
@@ -280,7 +280,7 @@ class XmiWrapper(Xmi):
     def get_time_units(self) -> str:
         raise NotImplementedError
 
-    def get_value(self, name: str, dest: NDArray = None) -> NDArray:
+    def get_value(self, name: str, dest: Union[NDArray, None] = None) -> NDArray:
         # make sure that optional array is of correct layout:
         if dest is not None:
             if not dest.flags["C"]:
@@ -322,7 +322,7 @@ class XmiWrapper(Xmi):
 
         return dest
 
-    def get_value_ptr(self, name: str):
+    def get_value_ptr(self, name: str) -> NDArray:
         # first scalars
         rank = self.get_var_rank(name)
         if rank == 0:
@@ -374,7 +374,7 @@ class XmiWrapper(Xmi):
         else:
             raise InputError(f"Given {vartype=} is invalid.")
 
-    def get_value_ptr_scalar(self, name: str):
+    def get_value_ptr_scalar(self, name: str) -> NDArray:
         vartype = self.get_var_type(name)
         if vartype.lower().startswith("double"):
             arraytype = np.ctypeslib.ndpointer(
@@ -634,7 +634,9 @@ class XmiWrapper(Xmi):
 
         return var_address.value.decode()
 
-    def execute_function(self, function, *args, detail=""):
+    def execute_function(
+        self, function: Callable[[Any], int], *args, detail=""
+    ) -> None:
         """
         Utility function to execute a BMI function in the kernel and checks its status
         """
