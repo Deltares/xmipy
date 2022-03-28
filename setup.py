@@ -46,13 +46,15 @@ setup(
     extras_require={
         "tests": ["pytest", "pytest-cov", "requests", "mfpymake", "flopy"],
         "lint": [
-            "flake8",
+            "mypy",
             "black",
             "isort",
         ],
     },
     python_requires=">=3.7",
     packages=find_namespace_packages(exclude=("tests", "examples")),
+    package_data={"xmipy": ["py.typed"]},
     version=get_version("xmipy/__init__.py"),
     classifiers=["Topic :: Scientific/Engineering :: Hydrology"],
+    zip_safe=False,
 )

@@ -13,16 +13,12 @@ from ctypes import (
     cdll,
     create_string_buffer,
 )
-
-FreeLibrary = None
-try:
-    import _ctypes.FreeLibrary
-except Exception:
-    pass
 from enum import Enum, IntEnum, unique
-from typing import Iterable, Tuple
+from pathlib import Path
+from typing import Any, Callable, Union
 
 import numpy as np
+from numpy.typing import NDArray
 
 from xmipy.errors import InputError, TimerError, XMIError
 from xmipy.timers.timer import Timer
@@ -52,25 +48,29 @@ class XmiWrapper(Xmi):
 
     def __init__(
         self,
-        lib_path: str,
-        lib_dependency: str = None,
-        working_directory: str = ".",
+        lib_path: Union[str, Path],
+        lib_dependency: Union[str, Path, None] = None,
+        working_directory: Union[str, Path, None] = None,
         timing: bool = False,
     ):
 
-        self._add_lib_dependency(lib_dependency)
+        if lib_dependency:
+            self._add_lib_dependency(lib_dependency)
         if sys.version_info[0:2] < (3, 8):
             # Python version < 3.8
-            self.lib = CDLL(lib_path)
+            self.lib = CDLL(str(lib_path))
         else:
             # LoadLibraryEx flag: LOAD_WITH_ALTERED_SEARCH_PATH 0x08
-            # -> uses the altered search path for resolving ddl dependencies
+            # -> uses the altered search path for resolving dll dependencies
             # `winmode` has no effect while running on Linux or macOS
             # Note: this could make xmipy less secure (dll-injection)
             # Can we get it to work without this flag?
-            self.lib = CDLL(lib_path, winmode=0x08)
+            self.lib = CDLL(str(lib_path), winmode=0x08)
 
-        self.working_directory = working_directory
+        if working_directory:
+            self.working_directory = Path(working_directory)
+        else:
+            self.working_directory = Path().cwd()
         self._state = State.UNINITIALIZED
         self.timing = timing
         self.libname = os.path.basename(lib_path)
@@ -82,20 +82,20 @@ class XmiWrapper(Xmi):
             )
 
     @staticmethod
-    def _add_lib_dependency(lib_dependency):
-        if lib_dependency:
-            if platform.system() == "Windows":
-                os.environ["PATH"] = lib_dependency + os.pathsep + os.environ["PATH"]
+    def _add_lib_dependency(lib_dependency: Union[str, Path]) -> None:
+        lib_dependency = str(lib_dependency)
+        if platform.system() == "Windows":
+            os.environ["PATH"] = lib_dependency + os.pathsep + os.environ["PATH"]
+        else:
+            # Assume a Unix-like system
+            if "LD_LIBRARY_PATH" in os.environ:
+                os.environ["LD_LIBRARY_PATH"] = (
+                    lib_dependency + os.pathsep + os.environ["LD_LIBRARY_PATH"]
+                )
             else:
-                # Assume a Unix-like system
-                if "LD_LIBRARY_PATH" in os.environ:
-                    os.environ["LD_LIBRARY_PATH"] = (
-                        lib_dependency + os.pathsep + os.environ["LD_LIBRARY_PATH"]
-                    )
-                else:
-                    os.environ["LD_LIBRARY_PATH"] = lib_dependency
+                os.environ["LD_LIBRARY_PATH"] = lib_dependency
 
-    def report_timing_totals(self):
+    def report_timing_totals(self) -> float:
         if self.timing:
             total = self.timer.report_totals()
             logger.info(f"Total elapsed time for {self.libname}: {total:0.4f} seconds")
@@ -131,10 +131,6 @@ class XmiWrapper(Xmi):
             with cd(self.working_directory):
                 self.execute_function(self.lib.finalize)
                 self._state = State.UNINITIALIZED
-            try:
-                FreeLibrary(self.lib._handle)
-            except Exception:
-                pass
         else:
             raise InputError("The library is not initialized yet")
 
@@ -174,7 +170,7 @@ class XmiWrapper(Xmi):
         self.execute_function(self.lib.get_output_item_count, byref(count))
         return count.value
 
-    def get_input_var_names(self) -> Tuple[str]:
+    def get_input_var_names(self):
         len_address = self.get_constant_int("BMI_LENVARADDRESS")
         nr_input_vars = self.get_input_item_count()
         len_names = nr_input_vars * len_address
@@ -185,15 +181,15 @@ class XmiWrapper(Xmi):
         self.execute_function(self.lib.get_input_var_names, byref(names))
 
         # decode
-        input_vars = [
-            names[i * len_address : (i + 1) * len_address]
+        input_vars = (
+            names[i * len_address : (i + 1) * len_address]  # type: ignore
             .split(b"\0", 1)[0]
             .decode("ascii")
             for i in range(nr_input_vars)
-        ]
+        )
         return tuple(input_vars)
 
-    def get_output_var_names(self) -> Tuple[str]:
+    def get_output_var_names(self):
         len_address = self.get_constant_int("BMI_LENVARADDRESS")
         nr_output_vars = self.get_output_item_count()
         len_names = nr_output_vars * len_address
@@ -205,7 +201,7 @@ class XmiWrapper(Xmi):
 
         # decode
         output_vars = [
-            names[i * len_address : (i + 1) * len_address]
+            names[i * len_address : (i + 1) * len_address]  # type: ignore
             .split(b"\0", 1)[0]
             .decode("ascii")
             for i in range(nr_output_vars)
@@ -234,7 +230,7 @@ class XmiWrapper(Xmi):
         return var_type.value.decode()
 
     # strictly speaking not BMI...
-    def get_var_shape(self, name: str) -> np.ndarray:
+    def get_var_shape(self, name: str) -> NDArray:
         rank = self.get_var_rank(name)
         array = np.zeros(rank, dtype=np.int32)
         self.execute_function(
@@ -284,7 +280,7 @@ class XmiWrapper(Xmi):
     def get_time_units(self) -> str:
         raise NotImplementedError
 
-    def get_value(self, name: str, dest: np.ndarray = None) -> np.ndarray:
+    def get_value(self, name: str, dest: Union[NDArray, None] = None) -> NDArray:
         # make sure that optional array is of correct layout:
         if dest is not None:
             if not dest.flags["C"]:
@@ -326,8 +322,7 @@ class XmiWrapper(Xmi):
 
         return dest
 
-    def get_value_ptr(self, name: str) -> np.ndarray:
-
+    def get_value_ptr(self, name: str) -> NDArray:
         # first scalars
         rank = self.get_var_rank(name)
         if rank == 0:
@@ -376,8 +371,10 @@ class XmiWrapper(Xmi):
                 detail="for variable " + name,
             )
             return values.contents
+        else:
+            raise InputError(f"Given {vartype=} is invalid.")
 
-    def get_value_ptr_scalar(self, name: str) -> np.ndarray:
+    def get_value_ptr_scalar(self, name: str) -> NDArray:
         vartype = self.get_var_type(name)
         if vartype.lower().startswith("double"):
             arraytype = np.ctypeslib.ndpointer(
@@ -392,7 +389,7 @@ class XmiWrapper(Xmi):
             )
         elif vartype.lower().startswith("float"):
             arraytype = np.ctypeslib.ndpointer(
-                dtype=np.float, ndim=1, shape=(1,), flags="C"
+                dtype=float, ndim=1, shape=(1,), flags="C"
             )
             values = arraytype()
             self.execute_function(
@@ -417,12 +414,10 @@ class XmiWrapper(Xmi):
 
         return values.contents
 
-    def get_value_at_indices(
-        self, name: str, dest: np.ndarray, inds: np.ndarray
-    ) -> np.ndarray:
+    def get_value_at_indices(self, name: str, dest: NDArray, inds: NDArray) -> NDArray:
         raise NotImplementedError
 
-    def set_value(self, name: str, values: np.ndarray) -> None:
+    def set_value(self, name: str, values: NDArray) -> None:
         if not values.flags["C"]:
             raise InputError("Array should have C layout")
         vartype = self.get_var_type(name)
@@ -447,9 +442,7 @@ class XmiWrapper(Xmi):
         else:
             raise InputError("Unsupported value type")
 
-    def set_value_at_indices(
-        self, name: str, inds: np.ndarray, src: np.ndarray
-    ) -> None:
+    def set_value_at_indices(self, name: str, inds: NDArray, src: NDArray) -> None:
         raise NotImplementedError
 
     def get_grid_rank(self, grid: int) -> int:
@@ -486,7 +479,7 @@ class XmiWrapper(Xmi):
         )
         return grid_type.value.decode()
 
-    def get_grid_shape(self, grid: int, shape: np.ndarray) -> np.ndarray:
+    def get_grid_shape(self, grid: int, shape: NDArray) -> NDArray:
         c_grid = c_int(grid)
         self.execute_function(
             self.lib.get_grid_shape,
@@ -496,13 +489,13 @@ class XmiWrapper(Xmi):
         )
         return shape
 
-    def get_grid_spacing(self, grid: int, spacing: np.ndarray) -> np.ndarray:
+    def get_grid_spacing(self, grid: int, spacing: NDArray) -> NDArray:
         raise NotImplementedError
 
-    def get_grid_origin(self, grid: int, origin: np.ndarray) -> np.ndarray:
+    def get_grid_origin(self, grid: int, origin: NDArray) -> NDArray:
         raise NotImplementedError
 
-    def get_grid_x(self, grid: int, x: np.ndarray) -> np.ndarray:
+    def get_grid_x(self, grid: int, x: NDArray) -> NDArray:
         c_grid = c_int(grid)
         self.execute_function(
             self.lib.get_grid_x,
@@ -512,7 +505,7 @@ class XmiWrapper(Xmi):
         )
         return x
 
-    def get_grid_y(self, grid: int, y: np.ndarray) -> np.ndarray:
+    def get_grid_y(self, grid: int, y: NDArray) -> NDArray:
         c_grid = c_int(grid)
         self.execute_function(
             self.lib.get_grid_y,
@@ -522,7 +515,7 @@ class XmiWrapper(Xmi):
         )
         return y
 
-    def get_grid_z(self, grid: int, z: np.ndarray) -> np.ndarray:
+    def get_grid_z(self, grid: int, z: NDArray) -> NDArray:
         c_grid = c_int(grid)
         self.execute_function(
             self.lib.get_grid_z,
@@ -557,13 +550,13 @@ class XmiWrapper(Xmi):
         )
         return grid_face_count.value
 
-    def get_grid_edge_nodes(self, grid: int, edge_nodes: np.ndarray) -> np.ndarray:
+    def get_grid_edge_nodes(self, grid: int, edge_nodes: NDArray) -> NDArray:
         raise NotImplementedError
 
-    def get_grid_face_edges(self, grid: int, face_edges: np.ndarray) -> np.ndarray:
+    def get_grid_face_edges(self, grid: int, face_edges: NDArray) -> NDArray:
         raise NotImplementedError
 
-    def get_grid_face_nodes(self, grid: int, face_nodes: np.ndarray) -> np.ndarray:
+    def get_grid_face_nodes(self, grid: int, face_nodes: NDArray) -> NDArray:
         c_grid = c_int(grid)
         self.execute_function(
             self.lib.get_grid_face_nodes,
@@ -573,9 +566,7 @@ class XmiWrapper(Xmi):
         )
         return face_nodes
 
-    def get_grid_nodes_per_face(
-        self, grid: int, nodes_per_face: np.ndarray
-    ) -> np.ndarray:
+    def get_grid_nodes_per_face(self, grid: int, nodes_per_face: NDArray) -> NDArray:
         c_grid = c_int(grid)
         self.execute_function(
             self.lib.get_grid_nodes_per_face,
@@ -643,7 +634,9 @@ class XmiWrapper(Xmi):
 
         return var_address.value.decode()
 
-    def execute_function(self, function, *args, detail=""):
+    def execute_function(
+        self, function: Callable[[Any], int], *args, detail=""
+    ) -> None:
         """
         Utility function to execute a BMI function in the kernel and checks its status
         """

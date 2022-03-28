@@ -3,8 +3,6 @@
 Adapted from https://pypi.org/project/codetiming/.
 """
 
-# Standard library imports
-import functools
 import logging
 import math
 import time
@@ -21,7 +19,7 @@ class Timer:
     def __init__(self, name: str, text: str):
         self.name = name
         self.timers = Timers()
-        self._start_time = {}
+        self._start_time: dict[str, float] = {}
         self.text = text
         self.last = math.nan
 
