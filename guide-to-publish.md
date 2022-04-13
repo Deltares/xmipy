@@ -1,4 +1,4 @@
-# How to publish to PyPi
+# How to publish to PyPI
 
 1) If present remove build and dist folder
 
@@ -8,17 +8,21 @@ On powershell you can do this with
 rm -r *.egg-info
 ```
 
-3) If not done yet, install twine via
+3) If not done yet, install build and twine via
 ```
-pip install twine
+pip install build twine
 ```
-4) Update the version number in the setup.py file.
+4) Update the version number in `xmipy/__init__.py`.
 
 5) Re-create the wheels:
 ```
-python setup.py sdist bdist_wheel
+python -m build
 ```
-6) Re-upload the new files:
+6) Check the package files:
+```
+twine check dist/*
+```
+7) Re-upload the new files:
 ```
 twine upload dist/*
 ```
