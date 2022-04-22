@@ -14,15 +14,20 @@ pip install build twine
 ```
 4) Update the version number in `xmipy/__init__.py`.
 
-5) Re-create the wheels:
+5) Make a new commit with the updated version number,
+and push to remote
+
+6) Make a new github release
+
+7) Re-create the wheels:
 ```
 python -m build
 ```
-6) Check the package files:
+8) Check the package files:
 ```
 twine check dist/*
 ```
-7) Re-upload the new files:
+9) Re-upload the new files:
 ```
 twine upload dist/*
 ```
