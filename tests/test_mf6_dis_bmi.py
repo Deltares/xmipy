@@ -207,7 +207,6 @@ def test_get_value_ptr_modelname(flopy_dis, modflow_lib_path):
 
 
 def test_get_value_ptr_scalar(flopy_dis, modflow_lib_path):
-
     mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
 
     # Write output to screen:
