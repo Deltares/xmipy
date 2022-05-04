@@ -134,7 +134,7 @@ def test_get_current_time(flopy_dis, modflow_lib_path):
             prescribed_current_time = start_time + perlen / nstp
         else:
             prescribed_current_time = start_time + perlen * (tsmult - 1.0) / (
-                tsmult ** nstp - 1.0
+                tsmult**nstp - 1.0
             )
 
         actual_current_time = mf6.get_current_time()
