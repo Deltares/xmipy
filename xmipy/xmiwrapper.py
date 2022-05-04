@@ -161,12 +161,9 @@ class XmiWrapper(Xmi):
         return component_name.value.decode("ascii")
 
     def get_version(self) -> str:
-        try:
-            len_version = self.get_constant_int("BMI_LENVERSION")
-            version = create_string_buffer(len_version)
-            self.execute_function(self.lib.get_version, byref(version))
-        except:
-            return "???"
+        len_version = self.get_constant_int("BMI_LENVERSION")
+        version = create_string_buffer(len_version)
+        self.execute_function(self.lib.get_version, byref(version))
         return version.value.decode("ascii")
 
     def get_input_item_count(self) -> int:
