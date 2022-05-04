@@ -1,3 +1,4 @@
+import pytest
 from xmipy import XmiWrapper
 
 
@@ -210,4 +211,7 @@ def test_finalize_time_step(flopy_dis, modflow_lib_path):
 def test_get_version(flopy_dis, modflow_lib_path):
     mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
 
-    assert mf6.get_version()
+    with pytest.raises(ValueError) as e:
+        mf6.get_version()
+
+    assert "symbol 'BMI_LENVERSION' not found" in str(e.value.args[0])
