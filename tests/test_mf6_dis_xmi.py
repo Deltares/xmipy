@@ -213,5 +213,3 @@ def test_get_version(flopy_dis, modflow_lib_path):
 
     with pytest.raises(ValueError) as e:
         mf6.get_version()
-
-    assert "symbol 'BMI_LENVERSION' not found" in str(e.value.args[0])
