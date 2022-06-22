@@ -30,9 +30,7 @@ class Xmi(Bmi):
         Parameters
         ----------
         dt : float
-            MODFLOW time step length for the current time step. Currently
-            MODFLOW does not allow this value to be altered after
-            initialization, so it is ignored.
+            Model time step length for the current time step.
         """
         ...
 
@@ -56,7 +54,7 @@ class Xmi(Bmi):
 
     @abstractmethod
     def get_subcomponent_count(self) -> int:
-        """Get the number of Numerical Solutions in the simulation.
+        """Get the number of numerical solutions in the simulation.
 
         For most applications, this number will be equal to 1. Note that this
         part of the XMI only works when the simulation is defined with a single
@@ -65,7 +63,7 @@ class Xmi(Bmi):
         Returns
         -------
         int
-          The number of MODFLOW 6 numerical solutions in the simulation.
+          The number of numerical solutions in the simulation.
         """
         ...
 
@@ -78,7 +76,7 @@ class Xmi(Bmi):
         Parameters
         ----------
         component_id : int
-            MODFLOW 6 numerical solution id number.
+            Numerical solution id number.
         """
         ...
 
@@ -94,7 +92,7 @@ class Xmi(Bmi):
         Parameters
         ----------
         component_id : int
-            MODFLOW 6 numerical solution id number.
+            Numerical solution id number.
 
         Returns
         -------
@@ -115,7 +113,7 @@ class Xmi(Bmi):
         Parameters
         ----------
         component_id : int
-            MODFLOW 6 numerical solution id number.
+            Numerical solution id number.
 
         """
         ...
