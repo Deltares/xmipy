@@ -56,12 +56,14 @@ class XmiWrapper(Xmi):
 
         if lib_dependency:
             self._add_lib_dependency(lib_dependency)
-        # LoadLibraryEx flag (py38+): LOAD_WITH_ALTERED_SEARCH_PATH 0x08
-        # -> uses the altered search path for resolving dll dependencies
-        # `winmode` has no effect while running on Linux or macOS
-        # Note: this could make xmipy less secure (dll-injection)
-        # Can we get it to work without this flag?
-        self.lib = CDLL(str(lib_path), winmode=0x08)
+
+        lib_path = Path(lib_path)
+        try:
+            os.add_dll_directory(lib_path.parent)  # type: ignore
+        except (AttributeError, OSError):
+            pass
+
+        self.lib = CDLL(os.fsdecode(lib_path))
 
         if working_directory:
             self.working_directory = Path(working_directory)
@@ -69,7 +71,7 @@ class XmiWrapper(Xmi):
             self.working_directory = Path().cwd()
         self._state = State.UNINITIALIZED
         self.timing = timing
-        self.libname = os.path.basename(lib_path)
+        self.libname = lib_path.name
 
         if self.timing:
             self.timer = Timer(
@@ -80,10 +82,15 @@ class XmiWrapper(Xmi):
     @staticmethod
     def _add_lib_dependency(lib_dependency: Union[str, Path]) -> None:
         lib_dependency = str(lib_dependency)
-        if platform.system() == "Windows":
-            os.environ["PATH"] = lib_dependency + os.pathsep + os.environ["PATH"]
-        else:
-            # Assume a Unix-like system
+        sysinfo = platform.system()
+        if sysinfo == "Windows":
+            try:
+                os.add_dll_directory(lib_dependency)  # type: ignore
+            except OSError:
+                pass
+        elif sysinfo == "Darwin":
+            os.environ["DYLD_FALLBACK_LIBRARY_PATH"] = lib_dependency
+        elif sysinfo == "Linux":
             if "LD_LIBRARY_PATH" in os.environ:
                 os.environ["LD_LIBRARY_PATH"] = (
                     lib_dependency + os.pathsep + os.environ["LD_LIBRARY_PATH"]
