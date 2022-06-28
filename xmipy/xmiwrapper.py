@@ -56,16 +56,12 @@ class XmiWrapper(Xmi):
 
         if lib_dependency:
             self._add_lib_dependency(lib_dependency)
-        if sys.version_info[0:2] < (3, 8):
-            # Python version < 3.8
-            self.lib = CDLL(str(lib_path))
-        else:
-            # LoadLibraryEx flag: LOAD_WITH_ALTERED_SEARCH_PATH 0x08
-            # -> uses the altered search path for resolving dll dependencies
-            # `winmode` has no effect while running on Linux or macOS
-            # Note: this could make xmipy less secure (dll-injection)
-            # Can we get it to work without this flag?
-            self.lib = CDLL(str(lib_path), winmode=0x08)
+        # LoadLibraryEx flag (py38+): LOAD_WITH_ALTERED_SEARCH_PATH 0x08
+        # -> uses the altered search path for resolving dll dependencies
+        # `winmode` has no effect while running on Linux or macOS
+        # Note: this could make xmipy less secure (dll-injection)
+        # Can we get it to work without this flag?
+        self.lib = CDLL(str(lib_path), winmode=0x08)
 
         if working_directory:
             self.working_directory = Path(working_directory)
