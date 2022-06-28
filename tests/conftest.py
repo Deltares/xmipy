@@ -23,6 +23,8 @@ def modflow_lib_path(tmp_path_factory):
     elif sysinfo == "Darwin":
         url += "mac.zip"
         lib_path = tmp_path / "libmf6.dylib"
+    else:
+        raise RuntimeError(f"system not supported: {sysinfo}")
 
     pymake.download_and_unzip(url=url, pth=str(tmp_path))
     return str(lib_path)
