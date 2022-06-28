@@ -1,5 +1,3 @@
-import platform
-
 import numpy as np
 
 from xmipy import XmiWrapper
@@ -54,35 +52,28 @@ def test_get_grid_node_count(flopy_disu, modflow_lib_path):
 
 def test_get_grid_nodes_per_face(flopy_disu, modflow_lib_path):
     """Tests if the grid_nodes_per_face can be extracted"""
-    # TODO: Find out why test fail on UNIX-like systems
-    sysinfo = platform.system()
-    if sysinfo == "Windows":
-        mf6 = XmiWrapper(
-            lib_path=modflow_lib_path, working_directory=flopy_disu.sim_path
-        )
+    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_disu.sim_path)
 
-        # Write output to screen:
-        mf6.set_int("ISTDOUTTOFILE", 0)
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
 
-        try:
-            # Initialize
-            mf6.initialize()
+    try:
+        # Initialize
+        mf6.initialize()
 
-            # Rectangular grid -> nrow*ncol faces with 4 nodes each
-            prescribed_nodes_per_face = np.full(flopy_disu.nrow * flopy_disu.ncol, 4)
+        # Rectangular grid -> nrow*ncol faces with 4 nodes each
+        prescribed_nodes_per_face = np.full(flopy_disu.nrow * flopy_disu.ncol, 4)
 
-            # Getting the grid id from the model, requires specifying one variable
-            k11_tag = mf6.get_var_address("K11", flopy_disu.model_name, "NPF")
-            grid_id = mf6.get_var_grid(k11_tag)
-            face_count = mf6.get_grid_face_count(grid_id)
-            actual_nodes_per_face = np.empty(
-                shape=(face_count,), dtype=np.int32, order="F"
-            )
-            mf6.get_grid_nodes_per_face(grid_id, actual_nodes_per_face)
+        # Getting the grid id from the model, requires specifying one variable
+        k11_tag = mf6.get_var_address("K11", flopy_disu.model_name, "NPF")
+        grid_id = mf6.get_var_grid(k11_tag)
+        face_count = mf6.get_grid_face_count(grid_id)
+        actual_nodes_per_face = np.empty(shape=(face_count,), dtype=np.int32, order="F")
+        mf6.get_grid_nodes_per_face(grid_id, actual_nodes_per_face)
 
-            assert np.array_equal(prescribed_nodes_per_face, actual_nodes_per_face)
-        finally:
-            mf6.finalize()
+        assert np.array_equal(prescribed_nodes_per_face, actual_nodes_per_face)
+    finally:
+        mf6.finalize()
 
 
 def test_get_grid_face_nodes(flopy_disu, modflow_lib_path):
