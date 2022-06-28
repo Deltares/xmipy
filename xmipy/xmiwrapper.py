@@ -56,9 +56,6 @@ class XmiWrapper(Xmi):
 
         if lib_dependency:
             self._add_lib_dependency(lib_dependency)
-        if sys.version_info[0:2] < (3, 8):
-            # Python version < 3.8
-            self.lib = CDLL(str(lib_path))
         else:
             # LoadLibraryEx flag: LOAD_WITH_ALTERED_SEARCH_PATH 0x08
             # -> uses the altered search path for resolving dll dependencies
