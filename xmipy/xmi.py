@@ -115,3 +115,8 @@ class Xmi(Bmi):
 
         """
         ...
+
+    @abstractmethod
+    def get_version(self) -> str:
+        """Get the version of the kernel."""
+        ...
