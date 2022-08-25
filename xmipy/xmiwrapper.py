@@ -6,6 +6,7 @@ from ctypes import (
     CDLL,
     POINTER,
     byref,
+    c_char,
     c_char_p,
     c_double,
     c_int,
@@ -290,15 +291,30 @@ class XmiWrapper(Xmi):
 
         # first deal with scalars
         rank = self.get_var_rank(name)
-        if rank == 0:
-            src = self.get_value_ptr_scalar(name)
-            if dest is None:
-                return self.get_value_ptr_scalar(name).copy()
-            else:
-                dest[0] = src[0]
-                return dest
-
         var_type = self.get_var_type(name)
+
+        if rank == 0:
+            if var_type.lower().startswith("string"):
+                ilen = self.get_var_nbytes(name)
+                strtype = "<S" + str(ilen + 1)
+                if dest is None:
+                    dest = np.empty(1, dtype=strtype, order="C")
+                self.execute_function(
+                    self.lib.get_value_string,
+                    c_char_p(name.encode()),
+                    byref(dest.ctypes.data_as(POINTER(c_char))),
+                    detail="for variable " + name,
+                )
+                dest[0] = dest[0].decode("ascii").strip()
+                return dest.astype(str)
+            else:
+                src = self.get_value_ptr_scalar(name)
+                if dest is None:
+                    return self.get_value_ptr_scalar(name).copy()
+                else:
+                    dest[0] = src[0]
+                    return dest
+
         var_shape = self.get_var_shape(name)
 
         if var_type.lower().startswith("double"):
@@ -319,6 +335,20 @@ class XmiWrapper(Xmi):
                 byref(dest.ctypes.data_as(POINTER(c_int))),
                 detail="for variable " + name,
             )
+        elif var_type.lower().startswith("string"):
+            if dest is None:
+                ilen = int(self.get_var_nbytes(name) / var_shape[0])
+                strtype = "<S" + str(ilen + 1)
+                dest = np.empty(var_shape[0], dtype=strtype, order="C")
+            self.execute_function(
+                self.lib.get_value_string,
+                c_char_p(name.encode()),
+                byref(dest.ctypes.data_as(POINTER(c_char))),
+                detail="for variable " + name,
+            )
+            for i, x in enumerate(dest):
+                dest[i] = x.decode("ascii").strip()
+            return dest.astype(str)
         else:
             raise InputError("Unsupported value type")
 

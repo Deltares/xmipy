@@ -1,4 +1,5 @@
 import math
+import os
 
 import numpy as np
 import pytest
@@ -174,6 +175,80 @@ def test_get_var_type_int(flopy_dis, modflow_lib_path):
         iactive_tag = mf6.get_var_address("IACTIVE", "SLN_1")
         var_type = mf6.get_var_type(iactive_tag)
         assert var_type == "INTEGER (90)"
+    finally:
+        mf6.finalize()
+
+
+def test_get_var_string(flopy_dis, modflow_lib_path):
+    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
+
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    try:
+        # Initialize
+        mf6.initialize()
+
+        name_tag = mf6.get_var_address("NAME", flopy_dis.model_name)
+        var_type = mf6.get_var_type(name_tag)
+        assert var_type == "STRING LEN=16"
+
+        model_name = mf6.get_value(name_tag)[0]
+        assert model_name == "TEST_MODEL_DIS"
+    finally:
+        mf6.finalize()
+
+
+def test_set_var_string(flopy_dis, modflow_lib_path):
+    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
+
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    try:
+        # Initialize
+        mf6.initialize()
+
+        name_tag = mf6.get_var_address("NAME", flopy_dis.model_name)
+        var_type = mf6.get_var_type(name_tag)
+        assert var_type == "STRING LEN=16"
+
+        model_name = mf6.get_value(name_tag)[0]
+        assert model_name == "TEST_MODEL_DIS"
+    finally:
+        mf6.finalize()
+
+
+def test_get_var_stringarray(flopy_dis, modflow_lib_path):
+    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
+
+    # Write output to screen:
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    try:
+        # Initialize
+        mf6.initialize()
+
+        # boundary names are not set until _rp, so we need this update()
+        mf6.update()
+
+        bnd_name_tag = mf6.get_var_address(
+            "BOUNDNAME_CST", flopy_dis.model_name, "CHD_0"
+        )
+        var_shape = mf6.get_var_shape(bnd_name_tag)
+        assert var_shape == [2]
+
+        var_nbytes = mf6.get_var_nbytes(bnd_name_tag)
+        assert var_nbytes == 2 * 40  # NB: LENBOUNDNAME = 40
+
+        ilen = int(var_nbytes / var_shape[0])
+        var_type = mf6.get_var_type(bnd_name_tag)
+        assert var_type == "STRING LEN={} (2)".format(ilen)
+
+        bnd_names = mf6.get_value(bnd_name_tag)
+        assert bnd_names[0] == "BNDA"
+        assert bnd_names[1] == "BNDB"
+
     finally:
         mf6.finalize()
 
