@@ -11,7 +11,6 @@ from flopy.mf6 import MFSimulation
 
 @pytest.fixture(scope="session")
 def modflow_lib_path(tmp_path_factory):
-    return "d:/checkouts/modflow6-mjr/bin/libmf6d.dll"
     tmp_path = tmp_path_factory.getbasetemp()
     url = "https://github.com/MODFLOW-USGS/modflow6-nightly-build/releases/latest/download/"
     sysinfo = platform.system()

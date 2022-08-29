@@ -213,8 +213,9 @@ def test_set_var_string(flopy_dis, modflow_lib_path):
         var_type = mf6.get_var_type(name_tag)
         assert var_type == "STRING LEN=16"
 
-        model_name = mf6.get_value(name_tag)[0]
-        assert model_name == "TEST_MODEL_DIS"
+        # this is not yet supported
+        with pytest.raises(InputError):
+            mf6.set_value(name_tag, np.array(["VladDeSpietser"]))
     finally:
         mf6.finalize()
 
@@ -273,7 +274,7 @@ def test_get_value_ptr_modelname(flopy_dis, modflow_lib_path):
         head_tag = mf6.get_var_address("X", flopy_dis.model_name)
         actual_head = mf6.get_value_ptr(head_tag)
 
-        for cell_id, presciped_head in stress_period_data:
+        for cell_id, presciped_head, bn in stress_period_data:
             layer, row, column = cell_id
             head_index = column + row * ncol
             assert math.isclose(presciped_head, actual_head[head_index])
