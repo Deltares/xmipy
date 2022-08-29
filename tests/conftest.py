@@ -46,7 +46,9 @@ class FlopyDis:
 def flopy_dis(tmp_path, modflow_lib_path):
     sim_path = str(tmp_path)
     sim = flopy.mf6.MFSimulation(
-        sim_name="TEST_SIM_DIS", version="mf6", sim_ws=sim_path
+        sim_name="TEST_SIM_DIS",
+        version="mf6",
+        sim_ws=sim_path,
     )
     flopy_dis = FlopyDis(
         sim_path=sim_path,
@@ -56,7 +58,7 @@ def flopy_dis(tmp_path, modflow_lib_path):
         nrow=9,
         ncol=10,
         nlay=1,
-        stress_period_data=[[(0, 2, 0), 1.0], [(0, 6, 8), 0.0]],
+        stress_period_data=[[(0, 2, 0), 1.0, "BNDA"], [(0, 6, 8), 0.0, "BNDB"]],
     )
     flopy.mf6.ModflowTdis(sim, time_units="DAYS", nper=2, perioddata=flopy_dis.tdis_rc)
     flopy.mf6.ModflowIms(sim)
@@ -66,7 +68,12 @@ def flopy_dis(tmp_path, modflow_lib_path):
     )
     flopy.mf6.ModflowGwfic(gwf)
     flopy.mf6.ModflowGwfnpf(gwf, save_specific_discharge=True)
-    flopy.mf6.ModflowGwfchd(gwf, stress_period_data=flopy_dis.stress_period_data)
+    flopy.mf6.ModflowGwfchd(
+        gwf,
+        stress_period_data=flopy_dis.stress_period_data,
+        boundnames=True,
+        maxbound=len(flopy_dis.stress_period_data),
+    )
     budget_file = flopy_dis.model_name + ".bud"
     head_file = flopy_dis.model_name + ".hds"
     flopy.mf6.ModflowGwfoc(
