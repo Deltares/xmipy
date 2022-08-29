@@ -49,7 +49,6 @@ def flopy_dis(tmp_path, modflow_lib_path):
         sim_name="TEST_SIM_DIS",
         version="mf6",
         sim_ws=sim_path,
-        memory_print_option="all",
     )
     flopy_dis = FlopyDis(
         sim_path=sim_path,
