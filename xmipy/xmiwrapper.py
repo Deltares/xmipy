@@ -16,7 +16,7 @@ from ctypes import (
 )
 from enum import Enum, IntEnum, unique
 from pathlib import Path
-from typing import Any, Callable, Union
+from typing import Any, Callable, Tuple, Union
 
 import numpy as np
 from numpy.typing import NDArray
@@ -186,7 +186,7 @@ class XmiWrapper(Xmi):
         self._execute_function(self.lib.get_output_item_count, byref(count))
         return count.value
 
-    def get_input_var_names(self):
+    def get_input_var_names(self) -> Tuple[str]:
         len_address = self.get_constant_int("BMI_LENVARADDRESS")
         nr_input_vars = self.get_input_item_count()
         len_names = nr_input_vars * len_address
