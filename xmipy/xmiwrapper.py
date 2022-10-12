@@ -205,7 +205,7 @@ class XmiWrapper(Xmi):
         )
         return input_vars
 
-    def get_output_var_names(self):
+    def get_output_var_names(self) -> Tuple[str]:
         len_address = self.get_constant_int("BMI_LENVARADDRESS")
         nr_output_vars = self.get_output_item_count()
         len_names = nr_output_vars * len_address
@@ -216,13 +216,13 @@ class XmiWrapper(Xmi):
         self._execute_function(self.lib.get_output_var_names, byref(names))
 
         # decode
-        output_vars = [
+        output_vars: Tuple[str] = tuple(
             names[i * len_address : (i + 1) * len_address]  # type: ignore
             .split(b"\0", 1)[0]
             .decode("ascii")
             for i in range(nr_output_vars)
-        ]
-        return tuple(output_vars)
+        )
+        return output_vars
 
     def get_var_grid(self, name: str) -> int:
         grid_id = c_int(0)
