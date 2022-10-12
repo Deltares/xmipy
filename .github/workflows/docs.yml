@@ -17,8 +17,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
-        with:
-          python-version-file: .github/python-version.txt
 
       - run: pip install -e ".[docs]"
       # We use a custom build script for pdoc itself, ideally you just run `pdoc -o docs/ ...` here.
