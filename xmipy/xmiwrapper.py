@@ -42,10 +42,7 @@ class State(Enum):
 
 
 class XmiWrapper(Xmi):
-    """
-    This is the XMI (BMI++) wrapper for marshalling python types into
-    the kernels, and v.v.
-    """
+    """The implementation of the XMI"""
 
     def __init__(
         self,
@@ -54,6 +51,22 @@ class XmiWrapper(Xmi):
         working_directory: Union[str, Path, None] = None,
         timing: bool = False,
     ):
+        """Constructor
+
+        Parameters
+        ----------
+        lib_path : Union[str, Path]
+            Path to the shared library
+
+        lib_dependency : Union[str, Path, None], optional
+            Path to the dependencies of the shared library, by default None
+
+        working_directory : Union[str, Path, None], optional
+            The working directory the shared library expects when being called, by default None
+
+        timing : bool, optional
+            Whether timing should be activated, by default False
+        """
 
         if lib_dependency:
             self._add_lib_dependency(lib_dependency)
@@ -111,14 +124,14 @@ class XmiWrapper(Xmi):
     def initialize(self, config_file: str = "") -> None:
         if self._state == State.UNINITIALIZED:
             with cd(self.working_directory):
-                self.execute_function(self.lib.initialize, config_file)
+                self._execute_function(self.lib.initialize, config_file)
                 self._state = State.INITIALIZED
         else:
             raise InputError("The library is already initialized")
 
     def update(self) -> None:
         with cd(self.working_directory):
-            self.execute_function(self.lib.update)
+            self._execute_function(self.lib.update)
 
     def update_until(self, time: float) -> None:
         raise NotImplementedError
@@ -126,51 +139,51 @@ class XmiWrapper(Xmi):
     def finalize(self) -> None:
         if self._state == State.INITIALIZED:
             with cd(self.working_directory):
-                self.execute_function(self.lib.finalize)
+                self._execute_function(self.lib.finalize)
                 self._state = State.UNINITIALIZED
         else:
             raise InputError("The library is not initialized yet")
 
     def get_current_time(self) -> float:
         current_time = c_double(0.0)
-        self.execute_function(self.lib.get_current_time, byref(current_time))
+        self._execute_function(self.lib.get_current_time, byref(current_time))
         return current_time.value
 
     def get_start_time(self) -> float:
         start_time = c_double(0.0)
-        self.execute_function(self.lib.get_start_time, byref(start_time))
+        self._execute_function(self.lib.get_start_time, byref(start_time))
         return start_time.value
 
     def get_end_time(self) -> float:
         end_time = c_double(0.0)
-        self.execute_function(self.lib.get_end_time, byref(end_time))
+        self._execute_function(self.lib.get_end_time, byref(end_time))
         return end_time.value
 
     def get_time_step(self) -> float:
         dt = c_double(0.0)
-        self.execute_function(self.lib.get_time_step, byref(dt))
+        self._execute_function(self.lib.get_time_step, byref(dt))
         return dt.value
 
     def get_component_name(self) -> str:
         len_name = self.get_constant_int("BMI_LENCOMPONENTNAME")
         component_name = create_string_buffer(len_name)
-        self.execute_function(self.lib.get_component_name, byref(component_name))
+        self._execute_function(self.lib.get_component_name, byref(component_name))
         return component_name.value.decode("ascii")
 
     def get_version(self) -> str:
         len_version = self.get_constant_int("BMI_LENVERSION")
         version = create_string_buffer(len_version)
-        self.execute_function(self.lib.get_version, byref(version))
+        self._execute_function(self.lib.get_version, byref(version))
         return version.value.decode("ascii")
 
     def get_input_item_count(self) -> int:
         count = c_int(0)
-        self.execute_function(self.lib.get_input_item_count, byref(count))
+        self._execute_function(self.lib.get_input_item_count, byref(count))
         return count.value
 
     def get_output_item_count(self) -> int:
         count = c_int(0)
-        self.execute_function(self.lib.get_output_item_count, byref(count))
+        self._execute_function(self.lib.get_output_item_count, byref(count))
         return count.value
 
     def get_input_var_names(self):
@@ -181,7 +194,7 @@ class XmiWrapper(Xmi):
 
         # get a (1-dim) char array (char*) containing the input variable
         # names as \x00 terminated sub-strings
-        self.execute_function(self.lib.get_input_var_names, byref(names))
+        self._execute_function(self.lib.get_input_var_names, byref(names))
 
         # decode
         input_vars = (
@@ -200,7 +213,7 @@ class XmiWrapper(Xmi):
 
         # get a (1-dim) char array (char*) containing the output variable
         # names as \x00 terminated sub-strings
-        self.execute_function(self.lib.get_output_var_names, byref(names))
+        self._execute_function(self.lib.get_output_var_names, byref(names))
 
         # decode
         output_vars = [
@@ -213,7 +226,7 @@ class XmiWrapper(Xmi):
 
     def get_var_grid(self, name: str) -> int:
         grid_id = c_int(0)
-        self.execute_function(
+        self._execute_function(
             self.lib.get_var_grid,
             c_char_p(name.encode()),
             byref(grid_id),
@@ -224,7 +237,7 @@ class XmiWrapper(Xmi):
     def get_var_type(self, name: str) -> str:
         len_var_type = self.get_constant_int("BMI_LENVARTYPE")
         var_type = create_string_buffer(len_var_type)
-        self.execute_function(
+        self._execute_function(
             self.lib.get_var_type,
             c_char_p(name.encode()),
             byref(var_type),
@@ -233,10 +246,10 @@ class XmiWrapper(Xmi):
         return var_type.value.decode()
 
     # strictly speaking not BMI...
-    def get_var_shape(self, name: str) -> NDArray:
+    def get_var_shape(self, name: str) -> NDArray[np.int32]:
         rank = self.get_var_rank(name)
         array = np.zeros(rank, dtype=np.int32)
-        self.execute_function(
+        self._execute_function(
             self.lib.get_var_shape,
             c_char_p(name.encode()),
             c_void_p(array.ctypes.data),
@@ -246,7 +259,7 @@ class XmiWrapper(Xmi):
 
     def get_var_rank(self, name: str) -> int:
         rank = c_int(0)
-        self.execute_function(
+        self._execute_function(
             self.lib.get_var_rank,
             c_char_p(name.encode()),
             byref(rank),
@@ -259,7 +272,7 @@ class XmiWrapper(Xmi):
 
     def get_var_itemsize(self, name: str) -> int:
         item_size = c_int(0)
-        self.execute_function(
+        self._execute_function(
             self.lib.get_var_itemsize,
             c_char_p(name.encode()),
             byref(item_size),
@@ -269,7 +282,7 @@ class XmiWrapper(Xmi):
 
     def get_var_nbytes(self, name: str) -> int:
         nbytes = c_int(0)
-        self.execute_function(
+        self._execute_function(
             self.lib.get_var_nbytes,
             c_char_p(name.encode()),
             byref(nbytes),
@@ -299,7 +312,7 @@ class XmiWrapper(Xmi):
                 strtype = "<S" + str(ilen + 1)
                 if dest is None:
                     dest = np.empty(1, dtype=strtype, order="C")
-                self.execute_function(
+                self._execute_function(
                     self.lib.get_value_string,
                     c_char_p(name.encode()),
                     byref(dest.ctypes.data_as(POINTER(c_char))),
@@ -320,7 +333,7 @@ class XmiWrapper(Xmi):
         if var_type.lower().startswith("double"):
             if dest is None:
                 dest = np.empty(shape=var_shape, dtype=np.float64, order="C")
-            self.execute_function(
+            self._execute_function(
                 self.lib.get_value_double,
                 c_char_p(name.encode()),
                 byref(dest.ctypes.data_as(POINTER(c_double))),
@@ -329,7 +342,7 @@ class XmiWrapper(Xmi):
         elif var_type.lower().startswith("int"):
             if dest is None:
                 dest = np.empty(shape=var_shape, dtype=np.int32, order="C")
-            self.execute_function(
+            self._execute_function(
                 self.lib.get_value_int,
                 c_char_p(name.encode()),
                 byref(dest.ctypes.data_as(POINTER(c_int))),
@@ -340,7 +353,7 @@ class XmiWrapper(Xmi):
                 ilen = int(self.get_var_nbytes(name) / var_shape[0])
                 strtype = "<S" + str(ilen + 1)
                 dest = np.empty(var_shape[0], dtype=strtype, order="C")
-            self.execute_function(
+            self._execute_function(
                 self.lib.get_value_string,
                 c_char_p(name.encode()),
                 byref(dest.ctypes.data_as(POINTER(c_char))),
@@ -372,7 +385,7 @@ class XmiWrapper(Xmi):
                 dtype=np.float64, ndim=ndim, shape=shape_tuple, flags="C"
             )
             values = arraytype()
-            self.execute_function(
+            self._execute_function(
                 self.lib.get_value_ptr_double,
                 c_char_p(name.encode()),
                 byref(values),
@@ -384,7 +397,7 @@ class XmiWrapper(Xmi):
                 dtype=np.float32, ndim=ndim, shape=shape_tuple, flags="C"
             )
             values = arraytype()
-            self.execute_function(
+            self._execute_function(
                 self.lib.get_value_ptr_float,
                 c_char_p(name.encode()),
                 byref(values),
@@ -396,7 +409,7 @@ class XmiWrapper(Xmi):
                 dtype=np.int32, ndim=ndim, shape=shape_tuple, flags="C"
             )
             values = arraytype()
-            self.execute_function(
+            self._execute_function(
                 self.lib.get_value_ptr_int,
                 c_char_p(name.encode()),
                 byref(values),
@@ -413,7 +426,7 @@ class XmiWrapper(Xmi):
                 dtype=np.double, ndim=1, shape=(1,), flags="C"
             )
             values = arraytype()
-            self.execute_function(
+            self._execute_function(
                 self.lib.get_value_ptr_double,
                 c_char_p(name.encode()),
                 byref(values),
@@ -424,7 +437,7 @@ class XmiWrapper(Xmi):
                 dtype=float, ndim=1, shape=(1,), flags="C"
             )
             values = arraytype()
-            self.execute_function(
+            self._execute_function(
                 self.lib.get_value_ptr_float,
                 c_char_p(name.encode()),
                 byref(values),
@@ -435,7 +448,7 @@ class XmiWrapper(Xmi):
                 dtype=np.int32, ndim=1, shape=(1,), flags="C"
             )
             values = arraytype()
-            self.execute_function(
+            self._execute_function(
                 self.lib.get_value_ptr_int,
                 c_char_p(name.encode()),
                 byref(values),
@@ -456,7 +469,7 @@ class XmiWrapper(Xmi):
         if vartype.lower().startswith("double"):
             if values.dtype != np.float64:
                 raise InputError("Array should have float64 elements")
-            self.execute_function(
+            self._execute_function(
                 self.lib.set_value_double,
                 c_char_p(name.encode()),
                 byref(values.ctypes.data_as(POINTER(c_double))),
@@ -465,7 +478,7 @@ class XmiWrapper(Xmi):
         elif vartype.lower().startswith("int"):
             if values.dtype != np.int32:
                 raise InputError("Array should have int32 elements")
-            self.execute_function(
+            self._execute_function(
                 self.lib.set_value_int,
                 c_char_p(name.encode()),
                 byref(values.ctypes.data_as(POINTER(c_int))),
@@ -480,7 +493,7 @@ class XmiWrapper(Xmi):
     def get_grid_rank(self, grid: int) -> int:
         grid_rank = c_int(0)
         c_grid = c_int(grid)
-        self.execute_function(
+        self._execute_function(
             self.lib.get_grid_rank,
             byref(c_grid),
             byref(grid_rank),
@@ -491,7 +504,7 @@ class XmiWrapper(Xmi):
     def get_grid_size(self, grid: int) -> int:
         grid_size = c_int(0)
         c_grid = c_int(grid)
-        self.execute_function(
+        self._execute_function(
             self.lib.get_grid_size,
             byref(c_grid),
             byref(grid_size),
@@ -503,7 +516,7 @@ class XmiWrapper(Xmi):
         len_grid_type = self.get_constant_int("BMI_LENGRIDTYPE")
         grid_type = create_string_buffer(len_grid_type)
         c_grid = c_int(grid)
-        self.execute_function(
+        self._execute_function(
             self.lib.get_grid_type,
             byref(c_grid),
             byref(grid_type),
@@ -513,7 +526,7 @@ class XmiWrapper(Xmi):
 
     def get_grid_shape(self, grid: int, shape: NDArray) -> NDArray:
         c_grid = c_int(grid)
-        self.execute_function(
+        self._execute_function(
             self.lib.get_grid_shape,
             byref(c_grid),
             c_void_p(shape.ctypes.data),
@@ -529,7 +542,7 @@ class XmiWrapper(Xmi):
 
     def get_grid_x(self, grid: int, x: NDArray) -> NDArray:
         c_grid = c_int(grid)
-        self.execute_function(
+        self._execute_function(
             self.lib.get_grid_x,
             byref(c_grid),
             c_void_p(x.ctypes.data),
@@ -539,7 +552,7 @@ class XmiWrapper(Xmi):
 
     def get_grid_y(self, grid: int, y: NDArray) -> NDArray:
         c_grid = c_int(grid)
-        self.execute_function(
+        self._execute_function(
             self.lib.get_grid_y,
             byref(c_grid),
             c_void_p(y.ctypes.data),
@@ -549,7 +562,7 @@ class XmiWrapper(Xmi):
 
     def get_grid_z(self, grid: int, z: NDArray) -> NDArray:
         c_grid = c_int(grid)
-        self.execute_function(
+        self._execute_function(
             self.lib.get_grid_z,
             byref(c_grid),
             c_void_p(z.ctypes.data),
@@ -560,7 +573,7 @@ class XmiWrapper(Xmi):
     def get_grid_node_count(self, grid: int) -> int:
         grid_node_count = c_int(0)
         c_grid = c_int(grid)
-        self.execute_function(
+        self._execute_function(
             self.lib.get_grid_node_count,
             byref(c_grid),
             byref(grid_node_count),
@@ -574,7 +587,7 @@ class XmiWrapper(Xmi):
     def get_grid_face_count(self, grid: int) -> int:
         grid_face_count = c_int(0)
         c_grid = c_int(grid)
-        self.execute_function(
+        self._execute_function(
             self.lib.get_grid_face_count,
             byref(c_grid),
             byref(grid_face_count),
@@ -590,7 +603,7 @@ class XmiWrapper(Xmi):
 
     def get_grid_face_nodes(self, grid: int, face_nodes: NDArray) -> NDArray:
         c_grid = c_int(grid)
-        self.execute_function(
+        self._execute_function(
             self.lib.get_grid_face_nodes,
             byref(c_grid),
             c_void_p(face_nodes.ctypes.data),
@@ -600,7 +613,7 @@ class XmiWrapper(Xmi):
 
     def get_grid_nodes_per_face(self, grid: int, nodes_per_face: NDArray) -> NDArray:
         c_grid = c_int(grid)
-        self.execute_function(
+        self._execute_function(
             self.lib.get_grid_nodes_per_face,
             byref(c_grid),
             c_void_p(nodes_per_face.ctypes.data),
@@ -614,49 +627,50 @@ class XmiWrapper(Xmi):
     def prepare_time_step(self, dt) -> None:
         with cd(self.working_directory):
             dt = c_double(dt)
-            self.execute_function(self.lib.prepare_time_step, byref(dt))
+            self._execute_function(self.lib.prepare_time_step, byref(dt))
 
     def do_time_step(self) -> None:
         with cd(self.working_directory):
-            self.execute_function(self.lib.do_time_step)
+            self._execute_function(self.lib.do_time_step)
 
     def finalize_time_step(self) -> None:
         with cd(self.working_directory):
-            self.execute_function(self.lib.finalize_time_step)
+            self._execute_function(self.lib.finalize_time_step)
 
     def get_subcomponent_count(self) -> int:
         count = c_int(0)
-        self.execute_function(self.lib.get_subcomponent_count, byref(count))
+        self._execute_function(self.lib.get_subcomponent_count, byref(count))
         return count.value
 
     def prepare_solve(self, component_id=1) -> None:
         cid = c_int(component_id)
         with cd(self.working_directory):
-            self.execute_function(self.lib.prepare_solve, byref(cid))
+            self._execute_function(self.lib.prepare_solve, byref(cid))
 
     def solve(self, component_id=1) -> bool:
         cid = c_int(component_id)
         has_converged = c_int(0)
         with cd(self.working_directory):
-            self.execute_function(self.lib.solve, byref(cid), byref(has_converged))
+            self._execute_function(self.lib.solve, byref(cid), byref(has_converged))
         return has_converged.value == 1
 
     def finalize_solve(self, component_id=1) -> None:
         cid = c_int(component_id)
 
         with cd(self.working_directory):
-            self.execute_function(self.lib.finalize_solve, byref(cid))
+            self._execute_function(self.lib.finalize_solve, byref(cid))
 
     def get_var_address(
         self, var_name: str, component_name: str, subcomponent_name=""
     ) -> str:
+
         var_name = var_name.upper()
         component_name = component_name.upper()
         subcomponent_name = subcomponent_name.upper()
 
         len_var_address = self.get_constant_int("BMI_LENVARADDRESS")
         var_address = create_string_buffer(len_var_address)
-        self.execute_function(
+        self._execute_function(
             self.lib.get_var_address,
             c_char_p(component_name.encode()),
             c_char_p(subcomponent_name.encode()),
@@ -666,7 +680,7 @@ class XmiWrapper(Xmi):
 
         return var_address.value.decode()
 
-    def execute_function(
+    def _execute_function(
         self, function: Callable[[Any], int], *args, detail=""
     ) -> None:
         """

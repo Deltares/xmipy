@@ -15,8 +15,8 @@ class Xmi(Bmi):
     - a model can have sub-components which share the time stepping but have
       their own convergence loop
 
-    It does not change anything in the BMI interface, so models implementing
-    the XMI interface are compatible with BMI
+    Since it only extends the BMI, models implementing
+    the XMI are compatible with BMI
 
     """
 
@@ -119,4 +119,71 @@ class Xmi(Bmi):
     @abstractmethod
     def get_version(self) -> str:
         """Get the version of the kernel."""
+        ...
+
+    @abstractmethod
+    def report_timing_totals(self) -> float:
+        """Logs and returns total time spent
+
+        Returns
+        -------
+        float
+            Total time spent
+
+        Raises
+        ------
+        TimerError
+            Raised if timing is not activated
+        """
+        ...
+
+    @abstractmethod
+    def get_constant_int(self, name: str) -> int:
+        """Get a constant integer
+
+        Parameters
+        ----------
+        name : str
+            Name of the constant
+
+        Returns
+        -------
+        int
+            Constant to be returned
+        """
+        ...
+
+    @abstractmethod
+    def set_int(self, name: str, value: int) -> None:
+        """Set integer
+
+        Parameters
+        ----------
+        name : str
+            Integer to be set
+        value : int
+            Value to set the integer to
+        """
+        ...
+
+    @abstractmethod
+    def get_var_address(
+        self, var_name: str, component_name: str, subcomponent_name=""
+    ) -> str:
+        """Get the address of a given variable
+
+        Parameters
+        ----------
+        var_name : str
+            The variable name
+        component_name : str
+            The name of the component
+        subcomponent_name : str, optional
+            If applicable the name of the subcomponent, by default ""
+
+        Returns
+        -------
+        str
+            The variable address
+        """
         ...

@@ -17,5 +17,5 @@ pip install xmipy
 In order to develop on `xmipy` locally, execute the following line inside your virtual environment
 
 ```bash
-pip install -e ".[tests, lint]"
+pip install -e ".[tests, lint, docs]"
 ```
