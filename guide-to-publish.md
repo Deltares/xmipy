@@ -1,6 +1,6 @@
 # How to publish to PyPI
 
-1) If present remove build and dist folder
+1) If present remove dist folder
 
 2) Recursively remove all .egg-info files
 On powershell you can do this with
