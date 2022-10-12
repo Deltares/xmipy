@@ -1,5 +1,9 @@
-# imports
-from xmipy.xmi import Xmi as Xmi
-from xmipy.xmiwrapper import XmiWrapper as XmiWrapper
+# exports
+from bmipy.bmi import Bmi
+
+from xmipy.xmi import Xmi
+from xmipy.xmiwrapper import XmiWrapper
+
+__all__ = ["Bmi", "Xmi", "XmiWrapper"]
 
 __version__ = "1.2.0"
