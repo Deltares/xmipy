@@ -197,13 +197,13 @@ class XmiWrapper(Xmi):
         self._execute_function(self.lib.get_input_var_names, byref(names))
 
         # decode
-        input_vars = (
+        input_vars: Tuple[str] = tuple(
             names[i * len_address : (i + 1) * len_address]  # type: ignore
             .split(b"\0", 1)[0]
             .decode("ascii")
             for i in range(nr_input_vars)
         )
-        return tuple(input_vars)
+        return input_vars
 
     def get_output_var_names(self):
         len_address = self.get_constant_int("BMI_LENVARADDRESS")
