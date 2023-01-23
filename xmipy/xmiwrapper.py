@@ -62,7 +62,8 @@ class XmiWrapper(Xmi):
             Path to the dependencies of the shared library, by default None
 
         working_directory : Union[str, Path, None], optional
-            The working directory the shared library expects when being called, by default None
+            The working directory the shared library expects when being called,
+            by default None
 
         timing : bool, optional
             Whether timing should be activated, by default False
