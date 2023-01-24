@@ -25,25 +25,8 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install and print system dependencies (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo ln -fs /usr/bin/gfortran-10 /usr/local/bin/gfortran
-          gfortran --version
-      # Remove as soon as https://github.com/modflowpy/pymake/issues/111 is fixed
-      - name: Install numpy
-        run: |
-          pip install numpy
-      - name: Install and print system dependencies (macOS)
-        shell: bash
-        if: runner.os == 'macOS'
-        run: |
-          sudo ln -fs /usr/local/bin/gfortran-10 /usr/local/bin/gfortran
-          gfortran --version
-      - name: Install and print system dependencies (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          gfortran --version
+      - name: Setup GNU Fortran
+        uses: modflowpy/install-gfortran-action@v1
       - name: Install test dependencies
         run: |
           pip install -e ".[tests]"
