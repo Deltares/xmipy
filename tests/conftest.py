@@ -4,7 +4,6 @@ from typing import Any, List, Tuple
 
 import flopy
 import numpy as np
-import pymake
 import pytest
 from flopy.mf6 import MFSimulation
 
@@ -12,21 +11,17 @@ from flopy.mf6 import MFSimulation
 @pytest.fixture(scope="session")
 def modflow_lib_path(tmp_path_factory):
     tmp_path = tmp_path_factory.getbasetemp()
-    url = "https://github.com/MODFLOW-USGS/modflow6-nightly-build/releases/latest/download/"
     sysinfo = platform.system()
     if sysinfo == "Windows":
-        url += "win64.zip"
         lib_path = tmp_path / "libmf6.dll"
     elif sysinfo == "Linux":
-        url += "linux.zip"
         lib_path = tmp_path / "libmf6.so"
     elif sysinfo == "Darwin":
-        url += "mac.zip"
         lib_path = tmp_path / "libmf6.dylib"
     else:
         raise RuntimeError(f"system not supported: {sysinfo}")
 
-    pymake.download_and_unzip(url=url, pth=str(tmp_path))
+    flopy.utils.get_modflow(bindir=str(tmp_path))
     return str(lib_path)
 
 

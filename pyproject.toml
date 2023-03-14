@@ -27,8 +27,7 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 tests = [
-    "flopy",
-    "mfpymake",
+    "flopy >=3.3.6",
     "pytest",
     "pytest-cov",
     "requests",
