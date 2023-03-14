@@ -65,7 +65,6 @@ plt.ylim(bottom=6.0)
 plt.show()
 
 while current_time < end_time:
-
     # modify storage
     # this is done before prepare_timestep because the conversions are done in sto_rp()
     frac = (current_time - start_time) / simulation_length
@@ -83,7 +82,6 @@ while current_time < end_time:
     # loop over subcomponents
     n_solutions = mf6.get_subcomponent_count()
     for sol_id in range(1, n_solutions + 1):
-
         # convergence loop
         kiter = 0
         mf6.prepare_solve(sol_id)

@@ -34,7 +34,6 @@ def test_timer_stop_nonexisting_fails():
 
 
 def test_timer_multiple_subtimers():
-
     scope_label_1 = "methodA"
     scope_label_2 = "methodA"
 

@@ -664,7 +664,6 @@ class XmiWrapper(Xmi):
     def get_var_address(
         self, var_name: str, component_name: str, subcomponent_name=""
     ) -> str:
-
         var_name = var_name.upper()
         component_name = component_name.upper()
         subcomponent_name = subcomponent_name.upper()
