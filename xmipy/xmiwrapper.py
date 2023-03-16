@@ -351,7 +351,9 @@ class XmiWrapper(Xmi):
             )
         elif var_type.lower().startswith("string"):
             if dest is None:
-                ilen = int(self.get_var_nbytes(name) / var_shape[0])
+                if var_shape[0] == 0:
+                    return np.empty((0,), "U1")
+                ilen = self.get_var_nbytes(name) // var_shape[0]
                 strtype = "<S" + str(ilen + 1)
                 dest = np.empty(var_shape[0], dtype=strtype, order="C")
             self._execute_function(

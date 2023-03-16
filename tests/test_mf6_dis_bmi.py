@@ -242,13 +242,21 @@ def test_get_var_stringarray(flopy_dis, modflow_lib_path):
         var_nbytes = mf6.get_var_nbytes(bnd_name_tag)
         assert var_nbytes == 2 * 40  # NB: LENBOUNDNAME = 40
 
-        ilen = int(var_nbytes / var_shape[0])
+        ilen = var_nbytes // var_shape[0]
         var_type = mf6.get_var_type(bnd_name_tag)
-        assert var_type == "STRING LEN={} (2)".format(ilen)
+        assert var_type == f"STRING LEN={ilen} (2)"
 
         bnd_names = mf6.get_value(bnd_name_tag)
         assert bnd_names[0] == "BNDA"
         assert bnd_names[1] == "BNDB"
+
+        # test var with rank 1 and shape [0]
+        name_tag = mf6.get_var_address("AUXNAME_CST", flopy_dis.model_name, "CHD_0")
+        assert mf6.get_var_rank(name_tag) == 1
+        assert mf6.get_var_shape(name_tag) == [0]
+        assert mf6.get_var_nbytes(name_tag) == 0
+        assert mf6.get_var_type(name_tag) == "STRING LEN=16 (0)"
+        assert mf6.get_value(name_tag).tolist() == []
 
     finally:
         mf6.finalize()
