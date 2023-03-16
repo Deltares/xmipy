@@ -92,6 +92,10 @@ class XmiWrapper(Xmi):
                 text="Elapsed time for {name}.{fn_name}: {seconds:0.4f} seconds",
             )
 
+    def __del__(self):
+        if self._state == State.INITIALIZED:
+            self.finalize()
+
     @staticmethod
     def _add_lib_dependency(lib_dependency: Union[str, Path]) -> None:
         lib_dependency = str(lib_dependency)
