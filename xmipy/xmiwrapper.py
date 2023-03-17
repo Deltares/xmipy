@@ -129,7 +129,7 @@ class XmiWrapper(Xmi):
     def initialize(self, config_file: str = "") -> None:
         if self._state == State.UNINITIALIZED:
             with cd(self.working_directory):
-                self._execute_function(self.lib.initialize, config_file)
+                self._execute_function(self.lib.initialize, config_file.encode())
                 self._state = State.INITIALIZED
         else:
             raise InputError("The library is already initialized")
