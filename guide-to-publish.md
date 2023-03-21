@@ -12,21 +12,24 @@ rm -r *.egg-info
 ```
 pip install build twine
 ```
-4) Update the version number in `xmipy/__init__.py`.
 
-5) Make a new commit with the updated version number,
-and push to remote
-
-6) Make a new github release
-
-7) Re-create the wheels:
+4) Re-create the wheels:
 ```
 python -m build
 ```
-8) Check the package files:
+
+5) Check the package files:
 ```
 twine check dist/*
 ```
+
+6) Update the version number in `xmipy/__init__.py`.
+
+7) Make a new commit with the updated version number,
+and push to remote
+
+8) Make a new github release
+
 9) Re-upload the new files:
 ```
 twine upload dist/*
