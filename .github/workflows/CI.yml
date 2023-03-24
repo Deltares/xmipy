@@ -23,7 +23,7 @@ jobs:
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "${{ matrix.python-version }}"
       - name: Setup GNU Fortran
         uses: modflowpy/install-gfortran-action@v1
       - name: Install test dependencies
@@ -35,6 +35,6 @@ jobs:
         run: |
           pytest -vs --cov=xmipy --cov-report=xml tests/
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
