@@ -1,7 +1,6 @@
 import numpy as np
 
 from xmipy import XmiWrapper
-from xmipy.errors import InputError, XMIError
 
 
 def test_get_grid_face_count(flopy_disu, modflow_lib_path):

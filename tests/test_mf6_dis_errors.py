@@ -1,4 +1,3 @@
-from ctypes import POINTER, c_char
 
 import pytest
 
