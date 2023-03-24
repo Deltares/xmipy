@@ -39,3 +39,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v1
+      - name: Install lint dependencies
+        run: |
+          pip install -e ".[lint]"
+      - name: Build and check packages
+        run: |
+          pip install --upgrade build twine
+          python -m build
+          twine check --strict dist/*
