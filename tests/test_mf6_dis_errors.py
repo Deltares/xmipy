@@ -1,4 +1,3 @@
-
 import pytest
 
 from xmipy import XmiWrapper
