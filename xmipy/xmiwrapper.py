@@ -1,7 +1,6 @@
 import logging
 import os
 import platform
-import sys
 from ctypes import (
     CDLL,
     POINTER,
@@ -11,7 +10,6 @@ from ctypes import (
     c_double,
     c_int,
     c_void_p,
-    cdll,
     create_string_buffer,
 )
 from enum import Enum, IntEnum, unique
@@ -69,6 +67,8 @@ class XmiWrapper(Xmi):
             Whether timing should be activated, by default False
         """
 
+        self._state = State.UNINITIALIZED
+
         if lib_dependency:
             self._add_lib_dependency(lib_dependency)
         # LoadLibraryEx flag (py38+): LOAD_WITH_ALTERED_SEARCH_PATH 0x08
@@ -82,7 +82,6 @@ class XmiWrapper(Xmi):
             self.working_directory = Path(working_directory)
         else:
             self.working_directory = Path().cwd()
-        self._state = State.UNINITIALIZED
         self.timing = timing
         self.libname = os.path.basename(lib_path)
 
