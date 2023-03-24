@@ -47,7 +47,7 @@ class Xmi(Bmi):
     def finalize_time_step(self) -> None:
         """Finalize the time step.
 
-        Write messsages and output after model convergence has
+        Write messages and output after model convergence has
         been achieved.
         """
         ...

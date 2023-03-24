@@ -195,10 +195,10 @@ def test_get_var_grid(flopy_dis_mf6):
 
     # Getting the grid id from the model, requires specifying one variable
     k11_tag = mf6.get_var_address("K11", flopy_dis.model_name, "NPF")
-    prescriped_grid_id = mf6.get_var_grid(k11_tag)
+    prescribed_grid_id = mf6.get_var_grid(k11_tag)
 
     id_tag = mf6.get_var_address("ID", flopy_dis.model_name)
-    assert mf6.get_value_ptr(id_tag) == [prescriped_grid_id]
+    assert mf6.get_value_ptr(id_tag) == [prescribed_grid_id]
 
 
 def test_get_grid_type(flopy_dis_mf6):

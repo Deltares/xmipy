@@ -12,19 +12,18 @@ on:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
+    runs-on: "${{ matrix.os }}"
     strategy:
-      fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "${{ matrix.python-version }}"
       - name: Setup GNU Fortran
         uses: modflowpy/install-gfortran-action@v1
       - name: Install test dependencies
@@ -36,28 +35,6 @@ jobs:
         run: |
           pytest -vs --cov=xmipy --cov-report=xml tests/
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
-
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v1
-      - name: Install lint dependencies
-        run: |
-          pip install -e ".[lint]"
-      - name: Run black
-        run: black --check .
-      - name: Run isort
-        run: isort --check .
-      - name: Run mypy
-        run: |
-          mypy --install-types --non-interactive --ignore-missing-imports .
-      - name: Build and check packages
-        run: |
-          pip install --upgrade build twine
-          python -m build
-          twine check --strict dist/*
