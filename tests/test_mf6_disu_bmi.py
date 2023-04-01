@@ -1,112 +1,79 @@
 import numpy as np
+import pytest
 
 from xmipy import XmiWrapper
 
 
-def test_get_grid_face_count(flopy_disu, modflow_lib_path):
+@pytest.fixture
+def flopy_disu_mf6(flopy_disu, modflow_lib_path, request):
+    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_disu.sim_path)
+
+    # If initialized, call finalize() at end of use
+    request.addfinalizer(mf6.__del__)
+
+    # Write output to screen
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    return flopy_disu, mf6
+
+
+def test_get_grid_face_count(flopy_disu_mf6):
     """Tests if the grid_face_count can be extracted"""
-    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_disu.sim_path)
+    mf6 = flopy_disu_mf6[1]
+    mf6.initialize()
 
-    # Write output to screen:
-    mf6.set_int("ISTDOUTTOFILE", 0)
-
-    try:
-        # Initialize
-        mf6.initialize()
-
-        prescribed_grid_face_count = flopy_disu.nrow * flopy_disu.ncol
-
-        # Getting the grid id from the model, requires specifying one variable
-        k11_tag = mf6.get_var_address("K11", flopy_disu.model_name, "NPF")
-        grid_id = mf6.get_var_grid(k11_tag)
-        actual_grid_face_count = mf6.get_grid_face_count(grid_id)
-
-        assert prescribed_grid_face_count == actual_grid_face_count
-    finally:
-        mf6.finalize()
+    nrow = 3
+    ncol = 3
+    assert nrow * ncol == mf6.get_grid_face_count(1)
 
 
-def test_get_grid_node_count(flopy_disu, modflow_lib_path):
+def test_get_grid_node_count(flopy_disu_mf6):
     """Tests if the grid_node_count can be extracted"""
-    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_disu.sim_path)
+    mf6 = flopy_disu_mf6[1]
+    mf6.initialize()
 
-    # Write output to screen:
-    mf6.set_int("ISTDOUTTOFILE", 0)
-
-    try:
-        # Initialize
-        mf6.initialize()
-
-        prescribed_grid_node_count = (flopy_disu.nrow + 1) * (flopy_disu.ncol + 1)
-
-        # Getting the grid id from the model, requires specifying one variable
-        k11_tag = mf6.get_var_address("K11", flopy_disu.model_name, "NPF")
-        grid_id = mf6.get_var_grid(k11_tag)
-        actual_grid_node_count = mf6.get_grid_node_count(grid_id)
-
-        assert prescribed_grid_node_count == actual_grid_node_count
-    finally:
-        mf6.finalize()
+    nrow = 3
+    ncol = 3
+    assert (nrow + 1) * (ncol + 1) == mf6.get_grid_node_count(1)
 
 
-def test_get_grid_nodes_per_face(flopy_disu, modflow_lib_path):
+def test_get_grid_nodes_per_face(flopy_disu_mf6):
     """Tests if the grid_nodes_per_face can be extracted"""
-    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_disu.sim_path)
+    mf6 = flopy_disu_mf6[1]
+    mf6.initialize()
 
-    # Write output to screen:
-    mf6.set_int("ISTDOUTTOFILE", 0)
+    grid_id = 1
+    face_count = 9
 
-    try:
-        # Initialize
-        mf6.initialize()
-
-        # Rectangular grid -> nrow*ncol faces with 4 nodes each
-        prescribed_nodes_per_face = np.full(flopy_disu.nrow * flopy_disu.ncol, 4)
-
-        # Getting the grid id from the model, requires specifying one variable
-        k11_tag = mf6.get_var_address("K11", flopy_disu.model_name, "NPF")
-        grid_id = mf6.get_var_grid(k11_tag)
-        face_count = mf6.get_grid_face_count(grid_id)
-        actual_nodes_per_face = np.empty(shape=(face_count,), dtype=np.int32, order="F")
-        mf6.get_grid_nodes_per_face(grid_id, actual_nodes_per_face)
-
-        assert np.array_equal(prescribed_nodes_per_face, actual_nodes_per_face)
-    finally:
-        mf6.finalize()
+    model_nodes_per_face = np.empty(shape=(face_count,), dtype=np.int32)
+    result = mf6.get_grid_nodes_per_face(grid_id, model_nodes_per_face)
+    np.testing.assert_array_equal(
+        np.full((face_count,), 4),
+        model_nodes_per_face,
+    )
+    # these are the same objects
+    assert model_nodes_per_face is result
 
 
-def test_get_grid_face_nodes(flopy_disu, modflow_lib_path):
-    assert True
-    return
+@pytest.mark.xfail(strict=True)
+def test_get_grid_face_nodes(flopy_disu_mf6):
+    """Tests if the grid_face_nodes can be extracted."""
     # todo: fix this test
-    """Tests if the grid_face_nodes can be extracted"""
-    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_disu.sim_path)
+    mf6 = flopy_disu_mf6[1]
+    mf6.initialize()
 
-    # Write output to screen:
-    mf6.set_int("ISTDOUTTOFILE", 0)
+    # First 5 prescribed elements
+    expected_grid_face_nodes = np.array([1, 2, 6, 5, 1])
 
-    try:
-        # Initialize
-        mf6.initialize()
+    grid_id = 1
+    face_count = 9
+    face_nodes_count = face_count * (4 + 1)
 
-        # First 5 prescribed elements
-        prescribed_grid_face_nodes = np.array([1, 2, 6, 5, 1])
-
-        # Getting the grid id from the model, requires specifying one variable
-        k11_tag = mf6.get_var_address("K11", flopy_disu.model_name, "NPF")
-        grid_id = mf6.get_var_grid(k11_tag)
-        grid_face_count = mf6.get_grid_face_count(grid_id)
-        grid_nodes_per_face = np.empty(
-            shape=(grid_face_count,), dtype=np.int32, order="F"
-        )
-        mf6.get_grid_nodes_per_face(grid_id, grid_nodes_per_face)
-        face_nodes_count = np.sum(grid_nodes_per_face + 1)
-
-        actual_grid_face_nodes = np.empty(
-            shape=(face_nodes_count,), dtype=np.int32, order="F"
-        )
-        mf6.get_grid_face_nodes(grid_id, actual_grid_face_nodes)
-
-        assert np.array_equal(prescribed_grid_face_nodes, actual_grid_face_nodes[:5])
-    finally:
-        mf6.finalize()
+    model_grid_face_nodes = np.empty(shape=(face_nodes_count,), dtype=np.int32)
+    result = mf6.get_grid_face_nodes(grid_id, model_grid_face_nodes)
+    np.testing.assert_array_equal(
+        expected_grid_face_nodes,
+        model_grid_face_nodes,
+    )
+    # these are the same objects
+    assert model_grid_face_nodes is result

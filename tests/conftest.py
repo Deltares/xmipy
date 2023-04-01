@@ -7,6 +7,8 @@ import numpy as np
 import pytest
 from flopy.mf6 import MFSimulation
 
+from xmipy import XmiWrapper
+
 
 @pytest.fixture(scope="session")
 def modflow_lib_path(tmp_path_factory):
@@ -79,6 +81,19 @@ def flopy_dis(tmp_path, modflow_lib_path):
     )
     sim.write_simulation()
     return flopy_dis
+
+
+@pytest.fixture
+def flopy_dis_mf6(flopy_dis, modflow_lib_path, request):
+    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
+
+    # If initialized, call finalize() at end of use
+    request.addfinalizer(mf6.__del__)
+
+    # Write output to screen
+    mf6.set_int("ISTDOUTTOFILE", 0)
+
+    return flopy_dis, mf6
 
 
 @pytest.fixture(scope="function")
