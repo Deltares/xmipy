@@ -142,6 +142,15 @@ class XmiWrapper(Xmi):
         else:
             raise InputError("The library is already initialized")
 
+    def initialize_mpi(self, value: int) -> None:
+        if self._state == State.UNINITIALIZED:
+            with cd(self.working_directory):
+                comm = c_int(value)
+                self._execute_function(self.lib.initialize_mpi, byref(comm))
+                self._state = State.INITIALIZED
+        else:
+            raise InputError("The library is already initialized")
+
     def update(self) -> None:
         with cd(self.working_directory):
             self._execute_function(self.lib.update)
