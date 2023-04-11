@@ -1,59 +1,44 @@
-import math
-
 import pytest
 
 from xmipy import XmiWrapper
 from xmipy.errors import TimerError
 
 
-def test_timing_initialize(flopy_dis, modflow_lib_path):
+@pytest.fixture
+def flopy_dis_mf6_timing(flopy_dis, modflow_lib_path, request):
     mf6 = XmiWrapper(
         lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path, timing=True
     )
 
-    # Write output to screen:
+    # If initialized, call finalize() at end of use
+    request.addfinalizer(mf6.__del__)
+
+    # Write output to screen
     mf6.set_int("ISTDOUTTOFILE", 0)
 
-    try:
-        # Run initialize
-        mf6.initialize()
-
-        total = mf6.report_timing_totals()
-
-        assert total > 0.0
-    finally:
-        mf6.finalize()
+    return flopy_dis, mf6
 
 
-def test_timing_nothing(flopy_dis, modflow_lib_path):
-    mf6 = XmiWrapper(
-        lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path, timing=True
-    )
+def test_timing_initialize(flopy_dis_mf6_timing):
+    mf6 = flopy_dis_mf6_timing[1]
+    mf6.initialize()
 
-    # Write output to screen:
-    mf6.set_int("ISTDOUTTOFILE", 0)
-
-    totals = mf6.report_timing_totals()
-
-    assert math.isclose(totals, 0.0)
+    assert mf6.report_timing_totals() > 0.0
 
 
-def test_deactivated_timing(flopy_dis, modflow_lib_path):
-    mf6 = XmiWrapper(
-        lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path, timing=False
-    )
+def test_timing_nothing(flopy_dis_mf6_timing):
+    mf6 = flopy_dis_mf6_timing[1]
 
-    # Write output to screen:
-    mf6.set_int("ISTDOUTTOFILE", 0)
+    total = mf6.report_timing_totals()
+    assert pytest.approx(total) == 0.0
 
-    try:
-        # Run initialize
-        mf6.initialize()
 
-        with pytest.raises(TimerError):
-            mf6.report_timing_totals()
-    finally:
-        mf6.finalize()
+def test_deactivated_timing(flopy_dis_mf6):
+    mf6 = flopy_dis_mf6[1]
+    mf6.initialize()
+
+    with pytest.raises(TimerError, match="Timing not activated"):
+        mf6.report_timing_totals()
 
 
 def test_dependencies(flopy_dis, modflow_lib_path):

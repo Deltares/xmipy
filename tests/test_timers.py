@@ -14,8 +14,8 @@ def test_timer_create_and_run():
     time.sleep(0.1)
     timer.stop(scope_label)
 
-    value = timer.report_totals()
-    assert value > 0.09
+    # the timing +/- result is platform dependant
+    assert timer.report_totals() >= 0.09
 
 
 def test_timer_start_twice_fails():
@@ -23,13 +23,13 @@ def test_timer_start_twice_fails():
     timer = Timer("aTimer", "Some text with details")
     timer.start(scope_label)
 
-    with pytest.raises(TimerError):
+    with pytest.raises(TimerError, match="Timer for theMethod is already running"):
         timer.start(scope_label)
 
 
 def test_timer_stop_nonexisting_fails():
     timer = Timer("aTimer", "Some text with details")
-    with pytest.raises(TimerError):
+    with pytest.raises(TimerError, match="Timer for imnotthere is not running"):
         timer.stop("imnotthere")
 
 
@@ -47,5 +47,4 @@ def test_timer_multiple_subtimers():
     time.sleep(0.1)
     timer.stop(scope_label_2)
 
-    value = timer.report_totals()
-    assert value > 0.019
+    assert timer.report_totals() > 0.019
