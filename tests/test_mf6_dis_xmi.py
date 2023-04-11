@@ -48,7 +48,6 @@ def test_manual_do_time_step(flopy_dis_mf6, sol_id):
     # Prepare solve
     mf6.prepare_solve(*sol_id)
 
-    # mf6.get_var_address("MXITER", "SLN_1")
     max_iter = 25
     for kiter in range(max_iter):
         has_converged = mf6.solve(*sol_id)

@@ -19,22 +19,20 @@ def flopy_disu_mf6(flopy_disu, modflow_lib_path, request):
 
 def test_get_grid_face_count(flopy_disu_mf6):
     """Tests if the grid_face_count can be extracted"""
-    mf6 = flopy_disu_mf6[1]
+    flopy_disu, mf6 = flopy_disu_mf6
     mf6.initialize()
 
-    nrow = 3
-    ncol = 3
-    assert nrow * ncol == mf6.get_grid_face_count(1)
+    expected_grid_face_count = flopy_disu.nrow * flopy_disu.ncol
+    assert expected_grid_face_count == mf6.get_grid_face_count(1)
 
 
 def test_get_grid_node_count(flopy_disu_mf6):
     """Tests if the grid_node_count can be extracted"""
-    mf6 = flopy_disu_mf6[1]
+    flopy_disu, mf6 = flopy_disu_mf6
     mf6.initialize()
 
-    nrow = 3
-    ncol = 3
-    assert (nrow + 1) * (ncol + 1) == mf6.get_grid_node_count(1)
+    expected_grid_node_count = (flopy_disu.nrow + 1) * (flopy_disu.ncol + 1)
+    assert expected_grid_node_count == mf6.get_grid_node_count(1)
 
 
 def test_get_grid_nodes_per_face(flopy_disu_mf6):
