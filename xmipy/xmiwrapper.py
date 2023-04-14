@@ -707,7 +707,7 @@ class XmiWrapper(Xmi):
 
         try:
             if function(*args) != Status.SUCCESS:
-                msg = f"BMI exception in: {function.__name__} ({detail})"
+                msg = f"BMI exception in {function.__name__} ({detail}):"
 
                 # try to get detailed error msg, beware:
                 # directly call CDLL methods to avoid recursion
@@ -720,14 +720,12 @@ class XmiWrapper(Xmi):
                     component_name = create_string_buffer(len_name)
                     self.lib.get_component_name(byref(component_name))
 
-                    print(
-                        "--- Kernel message ("
-                        + component_name.value.decode()
-                        + ") ---\n=> "
-                        + err_msg.value.decode()
+                    msg += (
+                        f" Message from {component_name.value.decode()} '"
+                        + f"{err_msg.value.decode()}'"
                     )
                 except AttributeError:
-                    print("--- Kernel message ---\n" + "=> no details ...")
+                    logging.warn("Couldn't extract error message")
 
                 raise XMIError(msg)
         finally:
