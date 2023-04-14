@@ -721,8 +721,8 @@ class XmiWrapper(Xmi):
                     self.lib.get_component_name(byref(component_name))
 
                     msg += (
-                        f" Message from {component_name.value.decode()} '"
-                        + f"{err_msg.value.decode()}'"
+                        f" Message from {component_name.value.decode()} "
+                        + f"'{err_msg.value.decode()}'"
                     )
                 except AttributeError:
                     logging.warn("Couldn't extract error message")
