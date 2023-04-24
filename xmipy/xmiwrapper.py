@@ -401,39 +401,27 @@ class XmiWrapper(Xmi):
                 dtype=np.float64, ndim=ndim, shape=shape_tuple, flags="C"
             )
             values = arraytype()
-            self._execute_function(
-                self.lib.get_value_ptr_double,
-                c_char_p(name.encode()),
-                byref(values),
-                detail="for variable " + name,
-            )
-            return values.contents
+
         elif vartype.lower().startswith("float"):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.float32, ndim=ndim, shape=shape_tuple, flags="C"
             )
             values = arraytype()
-            self._execute_function(
-                self.lib.get_value_ptr_float,
-                c_char_p(name.encode()),
-                byref(values),
-                detail="for variable " + name,
-            )
-            return values.contents
         elif vartype.lower().startswith("int"):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.int32, ndim=ndim, shape=shape_tuple, flags="C"
             )
             values = arraytype()
-            self._execute_function(
-                self.lib.get_value_ptr_int,
-                c_char_p(name.encode()),
-                byref(values),
-                detail="for variable " + name,
-            )
-            return values.contents
         else:
             raise InputError(f"Given {vartype=} is invalid.")
+
+        self._execute_function(
+            self.lib.get_value_ptr,
+            c_char_p(name.encode()),
+            byref(values),
+            detail="for variable " + name,
+        )
+        return values.contents
 
     def get_value_ptr_scalar(self, name: str) -> NDArray:
         vartype = self.get_var_type(name)
