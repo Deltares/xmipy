@@ -327,7 +327,7 @@ class XmiWrapper(Xmi):
                 if dest is None:
                     dest = np.empty(1, dtype=strtype, order="C")
                 self._execute_function(
-                    self.lib.get_value_string,
+                    self.lib.get_value,
                     c_char_p(name.encode()),
                     byref(dest.ctypes.data_as(POINTER(c_char))),
                     detail="for variable " + name,
@@ -348,7 +348,7 @@ class XmiWrapper(Xmi):
             if dest is None:
                 dest = np.empty(shape=var_shape, dtype=np.float64, order="C")
             self._execute_function(
-                self.lib.get_value_double,
+                self.lib.get_value,
                 c_char_p(name.encode()),
                 byref(dest.ctypes.data_as(POINTER(c_double))),
                 detail="for variable " + name,
@@ -357,7 +357,7 @@ class XmiWrapper(Xmi):
             if dest is None:
                 dest = np.empty(shape=var_shape, dtype=np.int32, order="C")
             self._execute_function(
-                self.lib.get_value_int,
+                self.lib.get_value,
                 c_char_p(name.encode()),
                 byref(dest.ctypes.data_as(POINTER(c_int))),
                 detail="for variable " + name,
@@ -370,7 +370,7 @@ class XmiWrapper(Xmi):
                 strtype = "<S" + str(ilen + 1)
                 dest = np.empty(var_shape[0], dtype=strtype, order="C")
             self._execute_function(
-                self.lib.get_value_string,
+                self.lib.get_value,
                 c_char_p(name.encode()),
                 byref(dest.ctypes.data_as(POINTER(c_char))),
                 detail="for variable " + name,
@@ -474,7 +474,7 @@ class XmiWrapper(Xmi):
             if values.dtype != np.float64:
                 raise InputError("Array should have float64 elements")
             self._execute_function(
-                self.lib.set_value_double,
+                self.lib.set_value,
                 c_char_p(name.encode()),
                 byref(values.ctypes.data_as(POINTER(c_double))),
                 detail="for variable " + name,
@@ -483,7 +483,7 @@ class XmiWrapper(Xmi):
             if values.dtype != np.int32:
                 raise InputError("Array should have int32 elements")
             self._execute_function(
-                self.lib.set_value_int,
+                self.lib.set_value,
                 c_char_p(name.encode()),
                 byref(values.ctypes.data_as(POINTER(c_int))),
                 detail="for variable " + name,
