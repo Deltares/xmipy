@@ -23,7 +23,7 @@ def modflow_lib_path(tmp_path_factory):
     else:
         raise RuntimeError(f"system not supported: {sysinfo}")
 
-    flopy.utils.get_modflow(bindir=str(tmp_path))
+    flopy.utils.get_modflow(bindir=str(tmp_path), repo="modflow6-nightly-build")
     return str(lib_path)
 
 
