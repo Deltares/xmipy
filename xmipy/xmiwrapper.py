@@ -1,4 +1,3 @@
-import logging
 import os
 import platform
 from ctypes import (
@@ -20,11 +19,10 @@ import numpy as np
 from numpy.typing import NDArray
 
 from xmipy.errors import InputError, TimerError, XMIError
+from xmipy.logger import get_logger, show_logger_message
 from xmipy.timers.timer import Timer
 from xmipy.utils import cd
 from xmipy.xmi import Xmi
-
-logger = logging.getLogger(__name__)
 
 
 @unique
@@ -48,6 +46,7 @@ class XmiWrapper(Xmi):
         lib_dependency: Union[str, Path, None] = None,
         working_directory: Union[str, Path, None] = None,
         timing: bool = False,
+        logger_level: Union[str, int] = 0,
     ):
         """Constructor
 
@@ -65,9 +64,16 @@ class XmiWrapper(Xmi):
 
         timing : bool, optional
             Whether timing should be activated, by default False
+
+        logger_level : str, int, optional
+            Logger level, default 0 ("NOTSET"). Accepted values are
+            "DEBUG" (10), "INFO" (20), "WARNING" (30), "ERROR" (40) or
+            "CRITICAL" (50).
         """
 
         self._state = State.UNINITIALIZED
+        self.libname = os.path.basename(lib_path)
+        self.logger = get_logger(self.libname, logger_level)
 
         if lib_dependency:
             self._add_lib_dependency(lib_dependency)
@@ -83,7 +89,6 @@ class XmiWrapper(Xmi):
         else:
             self.working_directory = Path().cwd()
         self.timing = timing
-        self.libname = os.path.basename(lib_path)
 
         if self.timing:
             self.timer = Timer(
@@ -112,7 +117,10 @@ class XmiWrapper(Xmi):
     def report_timing_totals(self) -> float:
         if self.timing:
             total = self.timer.report_totals()
-            logger.info(f"Total elapsed time for {self.libname}: {total:0.4f} seconds")
+            with show_logger_message(self.logger):
+                self.logger.info(
+                    "Total elapsed time for %s: %0.4f seconds",
+                    self.libname, total)
             return total
         else:
             raise TimerError("Timing not activated")
@@ -725,7 +733,7 @@ class XmiWrapper(Xmi):
                         + f"'{err_msg.value.decode()}'"
                     )
                 except AttributeError:
-                    logging.warn("Couldn't extract error message")
+                    self.logging.error("Couldn't extract error message")
 
                 raise XMIError(msg)
         finally:
