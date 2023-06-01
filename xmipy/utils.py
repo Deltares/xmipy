@@ -1,13 +1,14 @@
+import ctypes
 import os
 from contextlib import contextmanager
 from pathlib import Path
-import ctypes
+from typing import Any, Generator
 
 import numpy as np
 
 
 @contextmanager
-def cd(newdir: Path):
+def cd(newdir: Path) -> Generator[None, None, None]:
     prevdir = Path().cwd()
     os.chdir(newdir)
     try:
@@ -16,7 +17,7 @@ def cd(newdir: Path):
         os.chdir(prevdir)
 
 
-def repr_function_call(function: str, *args) -> str:
+def repr_function_call(function: str, *args: Any) -> str:
     """Return a descriptive ctypes function call.
 
     Parameters
@@ -24,14 +25,14 @@ def repr_function_call(function: str, *args) -> str:
     function : str
         Name of function.
     *args : tuple
-        Zero or more arguments, usally based on ctypes.
+        Zero or more arguments, usually based on ctypes.
     """
 
-    def format_arg(arg) -> str:
+    def format_arg(arg: Any) -> str:
         if isinstance(arg, (ctypes.Array, ctypes.c_char_p)):
             return f"{arg.__class__.__name__}({arg.value!r})"
         elif isinstance(arg, np.ctypeslib._ndptr):
-            return arg.__class__.__name__
+            return str(arg.__class__.__name__)
         elif isinstance(arg, ctypes._Pointer):
             return "*" + repr(arg.contents)
         elif isinstance(arg, ctypes._SimpleCData):

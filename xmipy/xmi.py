@@ -168,7 +168,7 @@ class Xmi(Bmi):
 
     @abstractmethod
     def get_var_address(
-        self, var_name: str, component_name: str, subcomponent_name=""
+        self, var_name: str, component_name: str, subcomponent_name: str = ""
     ) -> str:
         """Get the address of a given variable
 

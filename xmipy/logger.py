@@ -4,12 +4,12 @@ __all__ = ["get_logger", "show_logger_message"]
 
 import logging
 import sys
-from logging import Logger
 from contextlib import contextmanager
-from typing import Union
+from logging import Logger
+from typing import Generator, Union
 
 
-def get_logger(name: str, level: Union[str, int] = 0):
+def get_logger(name: str, level: Union[str, int] = 0) -> Logger:
     """Return a named logger.
 
     Parameters
@@ -40,7 +40,7 @@ def get_logger(name: str, level: Union[str, int] = 0):
 @contextmanager
 def show_logger_message(
     logger: Logger, level: int = logging.INFO, ignore_disabled: bool = False
-):
+) -> Generator[None, None, None]:
     """Context manager to show logger messages at and above a given level.
 
     Parameters
