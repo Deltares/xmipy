@@ -22,7 +22,7 @@ from numpy.typing import NDArray
 from xmipy.errors import InputError, TimerError, XMIError
 from xmipy.logger import get_logger, show_logger_message
 from xmipy.timers.timer import Timer
-from xmipy.utils import cd, pretty_ctypes_execute_function
+from xmipy.utils import cd, repr_function_call
 from xmipy.xmi import Xmi
 
 
@@ -253,7 +253,6 @@ class XmiWrapper(Xmi):
             self.lib.get_var_grid,
             c_char_p(name.encode()),
             byref(grid_id),
-            detail="for variable " + name,
         )
         return grid_id.value
 
@@ -264,7 +263,6 @@ class XmiWrapper(Xmi):
             self.lib.get_var_type,
             c_char_p(name.encode()),
             byref(var_type),
-            detail="for variable " + name,
         )
         return var_type.value.decode()
 
@@ -276,7 +274,6 @@ class XmiWrapper(Xmi):
             self.lib.get_var_shape,
             c_char_p(name.encode()),
             c_void_p(array.ctypes.data),
-            detail="for variable " + name,
         )
         return array
 
@@ -286,7 +283,6 @@ class XmiWrapper(Xmi):
             self.lib.get_var_rank,
             c_char_p(name.encode()),
             byref(rank),
-            detail="for variable " + name,
         )
         return rank.value
 
@@ -299,7 +295,6 @@ class XmiWrapper(Xmi):
             self.lib.get_var_itemsize,
             c_char_p(name.encode()),
             byref(item_size),
-            detail="for variable " + name,
         )
         return item_size.value
 
@@ -309,7 +304,6 @@ class XmiWrapper(Xmi):
             self.lib.get_var_nbytes,
             c_char_p(name.encode()),
             byref(nbytes),
-            detail="for variable " + name,
         )
         return nbytes.value
 
@@ -340,7 +334,6 @@ class XmiWrapper(Xmi):
                     self.lib.get_value_string,
                     c_char_p(name.encode()),
                     byref(dest.ctypes.data_as(POINTER(c_char))),
-                    detail="for variable " + name,
                 )
                 dest[0] = dest[0].decode("ascii").strip()
                 return dest.astype(str)
@@ -361,7 +354,6 @@ class XmiWrapper(Xmi):
                 self.lib.get_value_double,
                 c_char_p(name.encode()),
                 byref(dest.ctypes.data_as(POINTER(c_double))),
-                detail="for variable " + name,
             )
         elif var_type_lower.startswith("int"):
             if dest is None:
@@ -370,7 +362,6 @@ class XmiWrapper(Xmi):
                 self.lib.get_value_int,
                 c_char_p(name.encode()),
                 byref(dest.ctypes.data_as(POINTER(c_int))),
-                detail="for variable " + name,
             )
         elif var_type_lower.startswith("string"):
             if dest is None:
@@ -383,7 +374,6 @@ class XmiWrapper(Xmi):
                 self.lib.get_value_string,
                 c_char_p(name.encode()),
                 byref(dest.ctypes.data_as(POINTER(c_char))),
-                detail="for variable " + name,
             )
             for i, x in enumerate(dest):
                 dest[i] = x.decode("ascii").strip()
@@ -416,7 +406,6 @@ class XmiWrapper(Xmi):
                 self.lib.get_value_ptr_double,
                 c_char_p(name.encode()),
                 byref(values),
-                detail="for variable " + name,
             )
             return values.contents
         elif var_type_lower.startswith("float"):
@@ -428,7 +417,6 @@ class XmiWrapper(Xmi):
                 self.lib.get_value_ptr_float,
                 c_char_p(name.encode()),
                 byref(values),
-                detail="for variable " + name,
             )
             return values.contents
         elif var_type_lower.startswith("int"):
@@ -440,7 +428,6 @@ class XmiWrapper(Xmi):
                 self.lib.get_value_ptr_int,
                 c_char_p(name.encode()),
                 byref(values),
-                detail="for variable " + name,
             )
             return values.contents
         else:
@@ -458,7 +445,6 @@ class XmiWrapper(Xmi):
                 self.lib.get_value_ptr_double,
                 c_char_p(name.encode()),
                 byref(values),
-                detail="for variable " + name,
             )
         elif var_type_lower.startswith("float"):
             arraytype = np.ctypeslib.ndpointer(
@@ -469,7 +455,6 @@ class XmiWrapper(Xmi):
                 self.lib.get_value_ptr_float,
                 c_char_p(name.encode()),
                 byref(values),
-                detail="for variable " + name,
             )
         elif var_type_lower.startswith("int"):
             arraytype = np.ctypeslib.ndpointer(
@@ -480,7 +465,6 @@ class XmiWrapper(Xmi):
                 self.lib.get_value_ptr_int,
                 c_char_p(name.encode()),
                 byref(values),
-                detail="for variable " + name,
             )
         else:
             raise InputError(f"Unsupported value type {var_type!r}")
@@ -502,7 +486,6 @@ class XmiWrapper(Xmi):
                 self.lib.set_value_double,
                 c_char_p(name.encode()),
                 byref(values.ctypes.data_as(POINTER(c_double))),
-                detail="for variable " + name,
             )
         elif var_type_lower.startswith("int"):
             if values.dtype != np.int32:
@@ -511,7 +494,6 @@ class XmiWrapper(Xmi):
                 self.lib.set_value_int,
                 c_char_p(name.encode()),
                 byref(values.ctypes.data_as(POINTER(c_int))),
-                detail="for variable " + name,
             )
         else:
             raise InputError("Unsupported value type")
@@ -526,7 +508,6 @@ class XmiWrapper(Xmi):
             self.lib.get_grid_rank,
             byref(c_grid),
             byref(grid_rank),
-            detail="for id " + str(grid),
         )
         return grid_rank.value
 
@@ -537,7 +518,6 @@ class XmiWrapper(Xmi):
             self.lib.get_grid_size,
             byref(c_grid),
             byref(grid_size),
-            detail="for id " + str(grid),
         )
         return grid_size.value
 
@@ -549,7 +529,6 @@ class XmiWrapper(Xmi):
             self.lib.get_grid_type,
             byref(c_grid),
             byref(grid_type),
-            detail="for id " + str(grid),
         )
         return grid_type.value.decode()
 
@@ -559,7 +538,6 @@ class XmiWrapper(Xmi):
             self.lib.get_grid_shape,
             byref(c_grid),
             c_void_p(shape.ctypes.data),
-            detail="for id " + str(grid),
         )
         return shape
 
@@ -575,7 +553,6 @@ class XmiWrapper(Xmi):
             self.lib.get_grid_x,
             byref(c_grid),
             c_void_p(x.ctypes.data),
-            detail="for id " + str(grid),
         )
         return x
 
@@ -585,7 +562,6 @@ class XmiWrapper(Xmi):
             self.lib.get_grid_y,
             byref(c_grid),
             c_void_p(y.ctypes.data),
-            detail="for id " + str(grid),
         )
         return y
 
@@ -595,7 +571,6 @@ class XmiWrapper(Xmi):
             self.lib.get_grid_z,
             byref(c_grid),
             c_void_p(z.ctypes.data),
-            detail="for id " + str(grid),
         )
         return z
 
@@ -606,7 +581,6 @@ class XmiWrapper(Xmi):
             self.lib.get_grid_node_count,
             byref(c_grid),
             byref(grid_node_count),
-            detail="for id " + str(grid),
         )
         return grid_node_count.value
 
@@ -620,7 +594,6 @@ class XmiWrapper(Xmi):
             self.lib.get_grid_face_count,
             byref(c_grid),
             byref(grid_face_count),
-            detail="for id " + str(grid),
         )
         return grid_face_count.value
 
@@ -636,7 +609,6 @@ class XmiWrapper(Xmi):
             self.lib.get_grid_face_nodes,
             byref(c_grid),
             c_void_p(face_nodes.ctypes.data),
-            detail="for id " + str(grid),
         )
         return face_nodes
 
@@ -646,7 +618,6 @@ class XmiWrapper(Xmi):
             self.lib.get_grid_nodes_per_face,
             byref(c_grid),
             c_void_p(nodes_per_face.ctypes.data),
-            detail="for id " + str(grid),
         )
         return nodes_per_face
 
@@ -704,9 +675,7 @@ class XmiWrapper(Xmi):
 
         return var_address.value.decode()
 
-    def _execute_function(
-        self, function: Callable[[Any], int], *args, detail=""
-    ) -> None:
+    def _execute_function(self, function: Callable[[Any], int], *args) -> None:
         """
         Utility function to execute a BMI function in the kernel and checks its status
         """
@@ -721,13 +690,13 @@ class XmiWrapper(Xmi):
             if self.logger.isEnabledFor(logging.DEBUG):
                 self.logger.debug(
                     "execute function: %s returned %s",
-                    pretty_ctypes_execute_function(function.__name__, *args),
+                    repr_function_call(function.__name__, *args),
                     result,
                 )
 
             if result != Status.SUCCESS:
                 msg = "BMI exception in "
-                msg += pretty_ctypes_execute_function(function.__name__, *args)
+                msg += repr_function_call(function.__name__, *args)
 
                 # try to get detailed error msg, beware:
                 # directly call CDLL methods to avoid recursion

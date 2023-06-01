@@ -16,10 +16,18 @@ def cd(newdir: Path):
         os.chdir(prevdir)
 
 
-def pretty_ctypes_execute_function(function: str, *args):
-    """Return a descriptive ctypes function call."""
+def repr_function_call(function: str, *args) -> str:
+    """Return a descriptive ctypes function call.
 
-    def format_item(arg):
+    Parameters
+    ----------
+    function : str
+        Name of function.
+    *args : tuple
+        Zero or more arguments, usally based on ctypes.
+    """
+
+    def format_arg(arg) -> str:
         if isinstance(arg, (ctypes.Array, ctypes.c_char_p)):
             return f"{arg.__class__.__name__}({arg.value!r})"
         elif isinstance(arg, np.ctypeslib._ndptr):
@@ -35,8 +43,8 @@ def pretty_ctypes_execute_function(function: str, *args):
     for arg in args:
         if hasattr(arg, "_obj"):
             # Format byref() with "&" prefix
-            item = "&" + format_item(arg._obj)
+            item = "&" + format_arg(arg._obj)
         else:
-            item = format_item(arg)
+            item = format_arg(arg)
         items.append(item)
     return f"{function}({', '.join(items)})"

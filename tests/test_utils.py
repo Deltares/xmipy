@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def test_pretty_ctypes_execute_function():
+def test_repr_function_call():
     from ctypes import (
         POINTER,
         byref,
@@ -14,7 +14,7 @@ def test_pretty_ctypes_execute_function():
         pointer,
     )
 
-    from xmipy.utils import pretty_ctypes_execute_function
+    from xmipy.utils import repr_function_call
 
     ar = np.zeros(2, dtype=np.int32)
     sar = np.zeros(1, dtype="<S4")
@@ -43,4 +43,4 @@ def test_pretty_ctypes_execute_function():
         ("x(&ndpointer_<f8_2d_2x3_C)", [byref(arraytype())]),
     ]
     for expected, args in cases:
-        assert expected == pretty_ctypes_execute_function("x", *args)
+        assert expected == repr_function_call("x", *args)
