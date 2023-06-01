@@ -25,7 +25,7 @@ def repr_function_call(function: str, *args: Any) -> str:
     function : str
         Name of function.
     *args : tuple
-        Zero or more arguments, usally based on ctypes.
+        Zero or more arguments, usually based on ctypes.
     """
 
     def format_arg(arg: Any) -> str:

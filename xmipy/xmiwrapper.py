@@ -702,7 +702,7 @@ class XmiWrapper(Xmi):
             self.timer.start(function.__name__)
 
         try:
-            # Execute library funtion
+            # Execute library function
             result = function(*args)
 
             if self.logger.isEnabledFor(logging.DEBUG):
