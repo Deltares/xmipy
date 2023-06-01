@@ -1,3 +1,4 @@
+import logging
 import os
 import platform
 from ctypes import (
@@ -21,7 +22,7 @@ from numpy.typing import NDArray
 from xmipy.errors import InputError, TimerError, XMIError
 from xmipy.logger import get_logger, show_logger_message
 from xmipy.timers.timer import Timer
-from xmipy.utils import cd
+from xmipy.utils import cd, pretty_ctypes_execute_function
 from xmipy.xmi import Xmi
 
 
@@ -119,8 +120,8 @@ class XmiWrapper(Xmi):
             total = self.timer.report_totals()
             with show_logger_message(self.logger):
                 self.logger.info(
-                    "Total elapsed time for %s: %0.4f seconds",
-                    self.libname, total)
+                    "Total elapsed time for %s: %0.4f seconds", self.libname, total
+                )
             return total
         else:
             raise TimerError("Timing not activated")
@@ -327,9 +328,10 @@ class XmiWrapper(Xmi):
         # first deal with scalars
         rank = self.get_var_rank(name)
         var_type = self.get_var_type(name)
+        var_type_lower = var_type.lower()
 
         if rank == 0:
-            if var_type.lower().startswith("string"):
+            if var_type_lower.startswith("string"):
                 ilen = self.get_var_nbytes(name)
                 strtype = "<S" + str(ilen + 1)
                 if dest is None:
@@ -352,7 +354,7 @@ class XmiWrapper(Xmi):
 
         var_shape = self.get_var_shape(name)
 
-        if var_type.lower().startswith("double"):
+        if var_type_lower.startswith("double"):
             if dest is None:
                 dest = np.empty(shape=var_shape, dtype=np.float64, order="C")
             self._execute_function(
@@ -361,7 +363,7 @@ class XmiWrapper(Xmi):
                 byref(dest.ctypes.data_as(POINTER(c_double))),
                 detail="for variable " + name,
             )
-        elif var_type.lower().startswith("int"):
+        elif var_type_lower.startswith("int"):
             if dest is None:
                 dest = np.empty(shape=var_shape, dtype=np.int32, order="C")
             self._execute_function(
@@ -370,7 +372,7 @@ class XmiWrapper(Xmi):
                 byref(dest.ctypes.data_as(POINTER(c_int))),
                 detail="for variable " + name,
             )
-        elif var_type.lower().startswith("string"):
+        elif var_type_lower.startswith("string"):
             if dest is None:
                 if var_shape[0] == 0:
                     return np.empty((0,), "U1")
@@ -387,7 +389,7 @@ class XmiWrapper(Xmi):
                 dest[i] = x.decode("ascii").strip()
             return dest.astype(str)
         else:
-            raise InputError("Unsupported value type")
+            raise InputError(f"Unsupported value type {var_type!r}")
 
         return dest
 
@@ -397,14 +399,15 @@ class XmiWrapper(Xmi):
         if rank == 0:
             return self.get_value_ptr_scalar(name)
 
-        vartype = self.get_var_type(name)
+        var_type = self.get_var_type(name)
+        var_type_lower = var_type.lower()
         shape_array = self.get_var_shape(name)
 
         # convert shape array to python tuple
         shape_tuple = tuple(np.trim_zeros(shape_array))
         ndim = len(shape_tuple)
 
-        if vartype.lower().startswith("double"):
+        if var_type_lower.startswith("double"):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.float64, ndim=ndim, shape=shape_tuple, flags="C"
             )
@@ -416,7 +419,7 @@ class XmiWrapper(Xmi):
                 detail="for variable " + name,
             )
             return values.contents
-        elif vartype.lower().startswith("float"):
+        elif var_type_lower.startswith("float"):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.float32, ndim=ndim, shape=shape_tuple, flags="C"
             )
@@ -428,7 +431,7 @@ class XmiWrapper(Xmi):
                 detail="for variable " + name,
             )
             return values.contents
-        elif vartype.lower().startswith("int"):
+        elif var_type_lower.startswith("int"):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.int32, ndim=ndim, shape=shape_tuple, flags="C"
             )
@@ -441,13 +444,14 @@ class XmiWrapper(Xmi):
             )
             return values.contents
         else:
-            raise InputError(f"Given {vartype=} is invalid.")
+            raise InputError(f"Unsupported value type {var_type!r}")
 
     def get_value_ptr_scalar(self, name: str) -> NDArray:
-        vartype = self.get_var_type(name)
-        if vartype.lower().startswith("double"):
+        var_type = self.get_var_type(name)
+        var_type_lower = var_type.lower()
+        if var_type_lower.startswith("double"):
             arraytype = np.ctypeslib.ndpointer(
-                dtype=np.double, ndim=1, shape=(1,), flags="C"
+                dtype=np.float64, ndim=1, shape=(1,), flags="C"
             )
             values = arraytype()
             self._execute_function(
@@ -456,9 +460,9 @@ class XmiWrapper(Xmi):
                 byref(values),
                 detail="for variable " + name,
             )
-        elif vartype.lower().startswith("float"):
+        elif var_type_lower.startswith("float"):
             arraytype = np.ctypeslib.ndpointer(
-                dtype=float, ndim=1, shape=(1,), flags="C"
+                dtype=np.float32, ndim=1, shape=(1,), flags="C"
             )
             values = arraytype()
             self._execute_function(
@@ -467,7 +471,7 @@ class XmiWrapper(Xmi):
                 byref(values),
                 detail="for variable " + name,
             )
-        elif vartype.lower().startswith("int"):
+        elif var_type_lower.startswith("int"):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.int32, ndim=1, shape=(1,), flags="C"
             )
@@ -479,7 +483,7 @@ class XmiWrapper(Xmi):
                 detail="for variable " + name,
             )
         else:
-            raise InputError("Unsupported value type")
+            raise InputError(f"Unsupported value type {var_type!r}")
 
         return values.contents
 
@@ -489,8 +493,9 @@ class XmiWrapper(Xmi):
     def set_value(self, name: str, values: NDArray) -> None:
         if not values.flags["C"]:
             raise InputError("Array should have C layout")
-        vartype = self.get_var_type(name)
-        if vartype.lower().startswith("double"):
+        var_type = self.get_var_type(name)
+        var_type_lower = var_type.lower()
+        if var_type_lower.startswith("double"):
             if values.dtype != np.float64:
                 raise InputError("Array should have float64 elements")
             self._execute_function(
@@ -499,7 +504,7 @@ class XmiWrapper(Xmi):
                 byref(values.ctypes.data_as(POINTER(c_double))),
                 detail="for variable " + name,
             )
-        elif vartype.lower().startswith("int"):
+        elif var_type_lower.startswith("int"):
             if values.dtype != np.int32:
                 raise InputError("Array should have int32 elements")
             self._execute_function(
@@ -687,17 +692,13 @@ class XmiWrapper(Xmi):
     def get_var_address(
         self, var_name: str, component_name: str, subcomponent_name=""
     ) -> str:
-        var_name = var_name.upper()
-        component_name = component_name.upper()
-        subcomponent_name = subcomponent_name.upper()
-
         len_var_address = self.get_constant_int("BMI_LENVARADDRESS")
         var_address = create_string_buffer(len_var_address)
         self._execute_function(
             self.lib.get_var_address,
-            c_char_p(component_name.encode()),
-            c_char_p(subcomponent_name.encode()),
-            c_char_p(var_name.encode()),
+            c_char_p(component_name.upper().encode()),
+            c_char_p(subcomponent_name.upper().encode()),
+            c_char_p(var_name.upper().encode()),
             byref(var_address),
         )
 
@@ -714,8 +715,19 @@ class XmiWrapper(Xmi):
             self.timer.start(function.__name__)
 
         try:
-            if function(*args) != Status.SUCCESS:
-                msg = f"BMI exception in {function.__name__} ({detail}):"
+            # Execute library funtion
+            result = function(*args)
+
+            if self.logger.isEnabledFor(logging.DEBUG):
+                self.logger.debug(
+                    "execute function: %s returned %s",
+                    pretty_ctypes_execute_function(function.__name__, *args),
+                    result,
+                )
+
+            if result != Status.SUCCESS:
+                msg = "BMI exception in "
+                msg += pretty_ctypes_execute_function(function.__name__, *args)
 
                 # try to get detailed error msg, beware:
                 # directly call CDLL methods to avoid recursion
@@ -729,13 +741,14 @@ class XmiWrapper(Xmi):
                     self.lib.get_component_name(byref(component_name))
 
                     msg += (
-                        f" Message from {component_name.value.decode()} "
+                        f": Message from {component_name.value.decode()} "
                         + f"'{err_msg.value.decode()}'"
                     )
                 except AttributeError:
-                    self.logging.error("Couldn't extract error message")
+                    self.logger.error("Couldn't extract error message")
 
                 raise XMIError(msg)
+
         finally:
             if self.timing:
                 self.timer.stop(function.__name__)

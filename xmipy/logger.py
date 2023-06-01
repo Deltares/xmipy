@@ -29,7 +29,7 @@ def get_logger(name: str, level: Union[str, int] = 0):
     logger.setLevel(level)
 
     if not logger.hasHandlers():
-        formatter = logging.Formatter("%(name)s:%(levelname)s: %(message)s")
+        formatter = logging.Formatter("%(levelname)s:%(name)s: %(message)s")
         handler = logging.StreamHandler(sys.stdout)
         handler.setFormatter(formatter)
         logger.addHandler(handler)
