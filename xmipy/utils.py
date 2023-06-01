@@ -32,7 +32,7 @@ def repr_function_call(function: str, *args: Any) -> str:
         if isinstance(arg, (ctypes.Array, ctypes.c_char_p)):
             return f"{arg.__class__.__name__}({arg.value!r})"
         elif isinstance(arg, np.ctypeslib._ndptr):
-            return arg.__class__.__name__
+            return str(arg.__class__.__name__)
         elif isinstance(arg, ctypes._Pointer):
             return "*" + repr(arg.contents)
         elif isinstance(arg, ctypes._SimpleCData):
