@@ -97,7 +97,7 @@ class XmiWrapper(Xmi):
                 text="Elapsed time for {name}.{fn_name}: {seconds:0.4f} seconds",
             )
 
-    def __del__(self):
+    def __del__(self) -> None:
         if self._state == State.INITIALIZED:
             self.finalize()
 
@@ -313,7 +313,9 @@ class XmiWrapper(Xmi):
     def get_time_units(self) -> str:
         raise NotImplementedError
 
-    def get_value(self, name: str, dest: Union[NDArray, None] = None) -> NDArray:
+    def get_value(
+        self, name: str, dest: Union[NDArray[Any], None] = None
+    ) -> NDArray[Any]:
         # make sure that optional array is of correct layout:
         if dest is not None:
             if not dest.flags["C"]:
@@ -383,7 +385,7 @@ class XmiWrapper(Xmi):
 
         return dest
 
-    def get_value_ptr(self, name: str) -> NDArray:
+    def get_value_ptr(self, name: str) -> NDArray[Any]:
         # first scalars
         rank = self.get_var_rank(name)
         if rank == 0:
@@ -433,7 +435,7 @@ class XmiWrapper(Xmi):
         else:
             raise InputError(f"Unsupported value type {var_type!r}")
 
-    def get_value_ptr_scalar(self, name: str) -> NDArray:
+    def get_value_ptr_scalar(self, name: str) -> NDArray[Any]:
         var_type = self.get_var_type(name)
         var_type_lower = var_type.lower()
         if var_type_lower.startswith("double"):
@@ -471,10 +473,12 @@ class XmiWrapper(Xmi):
 
         return values.contents
 
-    def get_value_at_indices(self, name: str, dest: NDArray, inds: NDArray) -> NDArray:
+    def get_value_at_indices(
+        self, name: str, dest: NDArray[Any], inds: NDArray[np.int32]
+    ) -> NDArray[Any]:
         raise NotImplementedError
 
-    def set_value(self, name: str, values: NDArray) -> None:
+    def set_value(self, name: str, values: NDArray[Any]) -> None:
         if not values.flags["C"]:
             raise InputError("Array should have C layout")
         var_type = self.get_var_type(name)
@@ -498,7 +502,9 @@ class XmiWrapper(Xmi):
         else:
             raise InputError("Unsupported value type")
 
-    def set_value_at_indices(self, name: str, inds: NDArray, src: NDArray) -> None:
+    def set_value_at_indices(
+        self, name: str, inds: NDArray[Any], src: NDArray[Any]
+    ) -> None:
         raise NotImplementedError
 
     def get_grid_rank(self, grid: int) -> int:
@@ -532,7 +538,7 @@ class XmiWrapper(Xmi):
         )
         return grid_type.value.decode()
 
-    def get_grid_shape(self, grid: int, shape: NDArray) -> NDArray:
+    def get_grid_shape(self, grid: int, shape: NDArray[np.int32]) -> NDArray[np.int32]:
         c_grid = c_int(grid)
         self._execute_function(
             self.lib.get_grid_shape,
@@ -541,13 +547,17 @@ class XmiWrapper(Xmi):
         )
         return shape
 
-    def get_grid_spacing(self, grid: int, spacing: NDArray) -> NDArray:
+    def get_grid_spacing(
+        self, grid: int, spacing: NDArray[np.int32]
+    ) -> NDArray[np.int32]:
         raise NotImplementedError
 
-    def get_grid_origin(self, grid: int, origin: NDArray) -> NDArray:
+    def get_grid_origin(
+        self, grid: int, origin: NDArray[np.int32]
+    ) -> NDArray[np.int32]:
         raise NotImplementedError
 
-    def get_grid_x(self, grid: int, x: NDArray) -> NDArray:
+    def get_grid_x(self, grid: int, x: NDArray[np.float64]) -> NDArray[np.float64]:
         c_grid = c_int(grid)
         self._execute_function(
             self.lib.get_grid_x,
@@ -556,7 +566,7 @@ class XmiWrapper(Xmi):
         )
         return x
 
-    def get_grid_y(self, grid: int, y: NDArray) -> NDArray:
+    def get_grid_y(self, grid: int, y: NDArray[np.float64]) -> NDArray[np.float64]:
         c_grid = c_int(grid)
         self._execute_function(
             self.lib.get_grid_y,
@@ -565,7 +575,7 @@ class XmiWrapper(Xmi):
         )
         return y
 
-    def get_grid_z(self, grid: int, z: NDArray) -> NDArray:
+    def get_grid_z(self, grid: int, z: NDArray[np.float64]) -> NDArray[np.float64]:
         c_grid = c_int(grid)
         self._execute_function(
             self.lib.get_grid_z,
@@ -597,13 +607,19 @@ class XmiWrapper(Xmi):
         )
         return grid_face_count.value
 
-    def get_grid_edge_nodes(self, grid: int, edge_nodes: NDArray) -> NDArray:
+    def get_grid_edge_nodes(
+        self, grid: int, edge_nodes: NDArray[np.int32]
+    ) -> NDArray[np.int32]:
         raise NotImplementedError
 
-    def get_grid_face_edges(self, grid: int, face_edges: NDArray) -> NDArray:
+    def get_grid_face_edges(
+        self, grid: int, face_edges: NDArray[np.int32]
+    ) -> NDArray[np.int32]:
         raise NotImplementedError
 
-    def get_grid_face_nodes(self, grid: int, face_nodes: NDArray) -> NDArray:
+    def get_grid_face_nodes(
+        self, grid: int, face_nodes: NDArray[np.int32]
+    ) -> NDArray[np.int32]:
         c_grid = c_int(grid)
         self._execute_function(
             self.lib.get_grid_face_nodes,
@@ -612,7 +628,9 @@ class XmiWrapper(Xmi):
         )
         return face_nodes
 
-    def get_grid_nodes_per_face(self, grid: int, nodes_per_face: NDArray) -> NDArray:
+    def get_grid_nodes_per_face(
+        self, grid: int, nodes_per_face: NDArray[np.int32]
+    ) -> NDArray[np.int32]:
         c_grid = c_int(grid)
         self._execute_function(
             self.lib.get_grid_nodes_per_face,
@@ -624,10 +642,10 @@ class XmiWrapper(Xmi):
     # ===========================
     # here starts the XMI
     # ===========================
-    def prepare_time_step(self, dt) -> None:
+    def prepare_time_step(self, dt: float) -> None:
         with cd(self.working_directory):
-            dt = c_double(dt)
-            self._execute_function(self.lib.prepare_time_step, byref(dt))
+            c_dt = c_double(dt)
+            self._execute_function(self.lib.prepare_time_step, byref(c_dt))
 
     def do_time_step(self) -> None:
         with cd(self.working_directory):
@@ -642,26 +660,26 @@ class XmiWrapper(Xmi):
         self._execute_function(self.lib.get_subcomponent_count, byref(count))
         return count.value
 
-    def prepare_solve(self, component_id=1) -> None:
+    def prepare_solve(self, component_id: int = 1) -> None:
         cid = c_int(component_id)
         with cd(self.working_directory):
             self._execute_function(self.lib.prepare_solve, byref(cid))
 
-    def solve(self, component_id=1) -> bool:
+    def solve(self, component_id: int = 1) -> bool:
         cid = c_int(component_id)
         has_converged = c_int(0)
         with cd(self.working_directory):
             self._execute_function(self.lib.solve, byref(cid), byref(has_converged))
         return has_converged.value == 1
 
-    def finalize_solve(self, component_id=1) -> None:
+    def finalize_solve(self, component_id: int = 1) -> None:
         cid = c_int(component_id)
 
         with cd(self.working_directory):
             self._execute_function(self.lib.finalize_solve, byref(cid))
 
     def get_var_address(
-        self, var_name: str, component_name: str, subcomponent_name=""
+        self, var_name: str, component_name: str, subcomponent_name: str = ""
     ) -> str:
         len_var_address = self.get_constant_int("BMI_LENVARADDRESS")
         var_address = create_string_buffer(len_var_address)
@@ -675,7 +693,7 @@ class XmiWrapper(Xmi):
 
         return var_address.value.decode()
 
-    def _execute_function(self, function: Callable[[Any], int], *args) -> None:
+    def _execute_function(self, function: Callable[[Any], int], *args: Any) -> None:
         """
         Utility function to execute a BMI function in the kernel and checks its status
         """
