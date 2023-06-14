@@ -5,6 +5,13 @@ from xmipy import XmiWrapper
 from xmipy.errors import InputError
 
 
+def mf6_version_tuple(version: str) -> tuple:
+    """Convert a version string into tuple, removing "-dev" if present."""
+    if "-" in version:
+        version = version[: version.index("-")]
+    return tuple(int(v) for v in version.split("."))
+
+
 @pytest.fixture
 def flopy_dis_idomain_mf6(flopy_dis_idomain, modflow_lib_path, request):
     mf6 = XmiWrapper(
@@ -81,20 +88,20 @@ def test_update_and_get_current_time(flopy_dis_mf6):
     assert mf6.get_current_time() == 3.0
 
 
-def test_get_var_type_double(flopy_dis_mf6):
+@pytest.mark.parametrize(
+    "addr,expected",
+    [
+        (("X", "SLN_1"), "DOUBLE (90)"),
+        (("IACTIVE", "SLN_1"), "INTEGER (90)"),
+        (("ENDOFSIMULATION", "TDIS"), "LOGICAL"),
+    ],
+)
+def test_get_var_type(flopy_dis_mf6, addr, expected):
     mf6 = flopy_dis_mf6[1]
     mf6.initialize()
 
-    head_tag = mf6.get_var_address("X", "SLN_1")
-    assert mf6.get_var_type(head_tag) == "DOUBLE (90)"
-
-
-def test_get_var_type_int(flopy_dis_mf6):
-    mf6 = flopy_dis_mf6[1]
-    mf6.initialize()
-
-    iactive_tag = mf6.get_var_address("IACTIVE", "SLN_1")
-    assert mf6.get_var_type(iactive_tag) == "INTEGER (90)"
+    addr_tag = mf6.get_var_address(*addr)
+    assert mf6.get_var_type(addr_tag) == expected
 
 
 def test_get_var_string(flopy_dis_mf6):
@@ -174,6 +181,25 @@ def test_get_value_ptr_scalar(flopy_dis_mf6):
     # Only one model is defined => id should be 1
     # grid_id[0], because even scalars are defined as arrays
     assert grid_id[0] == 1
+
+
+def test_get_value_ptr_scalar_bool(flopy_dis_mf6):
+    """Test get_value_ptr_scalar with bool (LOGICAL) type."""
+    mf6 = flopy_dis_mf6[1]
+    if mf6_version_tuple(mf6.get_version()) < (6, 5, 0):
+        pytest.skip("modflow-6.5.0 or later needed")
+    mf6.initialize()
+
+    # Get end of simulation data
+    eos_tag = mf6.get_var_address("ENDOFSIMULATION", "TDIS")
+    eos_value = mf6.get_value_ptr_scalar(eos_tag)
+    np.testing.assert_array_equal(eos_value, [False])
+
+    # Change value, then check to see if it changed in lib via get_value
+    eos_value[0] = True
+    np.testing.assert_array_equal(mf6.get_value(eos_tag), [True])
+    eos_value[0] = False
+    np.testing.assert_array_equal(mf6.get_value(eos_tag), [False])
 
 
 def test_get_var_grid(flopy_dis_mf6):
@@ -319,6 +345,26 @@ def test_get_value_int_scalar(flopy_dis_idomain_mf6):
     )
 
 
+def test_get_value_bool(flopy_dis_idomain_mf6):
+    """Test get_value with bool (LOGICAL) type."""
+    mf6 = flopy_dis_idomain_mf6[1]
+    if mf6_version_tuple(mf6.get_version()) < (6, 5, 0):
+        pytest.skip("modflow-6.5.0 or later needed")
+    mf6.initialize()
+
+    # get scalar variable:
+    eos_tag = mf6.get_var_address("ENDOFSIMULATION", "TDIS")
+    assert mf6.get_var_rank(eos_tag) == 0
+
+    # Run each time step and check value
+    end_time = mf6.get_end_time()
+    while mf6.get_current_time() < end_time:
+        np.testing.assert_array_equal(mf6.get_value(eos_tag), [False])
+        mf6.update()
+    # Check that simulation has ended
+    np.testing.assert_array_equal(mf6.get_value(eos_tag), [True])
+
+
 def test_get_value_at_indices(flopy_dis_idomain_mf6):
     """Expects to be implemented as soon as `get_value_at_indices` is implemented"""
     mf6 = flopy_dis_idomain_mf6[1]
@@ -345,6 +391,26 @@ def test_set_value(flopy_dis_mf6):
     arr_int[0] = 999
     mf6.set_value(mxit_tag, arr_int)
     assert mf6.get_value(mxit_tag).tolist() == [999]
+
+
+def test_set_value_bool(flopy_dis_idomain_mf6):
+    """Test set_value with bool (LOGICAL) type."""
+    mf6 = flopy_dis_idomain_mf6[1]
+    if mf6_version_tuple(mf6.get_version()) < (6, 5, 0):
+        pytest.skip("modflow-6.5.0 or later needed")
+    mf6.initialize()
+
+    # Toggle end of simulation data
+    eos_tag = mf6.get_var_address("ENDOFSIMULATION", "TDIS")
+    np.testing.assert_array_equal(mf6.get_value(eos_tag), [False])
+    mf6.set_value(eos_tag, np.array([True]))
+    np.testing.assert_array_equal(mf6.get_value(eos_tag), [True])
+    mf6.set_value(eos_tag, np.array([False]))
+    np.testing.assert_array_equal(mf6.get_value(eos_tag), [False])
+
+    # Check wrong dtype
+    with pytest.raises(InputError):
+        mf6.set_value(eos_tag, np.array([0]))
 
 
 def test_set_value_at_indices(flopy_dis_mf6):
