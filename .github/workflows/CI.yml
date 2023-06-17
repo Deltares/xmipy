@@ -31,6 +31,8 @@ jobs:
           manifest-path: pyproject.toml
       - name: Install MODFLOW 6
         uses: modflowpy/install-modflow-action@v1
+        with:
+          repo: modflow6
       - name: Test with pytest
         run: pixi run tests-ci
         env: 
