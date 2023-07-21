@@ -14,7 +14,7 @@ from ctypes import (
 )
 from enum import Enum, IntEnum, unique
 from pathlib import Path
-from typing import Any, Callable, Tuple, Union
+from typing import Any, Callable, Tuple, Union, Dict
 
 import numpy as np
 from numpy.typing import NDArray
@@ -668,7 +668,7 @@ class XmiWrapper(Xmi):
 
         return var_address.value.decode()
 
-    def _execute_function(self, function: Callable[[Any], int], *args: Any) -> None:
+    def _execute_function(self, function: Callable[[Any], int], *args: Any, **kwargs: Dict[str, Any]) -> None:
         """
         Utility function to execute a BMI function in the kernel and checks its status
         """
@@ -702,9 +702,13 @@ class XmiWrapper(Xmi):
                     component_name = create_string_buffer(len_name)
                     self.lib.get_component_name(byref(component_name))
 
+                    if 'detail' in kwargs:
+                        detail = f", details : '{kwargs['detail']}'"
+                    else:
+                        detail = ""
                     msg += (
                         f": Message from {component_name.value.decode()} "
-                        + f"'{err_msg.value.decode()}'"
+                        + f"'{err_msg.value.decode()}'" + detail
                     )
                 except AttributeError:
                     self.logger.error("Couldn't extract error message")
