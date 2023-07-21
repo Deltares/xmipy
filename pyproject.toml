@@ -33,9 +33,6 @@ zip-safe = false
 [tool.setuptools.dynamic]
 version = { attr = "xmipy.__version__" }
 
-[tool.setuptools.packages.find]
-include = ["xmipy", "xmipy.*"]
-
 [tool.setuptools.package-data]
 "xmipy" = ["py.typed"]
 
@@ -43,6 +40,23 @@ include = ["xmipy", "xmipy.*"]
 Documentation = "https://deltares.github.io/xmipy/xmipy.html"
 Source = "https://github.com/Deltares/xmipy"
 
-[tool.isort]
-profile = "black"
-multi_line_output = 3
+[tool.mypy]
+exclude = ["tests"]
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+strict_equality = true
+strict_concatenate = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+disallow_any_generics = true
+disallow_untyped_calls = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+no_implicit_reexport = true
+warn_return_any = true
+
+[tool.ruff]
+select = ["E", "F", "NPY", "PD", "C4", "I"]
+ignore = ["E501", "PD901"]
+fixable = ["I"]
