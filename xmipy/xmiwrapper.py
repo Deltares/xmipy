@@ -14,7 +14,7 @@ from ctypes import (
 )
 from enum import Enum, IntEnum, unique
 from pathlib import Path
-from typing import Any, Callable, Tuple, Union, Dict
+from typing import Any, Callable, Dict, Tuple, Union
 
 import numpy as np
 from numpy.typing import NDArray
@@ -403,16 +403,16 @@ class XmiWrapper(Xmi):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.float64, ndim=ndim, shape=shape_tuple, flags="C"
             )
-        elif var_type_lower().startswith("float"):
+        elif var_type_lower.startswith("float"):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.float32, ndim=ndim, shape=shape_tuple, flags="C"
             )
-        elif var_type_lower().startswith("int"):
+        elif var_type_lower.startswith("int"):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.int32, ndim=ndim, shape=shape_tuple, flags="C"
             )
         else:
-            raise InputError(f"Unsupported value type {var_type!r}")            
+            raise InputError(f"Unsupported value type {var_type!r}")
         values = arraytype()
         self._execute_function(
             self.lib.get_value_ptr,
@@ -668,7 +668,9 @@ class XmiWrapper(Xmi):
 
         return var_address.value.decode()
 
-    def _execute_function(self, function: Callable[[Any], int], *args: Any, **kwargs: Dict[str, Any]) -> None:
+    def _execute_function(
+        self, function: Callable[[Any], int], *args: Any, **kwargs: Any
+    ) -> None:
         """
         Utility function to execute a BMI function in the kernel and checks its status
         """
@@ -702,13 +704,14 @@ class XmiWrapper(Xmi):
                     component_name = create_string_buffer(len_name)
                     self.lib.get_component_name(byref(component_name))
 
-                    if 'detail' in kwargs:
+                    if "detail" in kwargs:
                         detail = f", details : '{kwargs['detail']}'"
                     else:
                         detail = ""
                     msg += (
                         f": Message from {component_name.value.decode()} "
-                        + f"'{err_msg.value.decode()}'" + detail
+                        + f"'{err_msg.value.decode()}'"
+                        + detail
                     )
                 except AttributeError:
                     self.logger.error("Couldn't extract error message")
