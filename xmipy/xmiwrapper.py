@@ -14,7 +14,7 @@ from ctypes import (
 )
 from enum import Enum, IntEnum, unique
 from pathlib import Path
-from typing import Any, Callable, Dict, Tuple, Union
+from typing import Any, Callable, Tuple, Union
 
 import numpy as np
 from numpy.typing import NDArray
