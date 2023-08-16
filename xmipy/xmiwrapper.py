@@ -103,13 +103,9 @@ class XmiWrapper(Xmi):
 
     @staticmethod
     def _add_lib_dependency(lib_dependency: Union[str, Path]) -> None:
-        lib_dependency = str(lib_dependency)
+        lib_dependency = str(Path(lib_dependency).absolute())
         if platform.system() == "Windows":
-            os.environ["PATH"] = (
-                str(Path(lib_dependency).absolute())
-                + os.pathsep
-                + os.environ["PATH"]
-            )
+            os.environ["PATH"] = lib_dependency + os.pathsep + os.environ["PATH"]
         else:
             # Assume a Unix-like system
             if "LD_LIBRARY_PATH" in os.environ:
