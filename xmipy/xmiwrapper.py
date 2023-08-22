@@ -5,6 +5,7 @@ from ctypes import (
     CDLL,
     POINTER,
     byref,
+    c_bool,
     c_char,
     c_char_p,
     c_double,
@@ -130,9 +131,11 @@ class XmiWrapper(Xmi):
 
     def get_constant_int(self, name: str) -> int:
         c_var = c_int.in_dll(self.lib, name)
+        self.logger.debug("get_constant_int: %r returned %r", name, c_var)
         return c_var.value
 
     def set_int(self, name: str, value: int) -> None:
+        self.logger.debug("set_int: %r with value %r", name, value)
         c_var = c_int.in_dll(self.lib, name)
         c_var.value = value
 
@@ -474,6 +477,16 @@ class XmiWrapper(Xmi):
                 c_char_p(name.encode()),
                 byref(values),
             )
+        elif var_type_lower.startswith("logical"):
+            arraytype = np.ctypeslib.ndpointer(
+                dtype=bool, ndim=1, shape=(1,), flags="C"
+            )
+            values = arraytype()
+            self._execute_function(
+                self.lib.get_value_ptr_bool,
+                c_char_p(name.encode()),
+                byref(values),
+            )
         else:
             raise InputError(f"Unsupported value type {var_type!r}")
 
@@ -504,6 +517,14 @@ class XmiWrapper(Xmi):
                 self.lib.set_value_int,
                 c_char_p(name.encode()),
                 byref(values.ctypes.data_as(POINTER(c_int))),
+            )
+        elif var_type_lower.startswith("logical"):
+            if values.dtype != bool:
+                raise InputError("Array should have bool elements")
+            self._execute_function(
+                self.lib.set_value_bool,
+                c_char_p(name.encode()),
+                byref(values.ctypes.data_as(POINTER(c_bool))),
             )
         else:
             raise InputError("Unsupported value type")
