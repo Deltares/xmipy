@@ -139,9 +139,7 @@ class XmiWrapper(Xmi):
     def initialize(self, config_file: str = "") -> None:
         if self._state == State.UNINITIALIZED:
             with cd(self.working_directory):
-                self._execute_function(
-                    self.lib.initialize, config_file.encode()
-                )
+                self._execute_function(self.lib.initialize, config_file.encode())
                 self._state = State.INITIALIZED
         else:
             raise InputError("The library is already initialized")
@@ -194,9 +192,7 @@ class XmiWrapper(Xmi):
     def get_component_name(self) -> str:
         len_name = self.get_constant_int("BMI_LENCOMPONENTNAME")
         component_name = create_string_buffer(len_name)
-        self._execute_function(
-            self.lib.get_component_name, byref(component_name)
-        )
+        self._execute_function(self.lib.get_component_name, byref(component_name))
         return component_name.value.decode("ascii")
 
     def get_version(self) -> str:
@@ -544,9 +540,7 @@ class XmiWrapper(Xmi):
         )
         return grid_type.value.decode()
 
-    def get_grid_shape(
-        self, grid: int, shape: NDArray[np.int32]
-    ) -> NDArray[np.int32]:
+    def get_grid_shape(self, grid: int, shape: NDArray[np.int32]) -> NDArray[np.int32]:
         c_grid = c_int(grid)
         self._execute_function(
             self.lib.get_grid_shape,
@@ -565,9 +559,7 @@ class XmiWrapper(Xmi):
     ) -> NDArray[np.int32]:
         raise NotImplementedError
 
-    def get_grid_x(
-        self, grid: int, x: NDArray[np.float64]
-    ) -> NDArray[np.float64]:
+    def get_grid_x(self, grid: int, x: NDArray[np.float64]) -> NDArray[np.float64]:
         c_grid = c_int(grid)
         self._execute_function(
             self.lib.get_grid_x,
@@ -576,9 +568,7 @@ class XmiWrapper(Xmi):
         )
         return x
 
-    def get_grid_y(
-        self, grid: int, y: NDArray[np.float64]
-    ) -> NDArray[np.float64]:
+    def get_grid_y(self, grid: int, y: NDArray[np.float64]) -> NDArray[np.float64]:
         c_grid = c_int(grid)
         self._execute_function(
             self.lib.get_grid_y,
@@ -587,9 +577,7 @@ class XmiWrapper(Xmi):
         )
         return y
 
-    def get_grid_z(
-        self, grid: int, z: NDArray[np.float64]
-    ) -> NDArray[np.float64]:
+    def get_grid_z(self, grid: int, z: NDArray[np.float64]) -> NDArray[np.float64]:
         c_grid = c_int(grid)
         self._execute_function(
             self.lib.get_grid_z,
@@ -683,9 +671,7 @@ class XmiWrapper(Xmi):
         cid = c_int(component_id)
         has_converged = c_int(0)
         with cd(self.working_directory):
-            self._execute_function(
-                self.lib.solve, byref(cid), byref(has_converged)
-            )
+            self._execute_function(self.lib.solve, byref(cid), byref(has_converged))
         return has_converged.value == 1
 
     def finalize_solve(self, component_id: int = 1) -> None:
@@ -709,9 +695,7 @@ class XmiWrapper(Xmi):
 
         return var_address.value.decode()
 
-    def _execute_function(
-        self, function: Callable[[Any], int], *args: Any
-    ) -> None:
+    def _execute_function(self, function: Callable[[Any], int], *args: Any) -> None:
         """
         Utility function to execute a BMI function in the kernel and checks its status
         """
