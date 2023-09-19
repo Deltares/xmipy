@@ -335,7 +335,7 @@ class XmiWrapper(Xmi):
                 if dest is None:
                     dest = np.empty(1, dtype=strtype, order="C")
                 self._execute_function(
-                    self.lib.get_value_string,
+                    self.lib.get_value,
                     c_char_p(name.encode()),
                     byref(dest.ctypes.data_as(POINTER(c_char))),
                 )
@@ -355,7 +355,7 @@ class XmiWrapper(Xmi):
             if dest is None:
                 dest = np.empty(shape=var_shape, dtype=np.float64, order="C")
             self._execute_function(
-                self.lib.get_value_double,
+                self.lib.get_value,
                 c_char_p(name.encode()),
                 byref(dest.ctypes.data_as(POINTER(c_double))),
             )
@@ -363,7 +363,7 @@ class XmiWrapper(Xmi):
             if dest is None:
                 dest = np.empty(shape=var_shape, dtype=np.int32, order="C")
             self._execute_function(
-                self.lib.get_value_int,
+                self.lib.get_value,
                 c_char_p(name.encode()),
                 byref(dest.ctypes.data_as(POINTER(c_int))),
             )
@@ -375,7 +375,7 @@ class XmiWrapper(Xmi):
                 strtype = "<S" + str(ilen + 1)
                 dest = np.empty(var_shape[0], dtype=strtype, order="C")
             self._execute_function(
-                self.lib.get_value_string,
+                self.lib.get_value,
                 c_char_p(name.encode()),
                 byref(dest.ctypes.data_as(POINTER(c_char))),
             )
@@ -405,37 +405,24 @@ class XmiWrapper(Xmi):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.float64, ndim=ndim, shape=shape_tuple, flags="C"
             )
-            values = arraytype()
-            self._execute_function(
-                self.lib.get_value_ptr_double,
-                c_char_p(name.encode()),
-                byref(values),
-            )
-            return values.contents
         elif var_type_lower.startswith("float"):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.float32, ndim=ndim, shape=shape_tuple, flags="C"
             )
-            values = arraytype()
-            self._execute_function(
-                self.lib.get_value_ptr_float,
-                c_char_p(name.encode()),
-                byref(values),
-            )
-            return values.contents
         elif var_type_lower.startswith("int"):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.int32, ndim=ndim, shape=shape_tuple, flags="C"
             )
-            values = arraytype()
-            self._execute_function(
-                self.lib.get_value_ptr_int,
-                c_char_p(name.encode()),
-                byref(values),
-            )
-            return values.contents
         else:
             raise InputError(f"Unsupported value type {var_type!r}")
+        values = arraytype()
+        self._execute_function(
+            self.lib.get_value_ptr,
+            c_char_p(name.encode()),
+            byref(values),
+            detail="for variable " + name,
+        )
+        return values.contents
 
     def get_value_ptr_scalar(self, name: str) -> NDArray[Any]:
         var_type = self.get_var_type(name)
@@ -444,35 +431,23 @@ class XmiWrapper(Xmi):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.float64, ndim=1, shape=(1,), flags="C"
             )
-            values = arraytype()
-            self._execute_function(
-                self.lib.get_value_ptr_double,
-                c_char_p(name.encode()),
-                byref(values),
-            )
         elif var_type_lower.startswith("float"):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.float32, ndim=1, shape=(1,), flags="C"
-            )
-            values = arraytype()
-            self._execute_function(
-                self.lib.get_value_ptr_float,
-                c_char_p(name.encode()),
-                byref(values),
             )
         elif var_type_lower.startswith("int"):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.int32, ndim=1, shape=(1,), flags="C"
             )
-            values = arraytype()
-            self._execute_function(
-                self.lib.get_value_ptr_int,
-                c_char_p(name.encode()),
-                byref(values),
-            )
         else:
             raise InputError(f"Unsupported value type {var_type!r}")
-
+        values = arraytype()
+        self._execute_function(
+            self.lib.get_value_ptr,
+            c_char_p(name.encode()),
+            byref(values),
+            detail="for variable " + name,
+        )
         return values.contents
 
     def get_value_at_indices(
@@ -489,7 +464,7 @@ class XmiWrapper(Xmi):
             if values.dtype != np.float64:
                 raise InputError("Array should have float64 elements")
             self._execute_function(
-                self.lib.set_value_double,
+                self.lib.set_value,
                 c_char_p(name.encode()),
                 byref(values.ctypes.data_as(POINTER(c_double))),
             )
@@ -497,7 +472,7 @@ class XmiWrapper(Xmi):
             if values.dtype != np.int32:
                 raise InputError("Array should have int32 elements")
             self._execute_function(
-                self.lib.set_value_int,
+                self.lib.set_value,
                 c_char_p(name.encode()),
                 byref(values.ctypes.data_as(POINTER(c_int))),
             )
@@ -695,7 +670,9 @@ class XmiWrapper(Xmi):
 
         return var_address.value.decode()
 
-    def _execute_function(self, function: Callable[[Any], int], *args: Any) -> None:
+    def _execute_function(
+        self, function: Callable[[Any], int], *args: Any, **kwargs: Any
+    ) -> None:
         """
         Utility function to execute a BMI function in the kernel and checks its status
         """
@@ -729,9 +706,14 @@ class XmiWrapper(Xmi):
                     component_name = create_string_buffer(len_name)
                     self.lib.get_component_name(byref(component_name))
 
+                    if "detail" in kwargs:
+                        detail = f", details : '{kwargs['detail']}'"
+                    else:
+                        detail = ""
                     msg += (
                         f": Message from {component_name.value.decode()} "
                         + f"'{err_msg.value.decode()}'"
+                        + detail
                     )
                 except AttributeError:
                     self.logger.error("Couldn't extract error message")
