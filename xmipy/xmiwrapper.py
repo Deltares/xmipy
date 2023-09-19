@@ -103,7 +103,7 @@ class XmiWrapper(Xmi):
 
     @staticmethod
     def _add_lib_dependency(lib_dependency: Union[str, Path]) -> None:
-        lib_dependency = str(lib_dependency)
+        lib_dependency = str(Path(lib_dependency).absolute())
         if platform.system() == "Windows":
             os.environ["PATH"] = lib_dependency + os.pathsep + os.environ["PATH"]
         else:
@@ -120,7 +120,9 @@ class XmiWrapper(Xmi):
             total = self.timer.report_totals()
             with show_logger_message(self.logger):
                 self.logger.info(
-                    "Total elapsed time for %s: %0.4f seconds", self.libname, total
+                    "Total elapsed time for %s: %0.4f seconds",
+                    self.libname,
+                    total,
                 )
             return total
         else:
