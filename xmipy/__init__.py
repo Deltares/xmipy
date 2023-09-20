@@ -1,3 +1,8 @@
+"""
+Package for the eXtendend Model Interface.
+It provides abstract classes, as well as the implementation `XmiWrapper`
+"""
+
 # exports
 from bmipy.bmi import Bmi
 
