@@ -49,7 +49,42 @@ class XmiWrapper(Xmi):
         timing: bool = False,
         logger_level: Union[str, int] = 0,
     ):
-        """Constructor
+        """
+        Constructor of `XmiWrapper`
+
+        Next to wrapping C functions of a library exposing XMI,
+        it also adds timing and logging functionality.
+        An example for logging can be seen below.
+
+        ```
+        In [1]: from xmipy import XmiWrapper
+
+        In [2]: mf6 = XmiWrapper("/path/to/libmf6.so", working_directory="/path/to/sim", logger_level="DEBUG")
+
+        In [3]: mf6.initialize()
+        DEBUG:libmf6.so: execute function: initialize(b'') returned 0
+
+        In [4]: mf6.get_start_time()
+        DEBUG:libmf6.so: execute function: get_start_time(&c_double(0.0)) returned 0
+        Out[4]: 0.0
+
+        In [5]: mf6.get_end_time()
+        DEBUG:libmf6.so: execute function: get_end_time(&c_double(504.0)) returned 0
+        Out[5]: 504.0
+
+        In [6]: mf6.get_grid_rank(1)
+        DEBUG:libmf6.so: execute function: get_grid_rank(&c_int(1), &c_int(2)) returned 0
+        Out[6]: 2
+
+        In [7]: mf6.get_value('SLN_1/MXITER')
+        DEBUG:libmf6.so: execute function: get_var_rank(c_char_p(b'SLN_1/MXITER'), &c_int(0)) returned 0
+        DEBUG:libmf6.so: execute function: get_var_type(c_char_p(b'SLN_1/MXITER'), &c_char_Array_51(b'INTEGER')) returned 0
+        DEBUG:libmf6.so: execute function: get_var_type(c_char_p(b'SLN_1/MXITER'), &c_char_Array_51(b'INTEGER')) returned 0
+        DEBUG:libmf6.so: execute function: get_value_ptr_int(c_char_p(b'SLN_1/MXITER'), &ndpointer_<i4_1d_1_C) returned 0
+        DEBUG:libmf6.so: execute function: get_var_type(c_char_p(b'SLN_1/MXITER'), &c_char_Array_51(b'INTEGER')) returned 0
+        DEBUG:libmf6.so: execute function: get_value_ptr_int(c_char_p(b'SLN_1/MXITER'), &ndpointer_<i4_1d_1_C) returned 0
+        Out[7]: array([25], dtype=int32)
+        ```
 
         Parameters
         ----------
