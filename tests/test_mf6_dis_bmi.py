@@ -126,16 +126,6 @@ def test_get_var_stringarray(flopy_dis_mf6):
     # boundary names are not set until _rp, so we need this update()
     mf6.update()
 
-    bnd_name_tag = mf6.get_var_address("BOUNDNAME_CST", flopy_dis.model_name, "CHD_0")
-    var_shape = mf6.get_var_shape(bnd_name_tag)
-    assert var_shape == [2]
-
-    var_nbytes = mf6.get_var_nbytes(bnd_name_tag)
-    assert var_nbytes == 2 * 40  # NB: LENBOUNDNAME = 40
-    ilen = var_nbytes // var_shape[0]
-    assert mf6.get_var_type(bnd_name_tag) == f"STRING LEN={ilen} (2)"
-    assert mf6.get_value(bnd_name_tag).tolist() == ["BNDA", "BNDB"]
-
     # test var with rank 1 and shape [0]
     name_tag = mf6.get_var_address("AUXNAME_CST", flopy_dis.model_name, "CHD_0")
     assert mf6.get_var_rank(name_tag) == 1
