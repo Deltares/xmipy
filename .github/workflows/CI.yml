@@ -24,8 +24,8 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "${{ matrix.python-version }}"
-      - name: Setup GNU Fortran
-        uses: modflowpy/install-gfortran-action@v1
+      - name: Setup Fortran
+        uses: fortran-lang/setup-fortran@v1
       - name: Install test dependencies
         run: |
           pip install -e ".[tests]"
