@@ -49,7 +49,7 @@ def test_manual_do_time_step(flopy_dis_mf6, sol_id):
     mf6.prepare_solve(*sol_id)
 
     max_iter = 25
-    for kiter in range(max_iter):
+    for _ in range(max_iter):
         has_converged = mf6.solve(*sol_id)
 
         if has_converged:

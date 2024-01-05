@@ -57,6 +57,20 @@ no_implicit_reexport = true
 warn_return_any = true
 
 [tool.ruff]
-select = ["E", "F", "NPY", "PD", "C4", "I"]
-ignore = ["E501", "PD901"]
-fixable = ["I"]
+select = [
+    "ARG",
+    "B",
+    "C4",
+    "E",
+    "F",
+    "I",
+    "N",
+    "NPY",
+    "PD",
+    "PTH",
+    "RUF",
+    "SIM",
+    "W",
+]
+ignore = ["E501", "PT011"]
+fixable = ["I", "W"]

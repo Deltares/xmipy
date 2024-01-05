@@ -40,7 +40,7 @@ class FlopyDis:
 
 
 @pytest.fixture(scope="function")
-def flopy_dis(tmp_path, modflow_lib_path):
+def flopy_dis(tmp_path):
     sim_path = str(tmp_path)
     sim = flopy.mf6.MFSimulation(
         sim_name="TEST_SIM_DIS",
@@ -97,7 +97,7 @@ def flopy_dis_mf6(flopy_dis, modflow_lib_path, request):
 
 
 @pytest.fixture(scope="function")
-def flopy_dis_idomain(tmp_path, modflow_lib_path):
+def flopy_dis_idomain(tmp_path):
     sim_path = str(tmp_path)
     sim = flopy.mf6.MFSimulation(
         sim_name="TEST_SIM_DIS", version="mf6", sim_ws=sim_path
@@ -326,7 +326,7 @@ class FlopyGwfSto:
 
 
 @pytest.fixture(scope="function")
-def flopy_gwf_sto(tmp_path, modflow_lib_path):
+def flopy_gwf_sto(tmp_path):
     sim_path = str(tmp_path)
     sim = flopy.mf6.MFSimulation(
         sim_name="TEST_SIM_DIS", version="mf6", sim_ws=sim_path

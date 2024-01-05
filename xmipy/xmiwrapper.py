@@ -108,7 +108,7 @@ class XmiWrapper(Xmi):
         """
 
         self._state = State.UNINITIALIZED
-        self.libname = os.path.basename(lib_path)
+        self.libname = Path(lib_path).name
         self.logger = get_logger(self.libname, logger_level)
 
         if lib_dependency:
@@ -354,9 +354,8 @@ class XmiWrapper(Xmi):
         self, name: str, dest: Union[NDArray[Any], None] = None
     ) -> NDArray[Any]:
         # make sure that optional array is of correct layout:
-        if dest is not None:
-            if not dest.flags["C"]:
-                raise InputError("Array should have C layout")
+        if dest is not None and not dest.flags["C"]:
+            raise InputError("Array should have C layout")
 
         # first deal with scalars
         rank = self.get_var_rank(name)
