@@ -1,5 +1,5 @@
 import logging
-import os.path
+from pathlib import Path
 
 import xmipy.logger
 from xmipy import XmiWrapper
@@ -9,7 +9,7 @@ def test_logger_defaults(caplog, modflow_lib_path):
     mf6 = XmiWrapper(modflow_lib_path)
 
     assert mf6.logger.level == logging.NOTSET
-    assert mf6.logger.name == os.path.basename(modflow_lib_path)
+    assert mf6.logger.name == Path(modflow_lib_path).name
 
     mf6.logger.debug("not shown")
     assert len(caplog.record_tuples) == 0

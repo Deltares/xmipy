@@ -42,10 +42,7 @@ def repr_function_call(function: str, *args: Any) -> str:
 
     items = []
     for arg in args:
-        if hasattr(arg, "_obj"):
-            # Format byref() with "&" prefix
-            item = "&" + format_arg(arg._obj)
-        else:
-            item = format_arg(arg)
+        # Format byref() with "&" prefix
+        item = "&" + format_arg(arg._obj) if hasattr(arg, "_obj") else format_arg(arg)
         items.append(item)
     return f"{function}({', '.join(items)})"
