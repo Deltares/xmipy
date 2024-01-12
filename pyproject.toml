@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=61"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "xmipy"
@@ -24,21 +24,15 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 tests = ["flopy >=3.3.6", "pytest", "pytest-cov", "requests"]
-lint = ["black", "ruff", "mypy"]
+lint = ["ruff", "mypy"]
 docs = ["pdoc"]
-
-[tool.setuptools]
-zip-safe = false
-
-[tool.setuptools.dynamic]
-version = { attr = "xmipy.__version__" }
-
-[tool.setuptools.package-data]
-"xmipy" = ["py.typed"]
 
 [project.urls]
 Documentation = "https://deltares.github.io/xmipy/xmipy.html"
 Source = "https://github.com/Deltares/xmipy"
+
+[tool.hatch.version]
+path = "xmipy/__init__.py"
 
 [tool.mypy]
 exclude = ["tests"]
