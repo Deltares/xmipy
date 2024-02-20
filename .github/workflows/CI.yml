@@ -34,7 +34,7 @@ jobs:
         # This is necessary until proper error reporting is implemented by Modflow
         run: |
           pytest -vs --cov=xmipy --cov-report=xml tests/
-        env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
