@@ -13,6 +13,7 @@ from ctypes import (
     create_string_buffer,
 )
 from enum import Enum, IntEnum, unique
+from os import PathLike
 from pathlib import Path
 from typing import Any, Callable, Tuple, Union
 
@@ -43,9 +44,9 @@ class XmiWrapper(Xmi):
 
     def __init__(
         self,
-        lib_path: Union[str, Path],
-        lib_dependency: Union[str, Path, None] = None,
-        working_directory: Union[str, Path, None] = None,
+        lib_path: Union[str, PathLike[Any]],
+        lib_dependency: Union[str, PathLike[Any], None] = None,
+        working_directory: Union[str, PathLike[Any], None] = None,
         timing: bool = False,
         logger_level: Union[str, int] = 0,
     ):
@@ -88,13 +89,13 @@ class XmiWrapper(Xmi):
 
         Parameters
         ----------
-        lib_path : Union[str, Path]
+        lib_path : Union[str, PathLike]
             Path to the shared library
 
-        lib_dependency : Union[str, Path, None], optional
+        lib_dependency : Union[str, PathLike, None], optional
             Path to the dependencies of the shared library, by default None
 
-        working_directory : Union[str, Path, None], optional
+        working_directory : Union[str, PathLike, None], optional
             The working directory the shared library expects when being called,
             by default None
 
@@ -137,7 +138,7 @@ class XmiWrapper(Xmi):
             self.finalize()
 
     @staticmethod
-    def _add_lib_dependency(lib_dependency: Union[str, Path]) -> None:
+    def _add_lib_dependency(lib_dependency: Union[str, PathLike[Any]]) -> None:
         lib_dependency = str(Path(lib_dependency).absolute())
         if platform.system() == "Windows":
             os.environ["PATH"] = lib_dependency + os.pathsep + os.environ["PATH"]
@@ -171,10 +172,10 @@ class XmiWrapper(Xmi):
         c_var = c_int.in_dll(self.lib, name)
         c_var.value = value
 
-    def initialize(self, config_file: str = "") -> None:
+    def initialize(self, config_file: Union[str, PathLike[Any]] = "") -> None:
         if self._state == State.UNINITIALIZED:
             with cd(self.working_directory):
-                self._execute_function(self.lib.initialize, config_file.encode())
+                self._execute_function(self.lib.initialize, os.fsencode(config_file))
                 self._state = State.INITIALIZED
         else:
             raise InputError("The library is already initialized")
