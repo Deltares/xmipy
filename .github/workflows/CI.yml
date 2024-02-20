@@ -17,6 +17,7 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
         os: [ubuntu-latest, macos-latest, windows-latest]
+        modflow6-repo: [modflow6, modflow6-nightly-build]
 
     steps:
       - uses: actions/checkout@v4
@@ -26,14 +27,16 @@ jobs:
           python-version: "${{ matrix.python-version }}"
       - name: Setup Fortran
         uses: fortran-lang/setup-fortran@v1
+      - name: Install MODFLOW 6
+        uses: modflowpy/install-modflow-action@v1
+        with:
+          repo: ${{ matrix.modflow6-repo }}
       - name: Install test dependencies
         run: |
           pip install -e ".[tests]"
-      - name: Test with pytest
-        # The flag -s stops pytest from capturing output
-        # This is necessary until proper error reporting is implemented by Modflow
+      - name: Run tests with MODFLOW 6 release
         run: |
-          pytest -vs --cov=xmipy --cov-report=xml tests/
+          pytest -v --cov=xmipy --cov-report=xml
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:

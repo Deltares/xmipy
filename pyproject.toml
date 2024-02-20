@@ -31,6 +31,9 @@ docs = ["pdoc"]
 Documentation = "https://deltares.github.io/xmipy/xmipy.html"
 Source = "https://github.com/Deltares/xmipy"
 
+[tool.hatch.build.targets.wheel]
+packages = ["xmipy"]
+
 [tool.hatch.version]
 path = "xmipy/__init__.py"
 
@@ -49,6 +52,9 @@ disallow_incomplete_defs = true
 disallow_untyped_defs = true
 no_implicit_reexport = true
 warn_return_any = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.ruff]
 select = [
