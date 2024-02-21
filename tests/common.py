@@ -21,8 +21,8 @@ def get_libmf6() -> Path:
     if "LIBMF6" in os.environ:
         lib_path = Path(os.environ["LIBMF6"])
     else:
-        if "MODFLOW_BIN_PATH" in os.environ:
-            mf6 = shutil.which("mf6", path=os.environ["MODFLOW_BIN_PATH"])
+        if modflow_bin_path := os.environ.get("MODFLOW_BIN_PATH"):
+            mf6 = shutil.which("mf6", path=modflow_bin_path)
         else:
             mf6 = shutil.which("mf6")
         if mf6 is None:
