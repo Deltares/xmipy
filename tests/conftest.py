@@ -1,4 +1,5 @@
-import platform
+"""Fixtures for pytest. Other common functions are in common.py."""
+
 from dataclasses import dataclass
 from typing import Any, List, Tuple
 
@@ -9,22 +10,20 @@ from flopy.mf6 import MFSimulation
 
 from xmipy import XmiWrapper
 
+from .common import libmf6_path
+
+
+def pytest_report_header(**kwargs):  # noqa: ARG001
+    """Show report header at top of pytest output.
+
+    https://docs.pytest.org/reference/reference.html#pytest.hookspec.pytest_report_header
+    """
+    return f"libmf6: {libmf6_path}"
+
 
 @pytest.fixture(scope="session")
-def modflow_lib_path(tmp_path_factory):
-    tmp_path = tmp_path_factory.getbasetemp()
-    sysinfo = platform.system()
-    if sysinfo == "Windows":
-        lib_path = tmp_path / "libmf6.dll"
-    elif sysinfo == "Linux":
-        lib_path = tmp_path / "libmf6.so"
-    elif sysinfo == "Darwin":
-        lib_path = tmp_path / "libmf6.dylib"
-    else:
-        raise RuntimeError(f"system not supported: {sysinfo}")
-
-    flopy.utils.get_modflow(bindir=str(tmp_path), repo="modflow6-nightly-build")
-    return str(lib_path)
+def modflow_lib_path():
+    return libmf6_path
 
 
 @dataclass
@@ -167,6 +166,15 @@ def flopy_disu(tmp_path):
     flopy.mf6.ModflowTdis(sim, time_units="DAYS", nper=2, perioddata=flopy_disu.tdis_rc)
     flopy.mf6.ModflowIms(sim)
     gwf = flopy.mf6.ModflowGwf(sim, modelname=flopy_disu.model_name, save_flows=True)
+    # fmt: off
+    ja = [0, 1, 3, 1, 0, 2, 4, 2, 1, 5, 3, 0, 4, 6, 4, 1, 3,
+          5, 7, 5, 2, 4, 8, 6, 3, 7, 7, 4, 6, 8, 8, 5, 7]
+    # fmt: on
+    zero_locs = [0, 3, 7, 10, 14, 19, 23, 26, 30]
+    hwva = np.full(33, 1.0)
+    hwva[zero_locs] = 0.0
+    cl12 = np.full(33, 0.5)
+    cl12[zero_locs] = 0.0
     flopy.mf6.ModflowGwfdisu(
         gwf,
         nodes=9,
@@ -176,112 +184,10 @@ def flopy_disu(tmp_path):
         bot=[-2.0],
         area=np.full(9, 1.0),
         iac=[3, 4, 3, 4, 5, 4, 3, 4, 3],
-        ja=[
-            0,
-            1,
-            3,
-            1,
-            0,
-            2,
-            4,
-            2,
-            1,
-            5,
-            3,
-            0,
-            4,
-            6,
-            4,
-            1,
-            3,
-            5,
-            7,
-            5,
-            2,
-            4,
-            8,
-            6,
-            3,
-            7,
-            7,
-            4,
-            6,
-            8,
-            8,
-            5,
-            7,
-        ],
+        ja=ja,
         ihc=[1],
-        cl12=[
-            0,
-            0.5,
-            0.5,
-            0,
-            0.5,
-            0.5,
-            0.5,
-            0,
-            0.5,
-            0.5,
-            0,
-            0.5,
-            0.5,
-            0.5,
-            0,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0,
-            0.5,
-            0.5,
-            0.5,
-            0,
-            0.5,
-            0.5,
-            0,
-            0.5,
-            0.5,
-            0.5,
-            0,
-            0.5,
-            0.5,
-        ],
-        hwva=[
-            0,
-            1.0,
-            1.0,
-            0,
-            1.0,
-            1.0,
-            1.0,
-            0,
-            1.0,
-            1.0,
-            0,
-            1.0,
-            1.0,
-            1.0,
-            0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            0,
-            1.0,
-            1.0,
-            1.0,
-            0,
-            1.0,
-            1.0,
-            0,
-            1.0,
-            1.0,
-            1.0,
-            0,
-            1.0,
-            1.0,
-        ],
+        cl12=cl12,
+        hwva=hwva,
         vertices=[
             [0, 0.0, 0.0],
             [1, 0.0, 1.0],
