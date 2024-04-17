@@ -34,6 +34,57 @@ Source = "https://github.com/Deltares/xmipy"
 [tool.hatch.version]
 path = "xmipy/__init__.py"
 
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
+
+[tool.pixi.pypi-dependencies]
+xmipy = { path = ".", editable = true }
+
+[tool.pixi.dependencies]
+flopy = ">=3.3.6"
+pytest = "*"
+pytest-cov = "*"
+requests = "*"
+ruff = "*"
+mypy = "*"
+pdoc = "*"
+
+[tool.pixi.tasks]
+# Tests
+# The flag -s stops pytest from capturing output
+# This is necessary until proper error reporting is implemented by Modflow
+test-ci = "pytest -vs --cov=xmipy --cov-report=xml tests/"
+test = "pytest tests"
+
+# Docs
+docs = "pdoc -o docs/ xmipy"
+
+# Lint
+ruff = "ruff check ."
+ruff-format = "ruff format --check ."
+mypy = "mypy --install-types --non-interactive --ignore-missing-imports ."
+check-build = "rm -rf dist && python -m build && twine check --strict dist/*"
+
+[tool.pixi.feature.py312.dependencies]
+python = "3.12.*"
+
+[tool.pixi.feature.py311.dependencies]
+python = "3.11.*"
+
+[tool.pixi.feature.py310.dependencies]
+python = "3.10.*"
+
+[tool.pixi.feature.py39.dependencies]
+python = "3.9.*"
+
+[tool.pixi.environments]
+default = { features = ["py312"], solve-group = "py312" }
+py312 = { features = ["py312"], solve-group = "py312" }
+py311 = ["py311"]
+py310 = ["py310"]
+py39 = ["py39"]
+
 [tool.mypy]
 exclude = ["tests"]
 warn_unused_configs = true

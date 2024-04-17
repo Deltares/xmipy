@@ -68,3 +68,6 @@ docs/_build/
 
 # Test artifacts
 tests/bin
+
+# pixi
+.pixi
