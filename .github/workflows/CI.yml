@@ -31,6 +31,8 @@ jobs:
           manifest-path: pyproject.toml
       - name: Test with pytest
         run: pixi run test-ci
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
