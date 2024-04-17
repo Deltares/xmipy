@@ -42,13 +42,15 @@ platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
 xmipy = { path = ".", editable = true }
 
 [tool.pixi.dependencies]
+build = "*"
 flopy = ">=3.3.6"
+mypy = "*"
+pdoc = "*"
 pytest = "*"
 pytest-cov = "*"
 requests = "*"
 ruff = "*"
-mypy = "*"
-pdoc = "*"
+twine = "*"
 
 [tool.pixi.tasks]
 # Tests
