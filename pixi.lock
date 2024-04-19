@@ -2591,8 +2591,8 @@ packages:
 - kind: pypi
   name: black
   version: 24.4.0
-  url: https://files.pythonhosted.org/packages/cb/95/4a02a0fed559bf638001f6bf4e4c9d685111db959d221485e7e27c91e954/black-24.4.0-cp311-cp311-macosx_10_9_x86_64.whl
-  sha256: 8e5537f456a22cf5cfcb2707803431d2feeb82ab3748ade280d6ccd0b40ed2e8
+  url: https://files.pythonhosted.org/packages/97/a6/f5857f79bba7eca05ebdc7e27e3447e3d2fc23898bb04f34bf3ff5dfb2db/black-24.4.0-cp311-cp311-macosx_11_0_arm64.whl
+  sha256: 64e60a7edd71fd542a10a9643bf369bfd2644de95ec71e86790b063aa02ff745
   requires_dist:
   - click >=8.0.0
   - mypy-extensions >=0.4.3
@@ -2631,8 +2631,8 @@ packages:
 - kind: pypi
   name: black
   version: 24.4.0
-  url: https://files.pythonhosted.org/packages/97/a6/f5857f79bba7eca05ebdc7e27e3447e3d2fc23898bb04f34bf3ff5dfb2db/black-24.4.0-cp311-cp311-macosx_11_0_arm64.whl
-  sha256: 64e60a7edd71fd542a10a9643bf369bfd2644de95ec71e86790b063aa02ff745
+  url: https://files.pythonhosted.org/packages/cb/95/4a02a0fed559bf638001f6bf4e4c9d685111db959d221485e7e27c91e954/black-24.4.0-cp311-cp311-macosx_10_9_x86_64.whl
+  sha256: 8e5537f456a22cf5cfcb2707803431d2feeb82ab3748ade280d6ccd0b40ed2e8
   requires_dist:
   - click >=8.0.0
   - mypy-extensions >=0.4.3
@@ -2691,26 +2691,6 @@ packages:
 - kind: pypi
   name: black
   version: 24.4.0
-  url: https://files.pythonhosted.org/packages/99/f7/bd2b367aa8833d532451d943ecc0deb7f846f872477bfa8deaa04e86373b/black-24.4.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  sha256: dae79397f367ac8d7adb6c779813328f6d690943f64b32983e896bcccd18cbad
-  requires_dist:
-  - click >=8.0.0
-  - mypy-extensions >=0.4.3
-  - packaging >=22.0
-  - pathspec >=0.9.0
-  - platformdirs >=2
-  - tomli >=1.1.0 ; python_version < '3.11'
-  - typing-extensions >=4.0.1 ; python_version < '3.11'
-  - colorama >=0.4.3 ; extra == 'colorama'
-  - aiohttp !=3.9.0, >=3.7.4 ; (sys_platform == 'win32' and implementation_name == 'pypy') and extra == 'd'
-  - aiohttp >=3.7.4 ; (sys_platform != 'win32' or implementation_name != 'pypy') and extra == 'd'
-  - ipython >=7.8.0 ; extra == 'jupyter'
-  - tokenize-rt >=3.2.0 ; extra == 'jupyter'
-  - uvloop >=0.15.2 ; extra == 'uvloop'
-  requires_python: '>=3.8'
-- kind: pypi
-  name: black
-  version: 24.4.0
   url: https://files.pythonhosted.org/packages/d5/41/9c3d8ec509cfb35b646c00cb912d769f9a92aa5e469401d90b80314d209f/black-24.4.0-cp310-cp310-win_amd64.whl
   sha256: 71d998b73c957444fb7c52096c3843875f4b6b47a54972598741fe9a7f737fcb
   requires_dist:
@@ -2731,8 +2711,8 @@ packages:
 - kind: pypi
   name: black
   version: 24.4.0
-  url: https://files.pythonhosted.org/packages/ef/32/5e59d4aeec3db4964404939ae7d3d9e839df7c882cd50296f3cfcb4738c5/black-24.4.0-cp39-cp39-win_amd64.whl
-  sha256: 7852b05d02b5b9a8c893ab95863ef8986e4dda29af80bbbda94d7aee1abf8702
+  url: https://files.pythonhosted.org/packages/99/f7/bd2b367aa8833d532451d943ecc0deb7f846f872477bfa8deaa04e86373b/black-24.4.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  sha256: dae79397f367ac8d7adb6c779813328f6d690943f64b32983e896bcccd18cbad
   requires_dist:
   - click >=8.0.0
   - mypy-extensions >=0.4.3
@@ -2793,6 +2773,26 @@ packages:
   version: 24.4.0
   url: https://files.pythonhosted.org/packages/6c/b0/6dd1ad928d28b52d8f931e94ad94f5ac302dca984cc5aefa616143d8ebdb/black-24.4.0-cp39-cp39-macosx_10_9_x86_64.whl
   sha256: 6644f97a7ef6f401a150cca551a1ff97e03c25d8519ee0bbc9b0058772882665
+  requires_dist:
+  - click >=8.0.0
+  - mypy-extensions >=0.4.3
+  - packaging >=22.0
+  - pathspec >=0.9.0
+  - platformdirs >=2
+  - tomli >=1.1.0 ; python_version < '3.11'
+  - typing-extensions >=4.0.1 ; python_version < '3.11'
+  - colorama >=0.4.3 ; extra == 'colorama'
+  - aiohttp !=3.9.0, >=3.7.4 ; (sys_platform == 'win32' and implementation_name == 'pypy') and extra == 'd'
+  - aiohttp >=3.7.4 ; (sys_platform != 'win32' or implementation_name != 'pypy') and extra == 'd'
+  - ipython >=7.8.0 ; extra == 'jupyter'
+  - tokenize-rt >=3.2.0 ; extra == 'jupyter'
+  - uvloop >=0.15.2 ; extra == 'uvloop'
+  requires_python: '>=3.8'
+- kind: pypi
+  name: black
+  version: 24.4.0
+  url: https://files.pythonhosted.org/packages/ef/32/5e59d4aeec3db4964404939ae7d3d9e839df7c882cd50296f3cfcb4738c5/black-24.4.0-cp39-cp39-win_amd64.whl
+  sha256: 7852b05d02b5b9a8c893ab95863ef8986e4dda29af80bbbda94d7aee1abf8702
   requires_dist:
   - click >=8.0.0
   - mypy-extensions >=0.4.3
@@ -12917,7 +12917,7 @@ packages:
   name: xmipy
   version: 1.4.0
   path: .
-  sha256: ea9e6d9742270ad72d2510320cb3bd91e168acf648183288533f64ec28be7a2c
+  sha256: 22661204755a002fd526e07e51b5d1d50a2bb79a87269923bfe36e56df8653b3
   requires_dist:
   - bmipy
   - numpy
