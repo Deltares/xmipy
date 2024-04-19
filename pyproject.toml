@@ -56,8 +56,8 @@ twine = "*"
 # Tests
 # The flag -s stops pytest from capturing output
 # This is necessary until proper error reporting is implemented by Modflow
-test-ci = "pytest -vs --cov=xmipy --cov-report=xml tests/"
-test = "pytest tests"
+tests-ci = "pytest -vs --cov=xmipy --cov-report=xml tests/"
+tests = "pytest tests/"
 
 # Docs
 docs = "pdoc -o docs/ xmipy"
