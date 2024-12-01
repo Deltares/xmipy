@@ -31,6 +31,9 @@ docs = ["pdoc"]
 Documentation = "https://deltares.github.io/xmipy/xmipy.html"
 Source = "https://github.com/Deltares/xmipy"
 
+[tool.hatch.build.targets.wheel]
+packages = ["xmipy"]
+
 [tool.hatch.version]
 path = "xmipy/__init__.py"
 
@@ -56,8 +59,8 @@ twine = "*"
 # Tests
 # The flag -s stops pytest from capturing output
 # This is necessary until proper error reporting is implemented by Modflow
-tests-ci = "pytest -vs --cov=xmipy --cov-report=xml tests/"
-tests = "pytest tests/"
+tests-ci = "pytest --cov=xmipy --cov-report=xml"
+tests = "pytest"
 
 # Docs
 docs = "pdoc -o docs/ xmipy"
@@ -90,6 +93,10 @@ py311 = ["py311"]
 py310 = ["py310"]
 py39 = ["py39"]
 
+[tool.pytest.ini_options]
+addopts = "-vs"
+testpaths = ["tests"]
+
 [tool.mypy]
 exclude = ["tests"]
 warn_unused_configs = true
@@ -106,7 +113,7 @@ disallow_untyped_defs = true
 no_implicit_reexport = true
 warn_return_any = true
 
-[tool.ruff]
+[tool.ruff.lint]
 select = [
     "ARG",
     "B",
