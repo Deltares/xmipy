@@ -1,8 +1,10 @@
-version: 4
+version: 5
 environments:
   default:
     channels:
     - url: https://conda.anaconda.org/conda-forge/
+    indexes:
+    - https://pypi.org/simple
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
@@ -490,6 +492,8 @@ environments:
   py310:
     channels:
     - url: https://conda.anaconda.org/conda-forge/
+    indexes:
+    - https://pypi.org/simple
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
@@ -978,6 +982,8 @@ environments:
   py311:
     channels:
     - url: https://conda.anaconda.org/conda-forge/
+    indexes:
+    - https://pypi.org/simple
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
@@ -1465,6 +1471,8 @@ environments:
   py312:
     channels:
     - url: https://conda.anaconda.org/conda-forge/
+    indexes:
+    - https://pypi.org/simple
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
@@ -1952,6 +1960,8 @@ environments:
   py39:
     channels:
     - url: https://conda.anaconda.org/conda-forge/
+    indexes:
+    - https://pypi.org/simple
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
@@ -2494,79 +2504,19 @@ packages:
   url: https://files.pythonhosted.org/packages/07/fe/d7b94a17094f646491b27f43b0259a7916597e544fbcfd6bb638a823e29d/black-24.4.0-cp312-cp312-macosx_11_0_arm64.whl
   sha256: 4396ca365a4310beef84d446ca5016f671b10f07abdba3e4e4304218d2c71d33
   requires_dist:
-  - click >=8.0.0
-  - mypy-extensions >=0.4.3
-  - packaging >=22.0
-  - pathspec >=0.9.0
-  - platformdirs >=2
-  - tomli >=1.1.0 ; python_version < '3.11'
-  - typing-extensions >=4.0.1 ; python_version < '3.11'
-  - colorama >=0.4.3 ; extra == 'colorama'
-  - aiohttp !=3.9.0, >=3.7.4 ; (sys_platform == 'win32' and implementation_name == 'pypy') and extra == 'd'
-  - aiohttp >=3.7.4 ; (sys_platform != 'win32' or implementation_name != 'pypy') and extra == 'd'
-  - ipython >=7.8.0 ; extra == 'jupyter'
-  - tokenize-rt >=3.2.0 ; extra == 'jupyter'
-  - uvloop >=0.15.2 ; extra == 'uvloop'
-  requires_python: '>=3.8'
-- kind: pypi
-  name: black
-  version: 24.4.0
-  url: https://files.pythonhosted.org/packages/42/d3/8fa632ab059f2a79f8dd2e2910d245b045bca847373a9017c442e206df49/black-24.4.0-cp312-cp312-macosx_10_9_x86_64.whl
-  sha256: f95cece33329dc4aa3b0e1a771c41075812e46cf3d6e3f1dfe3d91ff09826ed2
-  requires_dist:
-  - click >=8.0.0
-  - mypy-extensions >=0.4.3
-  - packaging >=22.0
-  - pathspec >=0.9.0
-  - platformdirs >=2
-  - tomli >=1.1.0 ; python_version < '3.11'
-  - typing-extensions >=4.0.1 ; python_version < '3.11'
-  - colorama >=0.4.3 ; extra == 'colorama'
-  - aiohttp !=3.9.0, >=3.7.4 ; (sys_platform == 'win32' and implementation_name == 'pypy') and extra == 'd'
-  - aiohttp >=3.7.4 ; (sys_platform != 'win32' or implementation_name != 'pypy') and extra == 'd'
-  - ipython >=7.8.0 ; extra == 'jupyter'
-  - tokenize-rt >=3.2.0 ; extra == 'jupyter'
-  - uvloop >=0.15.2 ; extra == 'uvloop'
-  requires_python: '>=3.8'
-- kind: pypi
-  name: black
-  version: 24.4.0
-  url: https://files.pythonhosted.org/packages/0f/ce/28131fefb3bd6197ab2d1841e869e9b6abe90b54080ac29ccb504433263b/black-24.4.0-cp312-cp312-win_amd64.whl
-  sha256: 21f9407063ec71c5580b8ad975653c66508d6a9f57bd008bb8691d273705adcd
-  requires_dist:
-  - click >=8.0.0
-  - mypy-extensions >=0.4.3
-  - packaging >=22.0
-  - pathspec >=0.9.0
-  - platformdirs >=2
-  - tomli >=1.1.0 ; python_version < '3.11'
-  - typing-extensions >=4.0.1 ; python_version < '3.11'
-  - colorama >=0.4.3 ; extra == 'colorama'
-  - aiohttp !=3.9.0, >=3.7.4 ; (sys_platform == 'win32' and implementation_name == 'pypy') and extra == 'd'
-  - aiohttp >=3.7.4 ; (sys_platform != 'win32' or implementation_name != 'pypy') and extra == 'd'
-  - ipython >=7.8.0 ; extra == 'jupyter'
-  - tokenize-rt >=3.2.0 ; extra == 'jupyter'
-  - uvloop >=0.15.2 ; extra == 'uvloop'
-  requires_python: '>=3.8'
-- kind: pypi
-  name: black
-  version: 24.4.0
-  url: https://files.pythonhosted.org/packages/57/bc/c7f2e1665805b79476c4f10b554d0f8659b5f19f49d86eb5ef6c876f15ba/black-24.4.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  sha256: 44d99dfdf37a2a00a6f7a8dcbd19edf361d056ee51093b2445de7ca09adac965
-  requires_dist:
-  - click >=8.0.0
-  - mypy-extensions >=0.4.3
-  - packaging >=22.0
-  - pathspec >=0.9.0
-  - platformdirs >=2
-  - tomli >=1.1.0 ; python_version < '3.11'
-  - typing-extensions >=4.0.1 ; python_version < '3.11'
-  - colorama >=0.4.3 ; extra == 'colorama'
-  - aiohttp !=3.9.0, >=3.7.4 ; (sys_platform == 'win32' and implementation_name == 'pypy') and extra == 'd'
-  - aiohttp >=3.7.4 ; (sys_platform != 'win32' or implementation_name != 'pypy') and extra == 'd'
-  - ipython >=7.8.0 ; extra == 'jupyter'
-  - tokenize-rt >=3.2.0 ; extra == 'jupyter'
-  - uvloop >=0.15.2 ; extra == 'uvloop'
+  - click>=8.0.0
+  - mypy-extensions>=0.4.3
+  - packaging>=22.0
+  - pathspec>=0.9.0
+  - platformdirs>=2
+  - tomli>=1.1.0 ; python_full_version < '3.11'
+  - typing-extensions>=4.0.1 ; python_full_version < '3.11'
+  - colorama>=0.4.3 ; extra == 'colorama'
+  - aiohttp>=3.7.4,!=3.9.0 ; implementation_name == 'pypy' and sys_platform == 'win32' and extra == 'd'
+  - aiohttp>=3.7.4 ; (implementation_name != 'pypy' and extra == 'd') or (sys_platform != 'win32' and extra == 'd')
+  - ipython>=7.8.0 ; extra == 'jupyter'
+  - tokenize-rt>=3.2.0 ; extra == 'jupyter'
+  - uvloop>=0.15.2 ; extra == 'uvloop'
   requires_python: '>=3.8'
 - kind: pypi
   name: black
@@ -2574,19 +2524,19 @@ packages:
   url: https://files.pythonhosted.org/packages/0a/ef/37666bae20ba77d9a8420867077879fc0fd26e60e734ba5ee5ebc46f72fb/black-24.4.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
   sha256: 5cd5b4f76056cecce3e69b0d4c228326d2595f506797f40b9233424e2524c070
   requires_dist:
-  - click >=8.0.0
-  - mypy-extensions >=0.4.3
-  - packaging >=22.0
-  - pathspec >=0.9.0
-  - platformdirs >=2
-  - tomli >=1.1.0 ; python_version < '3.11'
-  - typing-extensions >=4.0.1 ; python_version < '3.11'
-  - colorama >=0.4.3 ; extra == 'colorama'
-  - aiohttp !=3.9.0, >=3.7.4 ; (sys_platform == 'win32' and implementation_name == 'pypy') and extra == 'd'
-  - aiohttp >=3.7.4 ; (sys_platform != 'win32' or implementation_name != 'pypy') and extra == 'd'
-  - ipython >=7.8.0 ; extra == 'jupyter'
-  - tokenize-rt >=3.2.0 ; extra == 'jupyter'
-  - uvloop >=0.15.2 ; extra == 'uvloop'
+  - click>=8.0.0
+  - mypy-extensions>=0.4.3
+  - packaging>=22.0
+  - pathspec>=0.9.0
+  - platformdirs>=2
+  - tomli>=1.1.0 ; python_full_version < '3.11'
+  - typing-extensions>=4.0.1 ; python_full_version < '3.11'
+  - colorama>=0.4.3 ; extra == 'colorama'
+  - aiohttp>=3.7.4,!=3.9.0 ; implementation_name == 'pypy' and sys_platform == 'win32' and extra == 'd'
+  - aiohttp>=3.7.4 ; (implementation_name != 'pypy' and extra == 'd') or (sys_platform != 'win32' and extra == 'd')
+  - ipython>=7.8.0 ; extra == 'jupyter'
+  - tokenize-rt>=3.2.0 ; extra == 'jupyter'
+  - uvloop>=0.15.2 ; extra == 'uvloop'
   requires_python: '>=3.8'
 - kind: pypi
   name: black
@@ -2594,59 +2544,39 @@ packages:
   url: https://files.pythonhosted.org/packages/0f/11/fa05ac9429d971d0fc10da85f24dafc3fa5788733fbd0d1c186b7577cefd/black-24.4.0-cp311-cp311-win_amd64.whl
   sha256: 64578cf99b6b46a6301bc28bdb89f9d6f9b592b1c5837818a177c98525dbe397
   requires_dist:
-  - click >=8.0.0
-  - mypy-extensions >=0.4.3
-  - packaging >=22.0
-  - pathspec >=0.9.0
-  - platformdirs >=2
-  - tomli >=1.1.0 ; python_version < '3.11'
-  - typing-extensions >=4.0.1 ; python_version < '3.11'
-  - colorama >=0.4.3 ; extra == 'colorama'
-  - aiohttp !=3.9.0, >=3.7.4 ; (sys_platform == 'win32' and implementation_name == 'pypy') and extra == 'd'
-  - aiohttp >=3.7.4 ; (sys_platform != 'win32' or implementation_name != 'pypy') and extra == 'd'
-  - ipython >=7.8.0 ; extra == 'jupyter'
-  - tokenize-rt >=3.2.0 ; extra == 'jupyter'
-  - uvloop >=0.15.2 ; extra == 'uvloop'
+  - click>=8.0.0
+  - mypy-extensions>=0.4.3
+  - packaging>=22.0
+  - pathspec>=0.9.0
+  - platformdirs>=2
+  - tomli>=1.1.0 ; python_full_version < '3.11'
+  - typing-extensions>=4.0.1 ; python_full_version < '3.11'
+  - colorama>=0.4.3 ; extra == 'colorama'
+  - aiohttp>=3.7.4,!=3.9.0 ; implementation_name == 'pypy' and sys_platform == 'win32' and extra == 'd'
+  - aiohttp>=3.7.4 ; (implementation_name != 'pypy' and extra == 'd') or (sys_platform != 'win32' and extra == 'd')
+  - ipython>=7.8.0 ; extra == 'jupyter'
+  - tokenize-rt>=3.2.0 ; extra == 'jupyter'
+  - uvloop>=0.15.2 ; extra == 'uvloop'
   requires_python: '>=3.8'
 - kind: pypi
   name: black
   version: 24.4.0
-  url: https://files.pythonhosted.org/packages/cb/95/4a02a0fed559bf638001f6bf4e4c9d685111db959d221485e7e27c91e954/black-24.4.0-cp311-cp311-macosx_10_9_x86_64.whl
-  sha256: 8e5537f456a22cf5cfcb2707803431d2feeb82ab3748ade280d6ccd0b40ed2e8
+  url: https://files.pythonhosted.org/packages/0f/ce/28131fefb3bd6197ab2d1841e869e9b6abe90b54080ac29ccb504433263b/black-24.4.0-cp312-cp312-win_amd64.whl
+  sha256: 21f9407063ec71c5580b8ad975653c66508d6a9f57bd008bb8691d273705adcd
   requires_dist:
-  - click >=8.0.0
-  - mypy-extensions >=0.4.3
-  - packaging >=22.0
-  - pathspec >=0.9.0
-  - platformdirs >=2
-  - tomli >=1.1.0 ; python_version < '3.11'
-  - typing-extensions >=4.0.1 ; python_version < '3.11'
-  - colorama >=0.4.3 ; extra == 'colorama'
-  - aiohttp !=3.9.0, >=3.7.4 ; (sys_platform == 'win32' and implementation_name == 'pypy') and extra == 'd'
-  - aiohttp >=3.7.4 ; (sys_platform != 'win32' or implementation_name != 'pypy') and extra == 'd'
-  - ipython >=7.8.0 ; extra == 'jupyter'
-  - tokenize-rt >=3.2.0 ; extra == 'jupyter'
-  - uvloop >=0.15.2 ; extra == 'uvloop'
-  requires_python: '>=3.8'
-- kind: pypi
-  name: black
-  version: 24.4.0
-  url: https://files.pythonhosted.org/packages/97/a6/f5857f79bba7eca05ebdc7e27e3447e3d2fc23898bb04f34bf3ff5dfb2db/black-24.4.0-cp311-cp311-macosx_11_0_arm64.whl
-  sha256: 64e60a7edd71fd542a10a9643bf369bfd2644de95ec71e86790b063aa02ff745
-  requires_dist:
-  - click >=8.0.0
-  - mypy-extensions >=0.4.3
-  - packaging >=22.0
-  - pathspec >=0.9.0
-  - platformdirs >=2
-  - tomli >=1.1.0 ; python_version < '3.11'
-  - typing-extensions >=4.0.1 ; python_version < '3.11'
-  - colorama >=0.4.3 ; extra == 'colorama'
-  - aiohttp !=3.9.0, >=3.7.4 ; (sys_platform == 'win32' and implementation_name == 'pypy') and extra == 'd'
-  - aiohttp >=3.7.4 ; (sys_platform != 'win32' or implementation_name != 'pypy') and extra == 'd'
-  - ipython >=7.8.0 ; extra == 'jupyter'
-  - tokenize-rt >=3.2.0 ; extra == 'jupyter'
-  - uvloop >=0.15.2 ; extra == 'uvloop'
+  - click>=8.0.0
+  - mypy-extensions>=0.4.3
+  - packaging>=22.0
+  - pathspec>=0.9.0
+  - platformdirs>=2
+  - tomli>=1.1.0 ; python_full_version < '3.11'
+  - typing-extensions>=4.0.1 ; python_full_version < '3.11'
+  - colorama>=0.4.3 ; extra == 'colorama'
+  - aiohttp>=3.7.4,!=3.9.0 ; implementation_name == 'pypy' and sys_platform == 'win32' and extra == 'd'
+  - aiohttp>=3.7.4 ; (implementation_name != 'pypy' and extra == 'd') or (sys_platform != 'win32' and extra == 'd')
+  - ipython>=7.8.0 ; extra == 'jupyter'
+  - tokenize-rt>=3.2.0 ; extra == 'jupyter'
+  - uvloop>=0.15.2 ; extra == 'uvloop'
   requires_python: '>=3.8'
 - kind: pypi
   name: black
@@ -2654,139 +2584,19 @@ packages:
   url: https://files.pythonhosted.org/packages/28/3e/92c4b155420aa9722996ae4fb0b857cea856a701630014283b348c4e9504/black-24.4.0-cp310-cp310-macosx_10_9_x86_64.whl
   sha256: 6ad001a9ddd9b8dfd1b434d566be39b1cd502802c8d38bbb1ba612afda2ef436
   requires_dist:
-  - click >=8.0.0
-  - mypy-extensions >=0.4.3
-  - packaging >=22.0
-  - pathspec >=0.9.0
-  - platformdirs >=2
-  - tomli >=1.1.0 ; python_version < '3.11'
-  - typing-extensions >=4.0.1 ; python_version < '3.11'
-  - colorama >=0.4.3 ; extra == 'colorama'
-  - aiohttp !=3.9.0, >=3.7.4 ; (sys_platform == 'win32' and implementation_name == 'pypy') and extra == 'd'
-  - aiohttp >=3.7.4 ; (sys_platform != 'win32' or implementation_name != 'pypy') and extra == 'd'
-  - ipython >=7.8.0 ; extra == 'jupyter'
-  - tokenize-rt >=3.2.0 ; extra == 'jupyter'
-  - uvloop >=0.15.2 ; extra == 'uvloop'
-  requires_python: '>=3.8'
-- kind: pypi
-  name: black
-  version: 24.4.0
-  url: https://files.pythonhosted.org/packages/91/a0/df4cae0a28c5b32bbef232b81ece9556f96c0d4aeaccdc202b9882d9698b/black-24.4.0-cp310-cp310-macosx_11_0_arm64.whl
-  sha256: e3a3a092b8b756c643fe45f4624dbd5a389f770a4ac294cf4d0fce6af86addaf
-  requires_dist:
-  - click >=8.0.0
-  - mypy-extensions >=0.4.3
-  - packaging >=22.0
-  - pathspec >=0.9.0
-  - platformdirs >=2
-  - tomli >=1.1.0 ; python_version < '3.11'
-  - typing-extensions >=4.0.1 ; python_version < '3.11'
-  - colorama >=0.4.3 ; extra == 'colorama'
-  - aiohttp !=3.9.0, >=3.7.4 ; (sys_platform == 'win32' and implementation_name == 'pypy') and extra == 'd'
-  - aiohttp >=3.7.4 ; (sys_platform != 'win32' or implementation_name != 'pypy') and extra == 'd'
-  - ipython >=7.8.0 ; extra == 'jupyter'
-  - tokenize-rt >=3.2.0 ; extra == 'jupyter'
-  - uvloop >=0.15.2 ; extra == 'uvloop'
-  requires_python: '>=3.8'
-- kind: pypi
-  name: black
-  version: 24.4.0
-  url: https://files.pythonhosted.org/packages/99/f7/bd2b367aa8833d532451d943ecc0deb7f846f872477bfa8deaa04e86373b/black-24.4.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  sha256: dae79397f367ac8d7adb6c779813328f6d690943f64b32983e896bcccd18cbad
-  requires_dist:
-  - click >=8.0.0
-  - mypy-extensions >=0.4.3
-  - packaging >=22.0
-  - pathspec >=0.9.0
-  - platformdirs >=2
-  - tomli >=1.1.0 ; python_version < '3.11'
-  - typing-extensions >=4.0.1 ; python_version < '3.11'
-  - colorama >=0.4.3 ; extra == 'colorama'
-  - aiohttp !=3.9.0, >=3.7.4 ; (sys_platform == 'win32' and implementation_name == 'pypy') and extra == 'd'
-  - aiohttp >=3.7.4 ; (sys_platform != 'win32' or implementation_name != 'pypy') and extra == 'd'
-  - ipython >=7.8.0 ; extra == 'jupyter'
-  - tokenize-rt >=3.2.0 ; extra == 'jupyter'
-  - uvloop >=0.15.2 ; extra == 'uvloop'
-  requires_python: '>=3.8'
-- kind: pypi
-  name: black
-  version: 24.4.0
-  url: https://files.pythonhosted.org/packages/d5/41/9c3d8ec509cfb35b646c00cb912d769f9a92aa5e469401d90b80314d209f/black-24.4.0-cp310-cp310-win_amd64.whl
-  sha256: 71d998b73c957444fb7c52096c3843875f4b6b47a54972598741fe9a7f737fcb
-  requires_dist:
-  - click >=8.0.0
-  - mypy-extensions >=0.4.3
-  - packaging >=22.0
-  - pathspec >=0.9.0
-  - platformdirs >=2
-  - tomli >=1.1.0 ; python_version < '3.11'
-  - typing-extensions >=4.0.1 ; python_version < '3.11'
-  - colorama >=0.4.3 ; extra == 'colorama'
-  - aiohttp !=3.9.0, >=3.7.4 ; (sys_platform == 'win32' and implementation_name == 'pypy') and extra == 'd'
-  - aiohttp >=3.7.4 ; (sys_platform != 'win32' or implementation_name != 'pypy') and extra == 'd'
-  - ipython >=7.8.0 ; extra == 'jupyter'
-  - tokenize-rt >=3.2.0 ; extra == 'jupyter'
-  - uvloop >=0.15.2 ; extra == 'uvloop'
-  requires_python: '>=3.8'
-- kind: pypi
-  name: black
-  version: 24.4.0
-  url: https://files.pythonhosted.org/packages/6c/b0/6dd1ad928d28b52d8f931e94ad94f5ac302dca984cc5aefa616143d8ebdb/black-24.4.0-cp39-cp39-macosx_10_9_x86_64.whl
-  sha256: 6644f97a7ef6f401a150cca551a1ff97e03c25d8519ee0bbc9b0058772882665
-  requires_dist:
-  - click >=8.0.0
-  - mypy-extensions >=0.4.3
-  - packaging >=22.0
-  - pathspec >=0.9.0
-  - platformdirs >=2
-  - tomli >=1.1.0 ; python_version < '3.11'
-  - typing-extensions >=4.0.1 ; python_version < '3.11'
-  - colorama >=0.4.3 ; extra == 'colorama'
-  - aiohttp !=3.9.0, >=3.7.4 ; (sys_platform == 'win32' and implementation_name == 'pypy') and extra == 'd'
-  - aiohttp >=3.7.4 ; (sys_platform != 'win32' or implementation_name != 'pypy') and extra == 'd'
-  - ipython >=7.8.0 ; extra == 'jupyter'
-  - tokenize-rt >=3.2.0 ; extra == 'jupyter'
-  - uvloop >=0.15.2 ; extra == 'uvloop'
-  requires_python: '>=3.8'
-- kind: pypi
-  name: black
-  version: 24.4.0
-  url: https://files.pythonhosted.org/packages/ef/32/5e59d4aeec3db4964404939ae7d3d9e839df7c882cd50296f3cfcb4738c5/black-24.4.0-cp39-cp39-win_amd64.whl
-  sha256: 7852b05d02b5b9a8c893ab95863ef8986e4dda29af80bbbda94d7aee1abf8702
-  requires_dist:
-  - click >=8.0.0
-  - mypy-extensions >=0.4.3
-  - packaging >=22.0
-  - pathspec >=0.9.0
-  - platformdirs >=2
-  - tomli >=1.1.0 ; python_version < '3.11'
-  - typing-extensions >=4.0.1 ; python_version < '3.11'
-  - colorama >=0.4.3 ; extra == 'colorama'
-  - aiohttp !=3.9.0, >=3.7.4 ; (sys_platform == 'win32' and implementation_name == 'pypy') and extra == 'd'
-  - aiohttp >=3.7.4 ; (sys_platform != 'win32' or implementation_name != 'pypy') and extra == 'd'
-  - ipython >=7.8.0 ; extra == 'jupyter'
-  - tokenize-rt >=3.2.0 ; extra == 'jupyter'
-  - uvloop >=0.15.2 ; extra == 'uvloop'
-  requires_python: '>=3.8'
-- kind: pypi
-  name: black
-  version: 24.4.0
-  url: https://files.pythonhosted.org/packages/a3/bb/b1054dce88a6405329890a9006b355eb133845da8dcc62e6c88f9a55435b/black-24.4.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  sha256: eb949f56a63c5e134dfdca12091e98ffb5fd446293ebae123d10fc1abad00b9e
-  requires_dist:
-  - click >=8.0.0
-  - mypy-extensions >=0.4.3
-  - packaging >=22.0
-  - pathspec >=0.9.0
-  - platformdirs >=2
-  - tomli >=1.1.0 ; python_version < '3.11'
-  - typing-extensions >=4.0.1 ; python_version < '3.11'
-  - colorama >=0.4.3 ; extra == 'colorama'
-  - aiohttp !=3.9.0, >=3.7.4 ; (sys_platform == 'win32' and implementation_name == 'pypy') and extra == 'd'
-  - aiohttp >=3.7.4 ; (sys_platform != 'win32' or implementation_name != 'pypy') and extra == 'd'
-  - ipython >=7.8.0 ; extra == 'jupyter'
-  - tokenize-rt >=3.2.0 ; extra == 'jupyter'
-  - uvloop >=0.15.2 ; extra == 'uvloop'
+  - click>=8.0.0
+  - mypy-extensions>=0.4.3
+  - packaging>=22.0
+  - pathspec>=0.9.0
+  - platformdirs>=2
+  - tomli>=1.1.0 ; python_full_version < '3.11'
+  - typing-extensions>=4.0.1 ; python_full_version < '3.11'
+  - colorama>=0.4.3 ; extra == 'colorama'
+  - aiohttp>=3.7.4,!=3.9.0 ; implementation_name == 'pypy' and sys_platform == 'win32' and extra == 'd'
+  - aiohttp>=3.7.4 ; (implementation_name != 'pypy' and extra == 'd') or (sys_platform != 'win32' and extra == 'd')
+  - ipython>=7.8.0 ; extra == 'jupyter'
+  - tokenize-rt>=3.2.0 ; extra == 'jupyter'
+  - uvloop>=0.15.2 ; extra == 'uvloop'
   requires_python: '>=3.8'
 - kind: pypi
   name: black
@@ -2794,19 +2604,219 @@ packages:
   url: https://files.pythonhosted.org/packages/42/c6/1fe1d87c212a91164c7ab35e98350167667da039ce5f92552c7c3e36d0df/black-24.4.0-cp39-cp39-macosx_11_0_arm64.whl
   sha256: 75a2d0b4f5eb81f7eebc31f788f9830a6ce10a68c91fbe0fade34fff7a2836e6
   requires_dist:
-  - click >=8.0.0
-  - mypy-extensions >=0.4.3
-  - packaging >=22.0
-  - pathspec >=0.9.0
-  - platformdirs >=2
-  - tomli >=1.1.0 ; python_version < '3.11'
-  - typing-extensions >=4.0.1 ; python_version < '3.11'
-  - colorama >=0.4.3 ; extra == 'colorama'
-  - aiohttp !=3.9.0, >=3.7.4 ; (sys_platform == 'win32' and implementation_name == 'pypy') and extra == 'd'
-  - aiohttp >=3.7.4 ; (sys_platform != 'win32' or implementation_name != 'pypy') and extra == 'd'
-  - ipython >=7.8.0 ; extra == 'jupyter'
-  - tokenize-rt >=3.2.0 ; extra == 'jupyter'
-  - uvloop >=0.15.2 ; extra == 'uvloop'
+  - click>=8.0.0
+  - mypy-extensions>=0.4.3
+  - packaging>=22.0
+  - pathspec>=0.9.0
+  - platformdirs>=2
+  - tomli>=1.1.0 ; python_full_version < '3.11'
+  - typing-extensions>=4.0.1 ; python_full_version < '3.11'
+  - colorama>=0.4.3 ; extra == 'colorama'
+  - aiohttp>=3.7.4,!=3.9.0 ; implementation_name == 'pypy' and sys_platform == 'win32' and extra == 'd'
+  - aiohttp>=3.7.4 ; (implementation_name != 'pypy' and extra == 'd') or (sys_platform != 'win32' and extra == 'd')
+  - ipython>=7.8.0 ; extra == 'jupyter'
+  - tokenize-rt>=3.2.0 ; extra == 'jupyter'
+  - uvloop>=0.15.2 ; extra == 'uvloop'
+  requires_python: '>=3.8'
+- kind: pypi
+  name: black
+  version: 24.4.0
+  url: https://files.pythonhosted.org/packages/42/d3/8fa632ab059f2a79f8dd2e2910d245b045bca847373a9017c442e206df49/black-24.4.0-cp312-cp312-macosx_10_9_x86_64.whl
+  sha256: f95cece33329dc4aa3b0e1a771c41075812e46cf3d6e3f1dfe3d91ff09826ed2
+  requires_dist:
+  - click>=8.0.0
+  - mypy-extensions>=0.4.3
+  - packaging>=22.0
+  - pathspec>=0.9.0
+  - platformdirs>=2
+  - tomli>=1.1.0 ; python_full_version < '3.11'
+  - typing-extensions>=4.0.1 ; python_full_version < '3.11'
+  - colorama>=0.4.3 ; extra == 'colorama'
+  - aiohttp>=3.7.4,!=3.9.0 ; implementation_name == 'pypy' and sys_platform == 'win32' and extra == 'd'
+  - aiohttp>=3.7.4 ; (implementation_name != 'pypy' and extra == 'd') or (sys_platform != 'win32' and extra == 'd')
+  - ipython>=7.8.0 ; extra == 'jupyter'
+  - tokenize-rt>=3.2.0 ; extra == 'jupyter'
+  - uvloop>=0.15.2 ; extra == 'uvloop'
+  requires_python: '>=3.8'
+- kind: pypi
+  name: black
+  version: 24.4.0
+  url: https://files.pythonhosted.org/packages/57/bc/c7f2e1665805b79476c4f10b554d0f8659b5f19f49d86eb5ef6c876f15ba/black-24.4.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  sha256: 44d99dfdf37a2a00a6f7a8dcbd19edf361d056ee51093b2445de7ca09adac965
+  requires_dist:
+  - click>=8.0.0
+  - mypy-extensions>=0.4.3
+  - packaging>=22.0
+  - pathspec>=0.9.0
+  - platformdirs>=2
+  - tomli>=1.1.0 ; python_full_version < '3.11'
+  - typing-extensions>=4.0.1 ; python_full_version < '3.11'
+  - colorama>=0.4.3 ; extra == 'colorama'
+  - aiohttp>=3.7.4,!=3.9.0 ; implementation_name == 'pypy' and sys_platform == 'win32' and extra == 'd'
+  - aiohttp>=3.7.4 ; (implementation_name != 'pypy' and extra == 'd') or (sys_platform != 'win32' and extra == 'd')
+  - ipython>=7.8.0 ; extra == 'jupyter'
+  - tokenize-rt>=3.2.0 ; extra == 'jupyter'
+  - uvloop>=0.15.2 ; extra == 'uvloop'
+  requires_python: '>=3.8'
+- kind: pypi
+  name: black
+  version: 24.4.0
+  url: https://files.pythonhosted.org/packages/6c/b0/6dd1ad928d28b52d8f931e94ad94f5ac302dca984cc5aefa616143d8ebdb/black-24.4.0-cp39-cp39-macosx_10_9_x86_64.whl
+  sha256: 6644f97a7ef6f401a150cca551a1ff97e03c25d8519ee0bbc9b0058772882665
+  requires_dist:
+  - click>=8.0.0
+  - mypy-extensions>=0.4.3
+  - packaging>=22.0
+  - pathspec>=0.9.0
+  - platformdirs>=2
+  - tomli>=1.1.0 ; python_full_version < '3.11'
+  - typing-extensions>=4.0.1 ; python_full_version < '3.11'
+  - colorama>=0.4.3 ; extra == 'colorama'
+  - aiohttp>=3.7.4,!=3.9.0 ; implementation_name == 'pypy' and sys_platform == 'win32' and extra == 'd'
+  - aiohttp>=3.7.4 ; (implementation_name != 'pypy' and extra == 'd') or (sys_platform != 'win32' and extra == 'd')
+  - ipython>=7.8.0 ; extra == 'jupyter'
+  - tokenize-rt>=3.2.0 ; extra == 'jupyter'
+  - uvloop>=0.15.2 ; extra == 'uvloop'
+  requires_python: '>=3.8'
+- kind: pypi
+  name: black
+  version: 24.4.0
+  url: https://files.pythonhosted.org/packages/91/a0/df4cae0a28c5b32bbef232b81ece9556f96c0d4aeaccdc202b9882d9698b/black-24.4.0-cp310-cp310-macosx_11_0_arm64.whl
+  sha256: e3a3a092b8b756c643fe45f4624dbd5a389f770a4ac294cf4d0fce6af86addaf
+  requires_dist:
+  - click>=8.0.0
+  - mypy-extensions>=0.4.3
+  - packaging>=22.0
+  - pathspec>=0.9.0
+  - platformdirs>=2
+  - tomli>=1.1.0 ; python_full_version < '3.11'
+  - typing-extensions>=4.0.1 ; python_full_version < '3.11'
+  - colorama>=0.4.3 ; extra == 'colorama'
+  - aiohttp>=3.7.4,!=3.9.0 ; implementation_name == 'pypy' and sys_platform == 'win32' and extra == 'd'
+  - aiohttp>=3.7.4 ; (implementation_name != 'pypy' and extra == 'd') or (sys_platform != 'win32' and extra == 'd')
+  - ipython>=7.8.0 ; extra == 'jupyter'
+  - tokenize-rt>=3.2.0 ; extra == 'jupyter'
+  - uvloop>=0.15.2 ; extra == 'uvloop'
+  requires_python: '>=3.8'
+- kind: pypi
+  name: black
+  version: 24.4.0
+  url: https://files.pythonhosted.org/packages/97/a6/f5857f79bba7eca05ebdc7e27e3447e3d2fc23898bb04f34bf3ff5dfb2db/black-24.4.0-cp311-cp311-macosx_11_0_arm64.whl
+  sha256: 64e60a7edd71fd542a10a9643bf369bfd2644de95ec71e86790b063aa02ff745
+  requires_dist:
+  - click>=8.0.0
+  - mypy-extensions>=0.4.3
+  - packaging>=22.0
+  - pathspec>=0.9.0
+  - platformdirs>=2
+  - tomli>=1.1.0 ; python_full_version < '3.11'
+  - typing-extensions>=4.0.1 ; python_full_version < '3.11'
+  - colorama>=0.4.3 ; extra == 'colorama'
+  - aiohttp>=3.7.4,!=3.9.0 ; implementation_name == 'pypy' and sys_platform == 'win32' and extra == 'd'
+  - aiohttp>=3.7.4 ; (implementation_name != 'pypy' and extra == 'd') or (sys_platform != 'win32' and extra == 'd')
+  - ipython>=7.8.0 ; extra == 'jupyter'
+  - tokenize-rt>=3.2.0 ; extra == 'jupyter'
+  - uvloop>=0.15.2 ; extra == 'uvloop'
+  requires_python: '>=3.8'
+- kind: pypi
+  name: black
+  version: 24.4.0
+  url: https://files.pythonhosted.org/packages/99/f7/bd2b367aa8833d532451d943ecc0deb7f846f872477bfa8deaa04e86373b/black-24.4.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  sha256: dae79397f367ac8d7adb6c779813328f6d690943f64b32983e896bcccd18cbad
+  requires_dist:
+  - click>=8.0.0
+  - mypy-extensions>=0.4.3
+  - packaging>=22.0
+  - pathspec>=0.9.0
+  - platformdirs>=2
+  - tomli>=1.1.0 ; python_full_version < '3.11'
+  - typing-extensions>=4.0.1 ; python_full_version < '3.11'
+  - colorama>=0.4.3 ; extra == 'colorama'
+  - aiohttp>=3.7.4,!=3.9.0 ; implementation_name == 'pypy' and sys_platform == 'win32' and extra == 'd'
+  - aiohttp>=3.7.4 ; (implementation_name != 'pypy' and extra == 'd') or (sys_platform != 'win32' and extra == 'd')
+  - ipython>=7.8.0 ; extra == 'jupyter'
+  - tokenize-rt>=3.2.0 ; extra == 'jupyter'
+  - uvloop>=0.15.2 ; extra == 'uvloop'
+  requires_python: '>=3.8'
+- kind: pypi
+  name: black
+  version: 24.4.0
+  url: https://files.pythonhosted.org/packages/a3/bb/b1054dce88a6405329890a9006b355eb133845da8dcc62e6c88f9a55435b/black-24.4.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  sha256: eb949f56a63c5e134dfdca12091e98ffb5fd446293ebae123d10fc1abad00b9e
+  requires_dist:
+  - click>=8.0.0
+  - mypy-extensions>=0.4.3
+  - packaging>=22.0
+  - pathspec>=0.9.0
+  - platformdirs>=2
+  - tomli>=1.1.0 ; python_full_version < '3.11'
+  - typing-extensions>=4.0.1 ; python_full_version < '3.11'
+  - colorama>=0.4.3 ; extra == 'colorama'
+  - aiohttp>=3.7.4,!=3.9.0 ; implementation_name == 'pypy' and sys_platform == 'win32' and extra == 'd'
+  - aiohttp>=3.7.4 ; (implementation_name != 'pypy' and extra == 'd') or (sys_platform != 'win32' and extra == 'd')
+  - ipython>=7.8.0 ; extra == 'jupyter'
+  - tokenize-rt>=3.2.0 ; extra == 'jupyter'
+  - uvloop>=0.15.2 ; extra == 'uvloop'
+  requires_python: '>=3.8'
+- kind: pypi
+  name: black
+  version: 24.4.0
+  url: https://files.pythonhosted.org/packages/cb/95/4a02a0fed559bf638001f6bf4e4c9d685111db959d221485e7e27c91e954/black-24.4.0-cp311-cp311-macosx_10_9_x86_64.whl
+  sha256: 8e5537f456a22cf5cfcb2707803431d2feeb82ab3748ade280d6ccd0b40ed2e8
+  requires_dist:
+  - click>=8.0.0
+  - mypy-extensions>=0.4.3
+  - packaging>=22.0
+  - pathspec>=0.9.0
+  - platformdirs>=2
+  - tomli>=1.1.0 ; python_full_version < '3.11'
+  - typing-extensions>=4.0.1 ; python_full_version < '3.11'
+  - colorama>=0.4.3 ; extra == 'colorama'
+  - aiohttp>=3.7.4,!=3.9.0 ; implementation_name == 'pypy' and sys_platform == 'win32' and extra == 'd'
+  - aiohttp>=3.7.4 ; (implementation_name != 'pypy' and extra == 'd') or (sys_platform != 'win32' and extra == 'd')
+  - ipython>=7.8.0 ; extra == 'jupyter'
+  - tokenize-rt>=3.2.0 ; extra == 'jupyter'
+  - uvloop>=0.15.2 ; extra == 'uvloop'
+  requires_python: '>=3.8'
+- kind: pypi
+  name: black
+  version: 24.4.0
+  url: https://files.pythonhosted.org/packages/d5/41/9c3d8ec509cfb35b646c00cb912d769f9a92aa5e469401d90b80314d209f/black-24.4.0-cp310-cp310-win_amd64.whl
+  sha256: 71d998b73c957444fb7c52096c3843875f4b6b47a54972598741fe9a7f737fcb
+  requires_dist:
+  - click>=8.0.0
+  - mypy-extensions>=0.4.3
+  - packaging>=22.0
+  - pathspec>=0.9.0
+  - platformdirs>=2
+  - tomli>=1.1.0 ; python_full_version < '3.11'
+  - typing-extensions>=4.0.1 ; python_full_version < '3.11'
+  - colorama>=0.4.3 ; extra == 'colorama'
+  - aiohttp>=3.7.4,!=3.9.0 ; implementation_name == 'pypy' and sys_platform == 'win32' and extra == 'd'
+  - aiohttp>=3.7.4 ; (implementation_name != 'pypy' and extra == 'd') or (sys_platform != 'win32' and extra == 'd')
+  - ipython>=7.8.0 ; extra == 'jupyter'
+  - tokenize-rt>=3.2.0 ; extra == 'jupyter'
+  - uvloop>=0.15.2 ; extra == 'uvloop'
+  requires_python: '>=3.8'
+- kind: pypi
+  name: black
+  version: 24.4.0
+  url: https://files.pythonhosted.org/packages/ef/32/5e59d4aeec3db4964404939ae7d3d9e839df7c882cd50296f3cfcb4738c5/black-24.4.0-cp39-cp39-win_amd64.whl
+  sha256: 7852b05d02b5b9a8c893ab95863ef8986e4dda29af80bbbda94d7aee1abf8702
+  requires_dist:
+  - click>=8.0.0
+  - mypy-extensions>=0.4.3
+  - packaging>=22.0
+  - pathspec>=0.9.0
+  - platformdirs>=2
+  - tomli>=1.1.0 ; python_full_version < '3.11'
+  - typing-extensions>=4.0.1 ; python_full_version < '3.11'
+  - colorama>=0.4.3 ; extra == 'colorama'
+  - aiohttp>=3.7.4,!=3.9.0 ; implementation_name == 'pypy' and sys_platform == 'win32' and extra == 'd'
+  - aiohttp>=3.7.4 ; (implementation_name != 'pypy' and extra == 'd') or (sys_platform != 'win32' and extra == 'd')
+  - ipython>=7.8.0 ; extra == 'jupyter'
+  - tokenize-rt>=3.2.0 ; extra == 'jupyter'
+  - uvloop>=0.15.2 ; extra == 'uvloop'
   requires_python: '>=3.8'
 - kind: pypi
   name: bmipy
@@ -3794,7 +3804,7 @@ packages:
   sha256: ae74fb96c20a0277a1d615f1e4d73c8414f5a98db8b799a7931d1582f3390c28
   requires_dist:
   - colorama ; platform_system == 'Windows'
-  - importlib-metadata ; python_version < '3.8'
+  - importlib-metadata ; python_full_version < '3.8'
   requires_python: '>=3.7'
 - kind: conda
   name: cmarkgfm
@@ -10628,15 +10638,15 @@ packages:
   url: https://files.pythonhosted.org/packages/55/72/4898c44ee9ea6f43396fbc23d9bfaf3d06e01b83698bdf2e4c919deceb7c/platformdirs-4.2.0-py3-none-any.whl
   sha256: 0614df2a2f37e1a662acbd8e2b25b92ccf8632929bc6d43467e17fe89c75e068
   requires_dist:
-  - furo >=2023.9.10 ; extra == 'docs'
-  - proselint >=0.13 ; extra == 'docs'
-  - sphinx-autodoc-typehints >=1.25.2 ; extra == 'docs'
-  - sphinx >=7.2.6 ; extra == 'docs'
-  - appdirs ==1.4.4 ; extra == 'test'
-  - covdefaults >=2.3 ; extra == 'test'
-  - pytest-cov >=4.1 ; extra == 'test'
-  - pytest-mock >=3.12 ; extra == 'test'
-  - pytest >=7.4.3 ; extra == 'test'
+  - furo>=2023.9.10 ; extra == 'docs'
+  - proselint>=0.13 ; extra == 'docs'
+  - sphinx-autodoc-typehints>=1.25.2 ; extra == 'docs'
+  - sphinx>=7.2.6 ; extra == 'docs'
+  - appdirs==1.4.4 ; extra == 'test'
+  - covdefaults>=2.3 ; extra == 'test'
+  - pytest-cov>=4.1 ; extra == 'test'
+  - pytest-mock>=3.12 ; extra == 'test'
+  - pytest>=7.4.3 ; extra == 'test'
   requires_python: '>=3.8'
 - kind: conda
   name: pluggy
@@ -12915,16 +12925,16 @@ packages:
   timestamp: 1667051294134
 - kind: pypi
   name: xmipy
-  version: 1.4.0
+  version: 1.5.0
   path: .
-  sha256: 0d6a5bff8a8d979b01c8a94dce87ee8b6161fbaa6147615ae18f8498237afe0d
+  sha256: 65f685f0744f869687a292d6c3f96b3f1e6a818f78c3f8fa38fc14d7597f8ba7
   requires_dist:
   - bmipy
   - numpy
   - pdoc ; extra == 'docs'
   - mypy ; extra == 'lint'
   - ruff ; extra == 'lint'
-  - flopy >=3.3.6 ; extra == 'tests'
+  - flopy>=3.3.6 ; extra == 'tests'
   - pytest ; extra == 'tests'
   - pytest-cov ; extra == 'tests'
   - requests ; extra == 'tests'
