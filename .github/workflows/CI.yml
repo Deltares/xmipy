@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   test:
-    name: ${{ matrix.pixi-environment }} - ${{ matrix.os }}
+    name: ${{ matrix.pixi-environment }} - ${{ matrix.os }} - ${{ matrix.modflow6-repo }}
     runs-on: "${{ matrix.os }}"
     strategy:
       fail-fast: false

@@ -299,7 +299,7 @@ def test_get_value_int_scalar(flopy_dis_idomain_mf6):
     mf6.initialize()
 
     # get scalar variable:
-    id_tag = next(var for var in mf6.get_output_var_names() if var.endswith("/ID"))
+    id_tag = next(var for var in mf6.get_output_var_names() if var.endswith("/NROW"))
     assert mf6.get_var_rank(id_tag) == 0
 
     # compare with value in MODFLOW memory:
