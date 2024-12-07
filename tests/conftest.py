@@ -83,7 +83,11 @@ def flopy_dis(tmp_path):
 
 @pytest.fixture
 def flopy_dis_mf6(flopy_dis, modflow_lib_path, request):
-    mf6 = XmiWrapper(lib_path=modflow_lib_path, working_directory=flopy_dis.sim_path)
+    mf6 = XmiWrapper(
+        lib_path=modflow_lib_path,
+        working_directory=flopy_dis.sim_path,
+        logger_level="DEBUG",
+    )
 
     # If initialized, call finalize() at end of use
     request.addfinalizer(mf6.__del__)

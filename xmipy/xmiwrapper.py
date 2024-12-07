@@ -5,6 +5,7 @@ from ctypes import (
     CDLL,
     POINTER,
     byref,
+    c_bool,
     c_char,
     c_char_p,
     c_double,
@@ -430,26 +431,25 @@ class XmiWrapper(Xmi):
 
         var_type = self.get_var_type(name)
         var_type_lower = var_type.lower()
-        shape_array = self.get_var_shape(name)
+        if var_type_lower.startswith("double"):
+            dtype: Any = np.float64
+        elif var_type_lower.startswith("float"):
+            dtype = np.float32
+        elif var_type_lower.startswith("int"):
+            dtype = np.int32
+        elif var_type_lower.startswith("logical"):
+            dtype = bool
+        else:
+            raise InputError(f"Unsupported value type {var_type!r}")
 
         # convert shape array to python tuple
+        shape_array = self.get_var_shape(name)
         shape_tuple = tuple(np.trim_zeros(shape_array))
         ndim = len(shape_tuple)
 
-        if var_type_lower.startswith("double"):
-            arraytype = np.ctypeslib.ndpointer(
-                dtype=np.float64, ndim=ndim, shape=shape_tuple, flags="C"
-            )
-        elif var_type_lower.startswith("float"):
-            arraytype = np.ctypeslib.ndpointer(
-                dtype=np.float32, ndim=ndim, shape=shape_tuple, flags="C"
-            )
-        elif var_type_lower.startswith("int"):
-            arraytype = np.ctypeslib.ndpointer(
-                dtype=np.int32, ndim=ndim, shape=shape_tuple, flags="C"
-            )
-        else:
-            raise InputError(f"Unsupported value type {var_type!r}")
+        arraytype = np.ctypeslib.ndpointer(
+            dtype=dtype, ndim=ndim, shape=shape_tuple, flags="C"
+        )
         values = arraytype()
         self._execute_function(
             self.lib.get_value_ptr,
@@ -457,25 +457,22 @@ class XmiWrapper(Xmi):
             byref(values),
             detail="for variable " + name,
         )
-        return values.contents
+        return values.contents  # type: ignore
 
     def get_value_ptr_scalar(self, name: str) -> NDArray[Any]:
         var_type = self.get_var_type(name)
         var_type_lower = var_type.lower()
         if var_type_lower.startswith("double"):
-            arraytype = np.ctypeslib.ndpointer(
-                dtype=np.float64, ndim=1, shape=(1,), flags="C"
-            )
+            dtype: Any = np.float64
         elif var_type_lower.startswith("float"):
-            arraytype = np.ctypeslib.ndpointer(
-                dtype=np.float32, ndim=1, shape=(1,), flags="C"
-            )
+            dtype = np.float32
         elif var_type_lower.startswith("int"):
-            arraytype = np.ctypeslib.ndpointer(
-                dtype=np.int32, ndim=1, shape=(1,), flags="C"
-            )
+            dtype = np.int32
+        elif var_type_lower.startswith("logical"):
+            dtype = bool
         else:
             raise InputError(f"Unsupported value type {var_type!r}")
+        arraytype = np.ctypeslib.ndpointer(dtype=dtype, ndim=1, shape=(1,), flags="C")
         values = arraytype()
         self._execute_function(
             self.lib.get_value_ptr,
@@ -483,7 +480,7 @@ class XmiWrapper(Xmi):
             byref(values),
             detail="for variable " + name,
         )
-        return values.contents
+        return values.contents  # type: ignore
 
     def get_value_at_indices(
         self, name: str, dest: NDArray[Any], inds: NDArray[np.int32]
@@ -510,6 +507,14 @@ class XmiWrapper(Xmi):
                 self.lib.set_value,
                 c_char_p(name.encode()),
                 byref(values.ctypes.data_as(POINTER(c_int))),
+            )
+        elif var_type_lower.startswith("logical"):
+            if values.dtype != bool:
+                raise InputError("Array should have bool elements")
+            self._execute_function(
+                self.lib.set_value_bool,
+                c_char_p(name.encode()),
+                byref(values.ctypes.data_as(POINTER(c_bool))),
             )
         else:
             raise InputError("Unsupported value type")

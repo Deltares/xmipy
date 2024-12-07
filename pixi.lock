@@ -12927,7 +12927,7 @@ packages:
   name: xmipy
   version: 1.5.0
   path: .
-  sha256: 65f685f0744f869687a292d6c3f96b3f1e6a818f78c3f8fa38fc14d7597f8ba7
+  sha256: d6029626bb13ed898f606e430303f475b1f80e106297c659c227bd2e7f79ff0e
   requires_dist:
   - bmipy
   - numpy
