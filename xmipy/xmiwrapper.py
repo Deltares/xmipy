@@ -448,6 +448,29 @@ class XmiWrapper(Xmi):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.int32, ndim=ndim, shape=shape_tuple, flags="C"
             )
+        elif var_type_lower.startswith(("logical", "bool")):
+            # Determine dtype from actual item size to support both
+            # Fortran LOGICAL(4) (4 bytes) and C _Bool (1 byte)
+            itemsize = self.get_var_itemsize(name)
+            dtype = {1: np.int8, 2: np.int16, 4: np.int32, 8: np.int64}.get(itemsize)
+            if dtype is None:
+                raise InputError(
+                    f"Unsupported boolean item size {itemsize} for variable {name}"
+                )
+            arraytype = np.ctypeslib.ndpointer(
+                dtype=dtype, ndim=ndim, shape=shape_tuple, flags="C"
+            )
+            values = arraytype()
+            # Try get_value_ptr_bool first (Fortran), fall back to
+            # get_value_ptr_int (standard BMI)
+            fn = getattr(self.lib, "get_value_ptr_bool", None) or self.lib.get_value_ptr_int
+            self._execute_function(
+                fn,
+                c_char_p(name.encode()),
+                byref(values),
+                detail="for variable " + name,
+            )
+            return values.contents
         else:
             raise InputError(f"Unsupported value type {var_type!r}")
         values = arraytype()
@@ -473,6 +496,26 @@ class XmiWrapper(Xmi):
         elif var_type_lower.startswith("int"):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=np.int32, ndim=1, shape=(1,), flags="C"
+            )
+        elif var_type_lower.startswith(("logical", "bool")):
+            # Determine dtype from actual item size to support both
+            # Fortran LOGICAL(4) (4 bytes) and C _Bool (1 byte)
+            itemsize = self.get_var_itemsize(name)
+            dtype = {1: np.int8, 2: np.int16, 4: np.int32, 8: np.int64}.get(itemsize)
+            if dtype is None:
+                raise InputError(
+                    f"Unsupported boolean item size {itemsize} for variable {name}"
+                )
+            arraytype = np.ctypeslib.ndpointer(
+                dtype=dtype, ndim=1, shape=(1,), flags="C"
+            )
+            values = arraytype()
+            fn = getattr(self.lib, "get_value_ptr_bool", None) or self.lib.get_value_ptr_int
+            self._execute_function(
+                fn,
+                c_char_p(name.encode()),
+                byref(values),
+                detail="for variable " + name,
             )
         else:
             raise InputError(f"Unsupported value type {var_type!r}")
