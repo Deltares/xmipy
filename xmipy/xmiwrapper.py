@@ -460,20 +460,6 @@ class XmiWrapper(Xmi):
             arraytype = np.ctypeslib.ndpointer(
                 dtype=dtype, ndim=ndim, shape=shape_tuple, flags="C"
             )
-            values = arraytype()
-            # Try get_value_ptr_bool first (Fortran), fall back to
-            # get_value_ptr_int (standard BMI)
-            fn = (
-                getattr(self.lib, "get_value_ptr_bool", None)
-                or self.lib.get_value_ptr_int
-            )
-            self._execute_function(
-                fn,
-                c_char_p(name.encode()),
-                byref(values),
-                detail="for variable " + name,
-            )
-            return values.contents
         else:
             raise InputError(f"Unsupported value type {var_type!r}")
         values = arraytype()
@@ -511,17 +497,6 @@ class XmiWrapper(Xmi):
                 )
             arraytype = np.ctypeslib.ndpointer(
                 dtype=dtype, ndim=1, shape=(1,), flags="C"
-            )
-            values = arraytype()
-            fn = (
-                getattr(self.lib, "get_value_ptr_bool", None)
-                or self.lib.get_value_ptr_int
-            )
-            self._execute_function(
-                fn,
-                c_char_p(name.encode()),
-                byref(values),
-                detail="for variable " + name,
             )
         else:
             raise InputError(f"Unsupported value type {var_type!r}")
