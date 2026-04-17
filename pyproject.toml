@@ -37,7 +37,7 @@ packages = ["xmipy"]
 [tool.hatch.version]
 path = "xmipy/__init__.py"
 
-[tool.pixi.project]
+[tool.pixi.workspace]
 channels = ["conda-forge"]
 platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
 
@@ -72,7 +72,7 @@ mypy = "mypy --install-types --non-interactive --ignore-missing-imports ."
 check-build = "rm -rf dist && python -m build && twine check --strict dist/*"
 
 # Publish
-publish-build = { cmd = "twine upload dist/*", depends_on = ["check-build"] }
+publish-build = { cmd = "twine upload dist/*", depends-on = ["check-build"] }
 
 [tool.pixi.feature.py312.dependencies]
 python = "3.12.*"

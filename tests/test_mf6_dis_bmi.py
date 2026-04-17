@@ -166,6 +166,33 @@ def test_get_value_ptr_scalar(flopy_dis_mf6):
     assert grid_id[0] == 1
 
 
+def test_get_value_ptr_logical(flopy_dis_mf6):
+    """Test that get_value_ptr works for logical/boolean variables.
+    The NPF package with save_specific_discharge=True exposes ISAVSPDIS
+    as a LOGICAL variable."""
+    flopy_dis, mf6 = flopy_dis_mf6
+    mf6.initialize()
+    mf6.update()
+    # Find a logical variable from the output var names
+    output_vars = mf6.get_output_var_names()
+    print("Output variables:", output_vars)
+    logical_vars = [
+        var
+        for var in output_vars
+        if mf6.get_var_type(var).lower().startswith(("logical", "bool"))
+    ]
+    assert len(logical_vars) > 0, "No logical/boolean variables found in output"
+
+    # Test get_value_ptr for each logical variable found
+    for var in logical_vars:
+        result = mf6.get_value_ptr(var)
+        assert result is not None
+        assert result.ndim >= 1
+        # Logical values should be representable as 0 or non-zero
+        for val in result.flat:
+            assert isinstance(val, (np.integer,))
+
+
 def test_get_var_grid(flopy_dis_mf6):
     flopy_dis, mf6 = flopy_dis_mf6
     mf6.initialize()
