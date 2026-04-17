@@ -463,7 +463,10 @@ class XmiWrapper(Xmi):
             values = arraytype()
             # Try get_value_ptr_bool first (Fortran), fall back to
             # get_value_ptr_int (standard BMI)
-            fn = getattr(self.lib, "get_value_ptr_bool", None) or self.lib.get_value_ptr_int
+            fn = (
+                getattr(self.lib, "get_value_ptr_bool", None)
+                or self.lib.get_value_ptr_int
+            )
             self._execute_function(
                 fn,
                 c_char_p(name.encode()),
@@ -510,7 +513,10 @@ class XmiWrapper(Xmi):
                 dtype=dtype, ndim=1, shape=(1,), flags="C"
             )
             values = arraytype()
-            fn = getattr(self.lib, "get_value_ptr_bool", None) or self.lib.get_value_ptr_int
+            fn = (
+                getattr(self.lib, "get_value_ptr_bool", None)
+                or self.lib.get_value_ptr_int
+            )
             self._execute_function(
                 fn,
                 c_char_p(name.encode()),

@@ -177,7 +177,8 @@ def test_get_value_ptr_logical(flopy_dis_mf6):
     output_vars = mf6.get_output_var_names()
     print("Output variables:", output_vars)
     logical_vars = [
-        var for var in output_vars
+        var
+        for var in output_vars
         if mf6.get_var_type(var).lower().startswith(("logical", "bool"))
     ]
     assert len(logical_vars) > 0, "No logical/boolean variables found in output"
