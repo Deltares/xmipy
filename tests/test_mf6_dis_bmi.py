@@ -190,7 +190,7 @@ def test_get_grid_type(flopy_dis_mf6):
 
 
 def test_get_input_item_count(flopy_dis_mf6):
-    flopy_dis, mf6 = flopy_dis_mf6
+    _, mf6 = flopy_dis_mf6
     mf6.initialize()
 
     assert mf6.get_input_item_count() > 0
