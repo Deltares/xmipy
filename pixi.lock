@@ -10322,7 +10322,7 @@ packages:
 - pypi: ./
   name: xmipy
   version: 1.5.0
-  sha256: 4eecba796e32cfa64985899b328aafd4c29f67eef35cd27036fd7190a25a302e
+  sha256: 88dcd3b9250750bf94226af47b7f6d1c9ba2262ece38a6b8344fd741ec98a024
   requires_dist:
   - bmipy
   - numpy

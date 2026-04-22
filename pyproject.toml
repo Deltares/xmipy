@@ -58,7 +58,7 @@ twine = "*"
 
 [tool.pixi.tasks]
 # Get executables
-get-exes = "python -c 'import os; os.makedirs(\"bin\", exist_ok=True); import flopy; flopy.utils.get_modflow(\"bin\")'"
+get-exes = "get-modflow bin"
 
 # Tests
 # The flag -s stops pytest from capturing output
