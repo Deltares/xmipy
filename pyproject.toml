@@ -53,6 +53,7 @@ pytest = "*"
 pytest-cov = "*"
 requests = "*"
 ruff = "*"
+codespell = "*"
 twine = "*"
 
 [tool.pixi.tasks]
@@ -72,6 +73,7 @@ docs = "pdoc -o docs/ xmipy"
 ruff = "ruff check ."
 ruff-format = "ruff format --check ."
 mypy = "mypy --install-types --non-interactive --ignore-missing-imports ."
+spell = "codespell"
 check-build = "rm -rf dist && python -m build && twine check --strict dist/*"
 
 # Publish
@@ -134,3 +136,6 @@ select = [
 ]
 ignore = ["E501", "PT011"]
 fixable = ["I", "W"]
+
+[tool.codespell]
+ignore-words-list = "nam"
