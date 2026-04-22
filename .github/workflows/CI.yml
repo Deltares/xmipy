@@ -24,9 +24,9 @@ jobs:
         pixi-environment: ["py39", "py310", "py311", "py312"]
         os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup Pixi
-        uses: prefix-dev/setup-pixi@v0.6.0
+        uses: prefix-dev/setup-pixi@v0.9.5
         with:
           manifest-path: pyproject.toml
       - name: Install MODFLOW 6
