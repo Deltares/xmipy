@@ -31,9 +31,9 @@ jobs:
           manifest-path: pyproject.toml
           environments: ${{ matrix.pixi-environment }}
       - name: Install MODFLOW 6
-        run: pixi run get-exes
+        run: pixi run -e ${{ matrix.pixi-environment }} get-exes
       - name: Test with pytest
-        run: pixi run tests-ci
+        run: pixi run -e ${{ matrix.pixi-environment }} tests-ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MODFLOW_BIN_PATH: ${{ github.workspace }}/bin
