@@ -71,3 +71,4 @@ tests/bin
 
 # pixi
 .pixi
+bin/

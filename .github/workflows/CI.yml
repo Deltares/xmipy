@@ -30,13 +30,12 @@ jobs:
         with:
           manifest-path: pyproject.toml
       - name: Install MODFLOW 6
-        uses: modflowpy/install-modflow-action@v1
-        with:
-          repo: modflow6-nightly-build
+        run: pixi run get-exes
       - name: Test with pytest
         run: pixi run tests-ci
-        env: 
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MODFLOW_BIN_PATH: ${{ github.workspace }}/bin
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
