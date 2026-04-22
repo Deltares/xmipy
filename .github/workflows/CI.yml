@@ -18,6 +18,8 @@ jobs:
   test:
     name: ${{ matrix.pixi-environment }} - ${{ matrix.os }}
     runs-on: "${{ matrix.os }}"
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -32,6 +34,8 @@ jobs:
           environments: ${{ matrix.pixi-environment }}
       - name: Install MODFLOW 6
         run: pixi run -e ${{ matrix.pixi-environment }} get-exes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Test with pytest
         run: pixi run -e ${{ matrix.pixi-environment }} tests-ci
         env:
