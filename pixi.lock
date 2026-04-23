@@ -13011,7 +13011,7 @@ packages:
 - pypi: ./
   name: xmipy
   version: 1.5.0
-  sha256: bb868d43da98825d801262b3a760b47b3c3626186d58b4b16e346c2c5563c8a0
+  sha256: 615bec00bd031ff7b9f5b98d3782ef4cde6eaf288f19c7c19d5d07c0d7ec448f
   requires_dist:
   - bmipy
   - numpy
