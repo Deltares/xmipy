@@ -45,7 +45,7 @@ platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
 xmipy = { path = ".", editable = true }
 
 [tool.pixi.dependencies]
-build = "*"
+python-build = "*"
 flopy = ">=3.3.6"
 mypy = "*"
 pdoc = "*"
@@ -53,9 +53,13 @@ pytest = "*"
 pytest-cov = "*"
 requests = "*"
 ruff = "*"
+codespell = "*"
 twine = "*"
 
 [tool.pixi.tasks]
+# Get executables
+get-exes = "python -c \"import os; os.makedirs('bin', exist_ok=True)\" && get-modflow bin --repo modflow6-nightly-build"
+
 # Tests
 # The flag -s stops pytest from capturing output
 # This is necessary until proper error reporting is implemented by Modflow
@@ -69,6 +73,7 @@ docs = "pdoc -o docs/ xmipy"
 ruff = "ruff check ."
 ruff-format = "ruff format --check ."
 mypy = "mypy --install-types --non-interactive --ignore-missing-imports ."
+spell = "codespell"
 check-build = "rm -rf dist && python -m build && twine check --strict dist/*"
 
 # Publish
@@ -131,3 +136,6 @@ select = [
 ]
 ignore = ["E501", "PT011"]
 fixable = ["I", "W"]
+
+[tool.codespell]
+ignore-words-list = "nam"

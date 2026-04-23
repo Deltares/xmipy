@@ -14,7 +14,7 @@ def test_timer_create_and_run():
     time.sleep(0.1)
     timer.stop(scope_label)
 
-    # the timing +/- result is platform dependant
+    # the timing +/- result is platform dependent
     assert timer.report_totals() >= 0.09
 
 

@@ -32,13 +32,13 @@ jobs:
       - name: Run mypy
         run: pixi run mypy
   typos:
-    name: Spell Check with Typos
+    name: Spell Check with Codespell
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Actions Repository
         uses: actions/checkout@v4
       - name: Check spelling
-        uses: crate-ci/typos@master
+        uses: codespell-project/actions-codespell@master
   check:
     runs-on: ubuntu-latest
     steps:

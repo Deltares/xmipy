@@ -18,26 +18,30 @@ jobs:
   test:
     name: ${{ matrix.pixi-environment }} - ${{ matrix.os }}
     runs-on: "${{ matrix.os }}"
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
         pixi-environment: ["py39", "py310", "py311", "py312"]
         os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup Pixi
-        uses: prefix-dev/setup-pixi@v0.6.0
+        uses: prefix-dev/setup-pixi@v0.9.5
         with:
           manifest-path: pyproject.toml
+          environments: ${{ matrix.pixi-environment }}
       - name: Install MODFLOW 6
-        uses: modflowpy/install-modflow-action@v1
-        with:
-          repo: modflow6-nightly-build
-      - name: Test with pytest
-        run: pixi run tests-ci
-        env: 
+        run: pixi run -e ${{ matrix.pixi-environment }} get-exes
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Test with pytest
+        run: pixi run -e ${{ matrix.pixi-environment }} tests-ci
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MODFLOW_BIN_PATH: ${{ github.workspace }}/bin
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
