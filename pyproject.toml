@@ -12,10 +12,9 @@ authors = [
     { name = "Joseph D. Hughes", email = "jdhughes@usgs.gov" },
 ]
 keywords = ["BMI", "Basic Model Interface"]
-license = { text = "CC0" }
+license = "CC0-1.0"
 classifiers = [
     "Intended Audience :: Science/Research",
-    "License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
     "Topic :: Scientific/Engineering :: Hydrology",
 ]
 requires-python = ">=3.9"
